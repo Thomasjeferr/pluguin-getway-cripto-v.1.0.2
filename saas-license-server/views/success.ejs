@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sucesso - Plugin Cripto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .success-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 3rem;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 10;
+        }
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: rgba(35, 134, 54, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .icon-circle i {
+            font-size: 2.5rem;
+            color: #238636;
+        }
+        .license-box {
+            background-color: #0d1117;
+            border: 1px dashed #F0B90B;
+            padding: 1rem;
+            border-radius: 8px;
+            color: #F0B90B;
+            font-family: monospace;
+            font-size: 1.3rem;
+            margin: 2rem 0;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        .btn-access {
+            background-color: #238636;
+            color: #fff;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .btn-access:hover {
+            background-color: #2ea043;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .next-steps {
+            text-align: left;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="success-card">
+        <div class="icon-circle">
+            <i class="fas fa-check"></i>
+        </div>
+        
+        <h2 class="fw-bold text-white mb-2">Tudo Certo!</h2>
+        <p class="text-secondary">Sua conta foi criada e sua licença gerada com sucesso.</p>
+
+        <div class="license-box">
+            <%= license_key %>
+        </div>
+
+        <div class="next-steps">
+            <div class="d-flex align-items-center mb-2">
+                <i class="fas fa-envelope text-secondary me-3"></i>
+                <span>Enviamos os dados para <strong><%= email %></strong></span>
+            </div>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-download text-secondary me-3"></i>
+                <span>O download do plugin está disponível na sua conta.</span>
+            </div>
+        </div>
+
+        <a href="/minha-conta" class="btn-access">
+            Acessar Minha Conta <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+
+    <script>
+        // Efeito de Confetes
+        var duration = 3 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        function randomInOut(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            var particleCount = 50 * (timeLeft / duration);
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInOut(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInOut(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    </script>
+
+</body>
+</html>

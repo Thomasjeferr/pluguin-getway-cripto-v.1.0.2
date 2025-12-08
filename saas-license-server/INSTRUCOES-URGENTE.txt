@@ -1,0 +1,23 @@
+========================================
+  PROBLEMA: Mongoose não está instalado
+========================================
+
+SOLUÇÃO RÁPIDA:
+
+1. Abra o PowerShell ou CMD
+2. Navegue até a pasta:
+   cd "C:\Users\thoma\OneDrive\Área de Trabalho\Pluguin -Woocomerc-Cripto-pix-usdt\saas-license-server"
+
+3. Execute:
+   npm install mongoose
+
+4. Depois execute:
+   npm start
+
+OU use o arquivo: EXECUTAR-AGORA.bat (clique duas vezes)
+
+========================================
+O servidor agora tenta instalar mongoose
+automaticamente, mas se não funcionar,
+execute os comandos acima manualmente.
+========================================

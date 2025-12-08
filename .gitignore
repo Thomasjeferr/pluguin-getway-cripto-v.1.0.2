@@ -1,0 +1,57 @@
+# Dependências
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variáveis de ambiente e configurações sensíveis
+.env
+.env.local
+.env.*.local
+configuracao.env
+*.env
+
+# Logs
+logs/
+*.log
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Arquivos temporários
+*.tmp
+*.temp
+.cache/
+
+# Backups manuais
+backup-*/
+*.backup
+*.bak
+
+# Build
+dist/
+build/
+
+# Arquivos específicos do projeto
+saas-license-server/instalacao-log.txt
+saas-license-server/*.bat
+saas-license-server/*.ps1
+
+# Mas mantenha os scripts importantes
+!saas-license-server/INICIAR.bat
+!saas-license-server/EXECUTAR-AGORA.bat
+!saas-license-server/SOLUCAO-FINAL.bat
+!saas-license-server/INSTALAR-E-RODAR.bat
+!saas-license-server/RODAR.bat
+!saas-license-server/start.bat
+!saas-license-server/corrigir-env.bat
+!saas-license-server/FORCAR-INSTALACAO.bat

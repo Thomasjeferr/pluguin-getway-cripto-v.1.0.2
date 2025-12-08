@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Cripto Woocommerce - Receba Pix em USDT Automático</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #F0B90B;
+            --dark-bg: #0b0e11;
+            --card-bg: #181a20;
+            --text-main: #f0f6fc;
+            --text-muted: #c9d1d9;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            padding: 20px 0;
+            background: rgba(11, 14, 17, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: #fff !important;
+            font-size: 1.5rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 140px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(240, 185, 11, 0.15) 0%, rgba(0,0,0,0) 70%);
+            top: -10%;
+            right: -10%;
+            z-index: -1;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #fff, #F0B90B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+            max-width: 600px;
+        }
+
+        .btn-cta {
+            background: linear-gradient(45deg, #F0B90B, #ffcd1f);
+            color: #000;
+            font-weight: 700;
+            padding: 15px 40px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1.1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(240, 185, 11, 0.3);
+            background: linear-gradient(45deg, #ffcd1f, #F0B90B);
+            color: #000;
+        }
+
+        /* Steps */
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: #000;
+            font-weight: 800;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Features */
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 2rem;
+            border-radius: 16px;
+            height: 100%;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Pricing */
+        .pricing-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .pricing-card.popular {
+            border: 2px solid var(--primary);
+            background: linear-gradient(180deg, rgba(240, 185, 11, 0.05) 0%, var(--card-bg) 100%);
+            transform: scale(1.05);
+            z-index: 2;
+        }
+
+        .pricing-card.popular:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .badge-popular {
+            background: var(--primary);
+            color: #000;
+            font-weight: 700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .price-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 1.5rem 0;
+        }
+
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+        }
+
+        .pricing-features li i {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+
+        /* FAQ Accordion */
+        .accordion-item {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 10px !important;
+        }
+
+        .accordion-button {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            box-shadow: none !important;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: rgba(240, 185, 11, 0.1);
+            color: var(--primary);
+        }
+
+        .accordion-body {
+            color: var(--text-muted);
+        }
+
+        .btn-outline-custom {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-outline-custom:hover {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .text-muted {
+            color: #a0a6ac !important;
+        }
+
+        .feature-card p, .pricing-card p, .accordion-body {
+            color: #b0b6bc !important;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fab fa-bitcoin text-warning me-2"></i>Plugin Cripto
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="fas fa-bars text-white"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a href="#features" class="nav-link text-white">Recursos</a></li>
+                    <li class="nav-item"><a href="#how-it-works" class="nav-link text-white">Como Funciona</a></li>
+                    <li class="nav-item"><a href="#pricing" class="nav-link text-white">Planos</a></li>
+                    <li class="nav-item"><a href="#faq" class="nav-link text-white">FAQ</a></li>
+                    <li class="nav-item ms-3">
+                        <a href="/acesso-admin" class="btn btn-sm btn-outline-light px-3 rounded-pill">Login</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="javascript:void(0)" onclick="openCheckout('monthly')" class="btn btn-sm btn-cta px-4">Começar</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section d-flex align-items-center">
+        <div class="hero-bg-glow"></div>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <% if (config.promoText) { %>
+                        <div class="d-inline-block border border-warning rounded-pill px-3 py-1 mb-4">
+                            <span class="text-warning small fw-bold text-uppercase"><i class="fas fa-bolt me-2"></i><%= config.promoText %></span>
+                        </div>
+                    <% } %>
+                    <h1 class="hero-title">Venda com Pix, <br><span class="text-gradient">Receba em USDT.</span></h1>
+                    <p class="hero-subtitle">
+                        Automatize seus recebimentos no WooCommerce. Seu cliente paga em Reais via Pix, e você recebe Dólar (USDT) na Binance Pay instantaneamente. Sem taxas bancárias abusivas.
+                    </p>
+                    <div class="d-flex gap-3 flex-column flex-sm-row">
+                        <a href="javascript:void(0)" onclick="openCheckout('monthly')" class="btn btn-cta">
+                            <i class="fas fa-rocket me-2"></i>Quero Receber em Dólar
+                        </a>
+                        <a href="#how-it-works" class="btn btn-outline-light rounded-pill px-4 py-3 fw-bold">
+                            <i class="fas fa-play-circle me-2"></i>Ver Demo
+                        </a>
+                    </div>
+                    <div class="mt-5 d-flex gap-4 text-muted small">
+                        <div><i class="fas fa-check-circle text-success me-2"></i>Setup Instantâneo</div>
+                        <div><i class="fas fa-shield-alt text-success me-2"></i>Anti-Fraude 3.0</div>
+                        <div><i class="fas fa-code text-success me-2"></i>No-Code</div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mt-5 mt-lg-0 position-relative">
+                    <div class="p-4 rounded-4 border border-secondary bg-dark shadow-lg" style="transform: rotate(-2deg);">
+                        <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
+                            <i class="fab fa-bitcoin fa-2x text-warning me-3"></i>
+                            <div>
+                                <div class="fw-bold text-white">Pagamento Confirmado</div>
+                                <div class="small text-muted">Sua carteira recebeu USDT</div>
+                            </div>
+                            <div class="ms-auto text-success fw-bold">+ $97.00</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-3 bg-secondary bg-opacity-10 mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shopping-bag text-white me-3"></i>
+                                <div>
+                                    <div class="text-white small">Licença Anual</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">Pedido #1234</div>
+                                </div>
+                            </div>
+                            <div class="text-white small">Concluído</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-3 bg-secondary bg-opacity-10">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user text-white me-3"></i>
+                                <div>
+                                    <div class="text-white small">Novo Cliente</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">cliente@email.com</div>
+                                </div>
+                            </div>
+                            <div class="text-white small">Verificado</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Logos -->
+    <div class="py-4 border-top border-bottom border-secondary" style="background: rgba(255,255,255,0.02);">
+        <div class="container">
+            <div class="row text-center opacity-50 grayscale">
+                <div class="col"><i class="fab fa-wordpress fa-2x"></i></div>
+                <div class="col"><i class="fab fa-aws fa-2x"></i></div>
+                <div class="col"><i class="fab fa-cc-visa fa-2x"></i></div>
+                <div class="col"><i class="fab fa-node-js fa-2x"></i></div>
+                <div class="col"><i class="fab fa-docker fa-2x"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-5 my-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Como Funciona</h2>
+                <p class="text-muted">Do Pix ao Dólar em 3 passos simples.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="p-4 border border-secondary rounded-4 bg-dark h-100">
+                        <div class="step-number">1</div>
+                        <h4>Instale o Plugin</h4>
+                        <p class="text-muted">Baixe nosso plugin e faça o upload no seu WordPress. Ative sua licença com um clique.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 border border-secondary rounded-4 bg-dark h-100">
+                        <div class="step-number">2</div>
+                        <h4>Conecte a Binance</h4>
+                        <p class="text-muted">Insira suas chaves de API da Binance Merchant. É seguro e seus fundos ficam sob sua custódia.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 border border-secondary rounded-4 bg-dark h-100">
+                        <div class="step-number">3</div>
+                        <h4>Venda em Dólar</h4>
+                        <p class="text-muted">Pronto! O cliente vê o QR Code Pix, paga em BRL e você recebe USDT automaticamente.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-bolt feature-icon"></i>
+                        <h4>Liquidez Imediata</h4>
+                        <p class="text-muted">Diga adeus ao D+1 ou D+30. Com blockchain, o dinheiro é seu no momento da venda.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-lock feature-icon"></i>
+                        <h4>Proteção Anti-Clone</h4>
+                        <p class="text-muted">Nosso sistema de licenciamento blinda seu plugin para funcionar apenas no seu domínio.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-globe feature-icon"></i>
+                        <h4>Checkout Transparente</h4>
+                        <p class="text-muted">Seu cliente não sai do site. Um modal elegante exibe o QR Code Pix para pagamento.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-sync feature-icon"></i>
+                        <h4>Atualizações Auto</h4>
+                        <p class="text-muted">Receba novas funcionalidades e correções de segurança diretamente no seu painel.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-headset feature-icon"></i>
+                        <h4>Suporte Especializado</h4>
+                        <p class="text-muted">Equipe técnica pronta para ajudar na integração e configuração da sua loja.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-mobile-alt feature-icon"></i>
+                        <h4>Mobile First</h4>
+                        <p class="text-muted">Totalmente otimizado para vendas via celular, onde ocorre a maior parte do tráfego.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="text-warning fw-bold small text-uppercase">Investimento</span>
+                <h2 class="fw-bold mb-3">Escolha o plano ideal</h2>
+                <p class="text-muted">Cancele a qualquer momento. Sem fidelidade.</p>
+            </div>
+
+            <div class="row align-items-center justify-content-center g-4">
+                
+                <!-- Plano Trial -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card">
+                        <h3 class="fw-bold">Trial</h3>
+                        <div class="price-value">Grátis</div>
+                        <p class="text-muted mb-4">Para testar e validar</p>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> <%= config.trialDays %> dias de acesso total</li>
+                            <li><i class="fas fa-check"></i> Processamento ilimitado</li>
+                            <li><i class="fas fa-check"></i> Suporte via email</li>
+                            <li><i class="fas fa-check"></i> 1 Domínio</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="openCheckout('trial')" class="btn btn-outline-custom">Começar Teste</a>
+                    </div>
+                </div>
+
+                <!-- Plano Anual (Destaque) -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card popular">
+                        <span class="badge-popular">Melhor Valor</span>
+                        <h3 class="fw-bold">Anual</h3>
+                        <div class="price-value">
+                            <span class="fs-4 align-top">R$</span><%= config.priceYearly %>
+                            <span class="fs-6 text-muted fw-normal">/ano</span>
+                        </div>
+                        <p class="text-muted mb-4">Economize 2 meses</p>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Tudo do plano mensal</li>
+                            <li><i class="fas fa-check"></i> Prioridade no suporte</li>
+                            <li><i class="fas fa-check"></i> Consultoria de Setup</li>
+                            <li><i class="fas fa-check"></i> 1 Domínio por 1 ano</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="openCheckout('yearly')" class="btn btn-cta w-100 shadow-none">Assinar Agora</a>
+                    </div>
+                </div>
+
+                <!-- Plano Mensal -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="pricing-card">
+                        <h3 class="fw-bold">Mensal</h3>
+                        <div class="price-value">
+                            <span class="fs-4 align-top">R$</span><%= config.priceMonthly %>
+                            <span class="fs-6 text-muted fw-normal">/mês</span>
+                        </div>
+                        <p class="text-muted mb-4">Flexibilidade total</p>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Cobrança mensal</li>
+                            <li><i class="fas fa-check"></i> Atualizações inclusas</li>
+                            <li><i class="fas fa-check"></i> Suporte WhatsApp</li>
+                            <li><i class="fas fa-check"></i> 1 Domínio</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="openCheckout('monthly')" class="btn btn-outline-custom">Assinar Mensal</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-5 mb-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="text-center mb-5">
+                        <h2 class="fw-bold">Perguntas Frequentes</h2>
+                    </div>
+                    <div class="accordion" id="accordionExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#c1">
+                                    Preciso ter conta na Binance?
+                                </button>
+                            </h2>
+                            <div id="c1" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Sim, você precisa de uma conta verificada na Binance para gerar as chaves de API Merchant e receber os pagamentos.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c2">
+                                    O dinheiro cai na hora?
+                                </button>
+                            </h2>
+                            <div id="c2" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Sim! A Binance processa o Pix instantaneamente e converte para USDT na sua carteira Spot ou Funding.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c3">
+                                    Funciona com qualquer tema?
+                                </button>
+                            </h2>
+                            <div id="c3" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Sim, nosso plugin é compatível com qualquer tema WordPress/WooCommerce padrão.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="py-5 text-center border-top border-secondary" style="background: #0b0e11;">
+        <div class="container">
+            <h2 class="fw-bold mb-4">Pronto para escalar suas vendas?</h2>
+            <a href="javascript:void(0)" onclick="openCheckout('monthly')" class="btn btn-cta px-5">Garantir Minha Licença</a>
+            <p class="mt-4 text-muted small">Garantia de 7 dias ou seu dinheiro de volta.</p>
+        </div>
+    </section>
+
+    <footer class="py-4 text-center text-muted" style="background: #050709; font-size: 0.9rem;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <p class="mb-0">&copy; 2025 Plugin Cripto Woocommerce. Todos os direitos reservados.</p>
+                    <div class="mt-2">
+                        <a href="#" class="text-muted text-decoration-none me-3">Termos</a>
+                        <a href="#" class="text-muted text-decoration-none">Privacidade</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal de Checkout -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark border-secondary text-white" style="background-color: #161b22 !important;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-lock text-success me-2"></i><span id="modalTitle">Finalizar Assinatura</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    
+                    <!-- Visual Trial -->
+                    <div id="trialContent" style="display: none;">
+                        <div class="text-center mb-4">
+                            <div class="badge bg-success mb-2">TESTE GRÁTIS (7 DIAS)</div>
+                            <h3 class="fw-bold mb-0">R$ 0,00</h3>
+                            <small class="text-muted">sem compromisso</small>
+                        </div>
+                    </div>
+
+                    <!-- Visual Pago -->
+                    <div id="paidContent" style="display: none;">
+                        <div class="card bg-black border-secondary mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-secondary" id="paidPlanName">Plano</span>
+                                    <span class="text-white fw-bold" id="paidPlanPrice">R$ 0,00</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-secondary">Taxa de Setup</span>
+                                    <span class="text-success">Grátis</span>
+                                </div>
+                                <hr class="border-secondary my-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-white">Total a pagar</span>
+                                    <span class="text-warning fw-bold fs-5" id="paidPlanTotal">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <span class="text-muted small d-block mb-2">Pagamento seguro via Stripe</span>
+                            <div class="d-flex justify-content-center gap-2 opacity-50">
+                                <i class="fab fa-cc-visa fa-lg"></i>
+                                <i class="fab fa-cc-mastercard fa-lg"></i>
+                                <i class="fab fa-cc-amex fa-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="checkoutForm" method="POST" action="">
+                        <input type="hidden" name="planId" id="planIdInput">
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small">Seu Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-envelope"></i></span>
+                                <input type="email" name="email" class="form-control bg-dark text-white border-secondary" placeholder="nome@exemplo.com" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small">Crie uma Senha</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-key"></i></span>
+                                <input type="password" name="password" class="form-control bg-dark text-white border-secondary" placeholder="******" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-cta py-2" id="checkoutBtn">
+                                Confirmar e Prosseguir <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                        
+                        <p class="text-center text-muted small mt-3 mb-0">
+                            <i class="fas fa-shield-alt me-1"></i> Ambiente Seguro. Acesso imediato.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Configurações vindas do servidor
+        const prices = {
+            monthly: <%= config.priceMonthly %>,
+            yearly: <%= config.priceYearly %>
+        };
+
+        function openCheckout(planType) {
+            const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+            const form = document.getElementById('checkoutForm');
+            const title = document.getElementById('modalTitle');
+            const planIdInput = document.getElementById('planIdInput');
+            const btn = document.getElementById('checkoutBtn');
+            
+            // Elementos de visualização
+            const trialContent = document.getElementById('trialContent');
+            const paidContent = document.getElementById('paidContent');
+            const paidName = document.getElementById('paidPlanName');
+            const paidPrice = document.getElementById('paidPlanPrice');
+            const paidTotal = document.getElementById('paidPlanTotal');
+
+            planIdInput.value = planType;
+
+            if (planType === 'trial') {
+                title.innerText = "Criar Conta Grátis";
+                trialContent.style.display = 'block';
+                paidContent.style.display = 'none';
+                
+                form.action = "/process-checkout";
+                btn.innerHTML = 'Começar Teste Agora <i class="fas fa-rocket ms-2"></i>';
+                btn.className = "btn btn-success w-100 py-2";
+            } 
+            else {
+                title.innerText = "Checkout Seguro";
+                trialContent.style.display = 'none';
+                paidContent.style.display = 'block';
+                
+                let price = 0;
+                let name = "";
+                
+                if (planType === 'monthly') {
+                    price = prices.monthly;
+                    name = "Assinatura Mensal";
+                } else {
+                    price = prices.yearly;
+                    name = "Assinatura Anual";
+                }
+
+                const priceFmt = "R$ " + price.toFixed(2).replace('.', ',');
+                paidName.innerText = name;
+                paidPrice.innerText = priceFmt;
+                paidTotal.innerText = priceFmt;
+
+                btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
+                btn.className = "btn btn-cta w-100 py-2";
+                
+                // Interceptar submit para criar sessão Stripe
+                form.onsubmit = async (e) => {
+                    e.preventDefault();
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processando...';
+                    
+                    const formData = new FormData(form);
+                    const email = formData.get('email');
+                    const password = formData.get('password');
+                    
+                    try {
+                        const response = await fetch('/create-checkout-session', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                email: email,
+                                password: password,
+                                planId: planType
+                            })
+                        });
+
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            alert('Erro: ' + data.error);
+                            btn.disabled = false;
+                            btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
+                            return;
+                        }
+
+                        // Redirecionar para Stripe Checkout
+                        if (data.url) {
+                            window.location.href = data.url;
+                        } else {
+                            alert('Erro ao criar sessão de pagamento');
+                            btn.disabled = false;
+                            btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
+                        }
+                    } catch (error) {
+                        console.error('Erro:', error);
+                        alert('Erro ao processar pagamento: ' + error.message);
+                        btn.disabled = false;
+                        btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
+                    }
+                };
+            }
+
+            modal.show();
+        }
+    </script>
+</body>
+</html>

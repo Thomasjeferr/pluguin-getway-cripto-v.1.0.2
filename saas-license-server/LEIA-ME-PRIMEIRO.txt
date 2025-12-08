@@ -1,0 +1,37 @@
+========================================
+  INSTRUÇÕES PARA INICIAR O SERVIDOR
+========================================
+
+PROBLEMA IDENTIFICADO:
+O módulo "mongoose" não está instalado.
+
+SOLUÇÃO (ESCOLHA UMA):
+
+OPÇÃO 1 - MAIS FÁCIL:
+1. Abra o PowerShell ou CMD
+2. Navegue até esta pasta:
+   cd "C:\Users\thoma\OneDrive\Área de Trabalho\Pluguin -Woocomerc-Cripto-pix-usdt\saas-license-server"
+3. Execute:
+   npm install
+4. Depois execute:
+   npm start
+
+OPÇÃO 2 - USANDO O SCRIPT:
+1. Clique duas vezes no arquivo: INSTALAR-E-RODAR.bat
+2. Aguarde a instalação
+3. O servidor iniciará automaticamente
+
+OPÇÃO 3 - MANUAL:
+1. Abra o terminal nesta pasta
+2. Execute: npm install mongoose
+3. Execute: node server.js
+
+========================================
+APÓS INICIAR, ACESSE:
+- http://localhost:5000
+- http://localhost:5000/acesso-admin
+
+Usuário Admin:
+- Login: master_root_v1
+- Senha: X7#k9$mP2@secure_v9
+========================================

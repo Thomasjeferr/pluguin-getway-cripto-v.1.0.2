@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Plugin Cripto Woocommerce</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #0d1117;
+            --bg-card: #161b22;
+            --border-color: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #c9d1d9;
+            --accent-color: #F0B90B;
+            --success-color: #238636;
+            --danger-color: #da3633;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--text-primary) !important;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-brand i {
+            color: var(--accent-color);
+            font-size: 1.4rem;
+        }
+
+        .btn-nav {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-nav:hover {
+            background-color: #21262d;
+            border-color: #8b949e;
+            color: #fff;
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color);
+            border: 1px solid rgba(240, 185, 11, 0.4);
+            color: #000;
+            font-weight: 500;
+        }
+
+        .btn-accent:hover {
+            background-color: #e5b00a;
+            color: #000;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-icon {
+            color: var(--text-secondary);
+            opacity: 0.5;
+            font-size: 1.5rem;
+        }
+
+        /* Main Content */
+        .content-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden; /* Para a tabela não vazar bordas */
+        }
+
+        .card-header-custom {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Table */
+        .table {
+            margin-bottom: 0;
+            color: var(--text-primary);
+        }
+
+        .table thead th {
+            background-color: #21262d;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding: 1rem 1.5rem;
+        }
+
+        .table td {
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: #30363d;
+            color: var(--text-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .license-code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            background-color: rgba(110, 118, 129, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--accent-color);
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+
+        .status-active {
+            background-color: rgba(35, 134, 54, 0.15);
+            color: #3fb950;
+            border-color: rgba(35, 134, 54, 0.2);
+        }
+
+        .status-blocked {
+            background-color: rgba(218, 54, 51, 0.15);
+            color: #f85149;
+            border-color: rgba(218, 54, 51, 0.2);
+        }
+
+        .domain-link {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+        
+        .domain-link:hover {
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            padding: 4rem 1rem;
+            text-center;
+            color: var(--text-secondary);
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: #21262d;
+            border-color: #8b949e;
+        }
+
+        .btn-action.danger:hover {
+            color: #f85149;
+            border-color: #f85149;
+        }
+
+        .btn-action.success:hover {
+            color: #3fb950;
+            border-color: #3fb950;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fa-brands fa-bitcoin"></i>
+                Plugin Cripto
+            </a>
+            
+            <div class="d-flex gap-2">
+                <a href="/download-plugin" class="btn btn-nav">
+                    <i class="fa-solid fa-download me-2"></i>Plugin
+                </a>
+                <a href="/comprar" target="_blank" class="btn btn-nav btn-accent">
+                    <i class="fa-solid fa-cart-shopping me-2"></i>Vendas
+                </a>
+                <a href="/logout" class="btn btn-nav text-danger border-danger">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        
+        <!-- Welcome Section -->
+        <div class="mb-4">
+            <h5 class="mb-1 text-white">Visão Geral</h5>
+            <p class="text-secondary" style="font-size: 0.9rem;">Gerencie suas licenças e faturamento.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="row g-4 mb-4">
+            <!-- Card 1 -->
+            <div class="col-md-4">
+                <div class="stat-card d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Licenças Ativas</div>
+                        <div class="stat-value text-success">
+                            <%= licenses.filter(l => l.active).length %>
+                        </div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="col-md-4">
+                <div class="stat-card d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Total de Clientes</div>
+                        <div class="stat-value">
+                            <%= licenses.length %>
+                        </div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="col-md-4">
+                <div class="stat-card d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Receita Estimada</div>
+                        <div class="stat-value" style="color: var(--accent-color);">
+                            R$ <%= licenses.length * config.priceMonthly %>,00
+                        </div>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="content-card mb-4">
+            <div class="card-header-custom">
+                <div class="card-title">
+                    <i class="fa-solid fa-cog me-2 text-secondary"></i>
+                    Configurações de Vendas
+                </div>
+            </div>
+            <div class="p-4">
+                <form action="/admin/update-config" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label text-secondary small">Dias de Teste (Trial)</label>
+                            <div class="input-group">
+                                <input type="number" name="trialDays" class="form-control bg-dark text-white border-secondary" value="<%= config.trialDays || 7 %>">
+                                <span class="input-group-text bg-dark text-secondary border-secondary">Dias</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-secondary small">Preço Mensal</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark text-secondary border-secondary">R$</span>
+                                <input type="number" name="priceMonthly" step="0.01" class="form-control bg-dark text-white border-secondary" value="<%= config.priceMonthly || 97.00 %>">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-secondary small">Preço Anual</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark text-secondary border-secondary">R$</span>
+                                <input type="number" name="priceYearly" step="0.01" class="form-control bg-dark text-white border-secondary" value="<%= config.priceYearly || 997.00 %>">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-secondary small">Texto Promocional</label>
+                            <input type="text" name="promoText" class="form-control bg-dark text-white border-secondary" value="<%= config.promoText || 'Oferta de Lançamento' %>">
+                        </div>
+                    </div>
+
+                    <!-- Stripe Configuration -->
+                    <div class="mt-4 pt-4 border-top border-secondary">
+                        <h6 class="text-white mb-3">
+                            <i class="fa-brands fa-stripe me-2 text-primary"></i>
+                            Configuração Stripe
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary small">
+                                    Stripe Secret Key
+                                    <i class="fa-solid fa-info-circle ms-1" data-bs-toggle="tooltip" title="Chave secreta do Stripe (sk_live_... ou sk_test_...)"></i>
+                                </label>
+                                <input type="password" name="stripeSecretKey" class="form-control bg-dark text-white border-secondary" 
+                                       value="<%= config.stripeSecretKey || '' %>" 
+                                       placeholder="sk_live_... ou sk_test_...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary small">
+                                    Stripe Publishable Key
+                                    <i class="fa-solid fa-info-circle ms-1" data-bs-toggle="tooltip" title="Chave pública do Stripe (pk_live_... ou pk_test_...)"></i>
+                                </label>
+                                <input type="text" name="stripePublishableKey" class="form-control bg-dark text-white border-secondary" 
+                                       value="<%= config.stripePublishableKey || '' %>" 
+                                       placeholder="pk_live_... ou pk_test_...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary small">
+                                    Webhook Secret
+                                    <i class="fa-solid fa-info-circle ms-1" data-bs-toggle="tooltip" title="Secret do webhook do Stripe (whsec_...)"></i>
+                                </label>
+                                <input type="password" name="stripeWebhookSecret" class="form-control bg-dark text-white border-secondary" 
+                                       value="<%= config.stripeWebhookSecret || '' %>" 
+                                       placeholder="whsec_...">
+                                <small class="text-secondary">URL do webhook: <code>http://seu-dominio.com/webhook/stripe</code></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 text-end mt-4">
+                        <button type="submit" class="btn btn-accent btn-sm">
+                            <i class="fa-solid fa-save me-1"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Table -->
+        <div class="content-card">
+            <div class="card-header-custom">
+                <div class="card-title">
+                    <i class="fa-solid fa-list-ul me-2 text-secondary"></i>
+                    Assinaturas Recentes
+                </div>
+                
+                <form action="/process-checkout" method="POST" target="_blank">
+                    <input type="hidden" name="email" value="teste-admin@demo.com">
+                    <button type="submit" class="btn btn-nav btn-sm">
+                        <i class="fa-solid fa-plus me-1"></i> Criar Teste
+                    </button>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Plano</th>
+                            <th>Chave de Licença</th>
+                            <th>Domínio</th>
+                            <th>Status</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (licenses.length === 0) { %>
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="fa-solid fa-inbox fa-2x mb-3 opacity-25"></i>
+                                        <p class="m-0">Nenhuma licença encontrada.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% } else { %>
+                            <% licenses.forEach(function(license) { %>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar">
+                                                <%= license.email.charAt(0).toUpperCase() %>
+                                            </div>
+                                            <div>
+                                                <div class="text-white" style="font-weight: 500;"><%= license.email.split('@')[0] %></div>
+                                                <div class="text-secondary" style="font-size: 0.8rem;"><%= license.email %></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <form action="/admin/change-plan" method="POST" onchange="this.submit()">
+                                            <input type="hidden" name="email" value="<%= license.email %>">
+                                            <select name="newPlan" class="form-select form-select-sm bg-dark text-light border-secondary" style="width: 110px; font-size: 0.75rem;">
+                                                <option value="trial" <%= license.plan === 'trial' ? 'selected' : '' %>>Trial</option>
+                                                <option value="monthly" <%= license.plan === 'monthly' ? 'selected' : '' %>>Mensal</option>
+                                                <option value="yearly" <%= license.plan === 'yearly' ? 'selected' : '' %>>Anual</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <span class="license-code"><%= license.key %></span>
+                                    </td>
+                                    <td>
+                                        <% if (license.domain) { %>
+                                            <a href="http://<%= license.domain %>" target="_blank" class="domain-link">
+                                                <i class="fa-solid fa-link me-1"></i><%= license.domain %>
+                                            </a>
+                                        <% } else { %>
+                                            <span class="text-secondary fst-italic">
+                                                <i class="fa-regular fa-clock me-1"></i>Pendente
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (license.active) { %>
+                                            <span class="status-badge status-active">
+                                                <i class="fa-solid fa-check me-1" style="font-size: 0.7rem;"></i> Ativo
+                                            </span>
+                                        <% } else { %>
+                                            <span class="status-badge status-blocked">
+                                                <i class="fa-solid fa-ban me-1" style="font-size: 0.7rem;"></i> Bloqueado
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-1 justify-content-end">
+                                            <form action="/toggle-license" method="POST" style="display:inline;">
+                                                <input type="hidden" name="email" value="<%= license.email %>">
+                                                <% if (license.active) { %>
+                                                    <button type="submit" class="btn btn-action danger btn-sm" title="Bloquear Acesso">
+                                                        <i class="fa-solid fa-ban"></i>
+                                                    </button>
+                                                <% } else { %>
+                                                    <button type="submit" class="btn btn-action success btn-sm" title="Restaurar Acesso">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </button>
+                                                <% } %>
+                                            </form>
+                                            <button class="btn btn-action btn-sm" 
+                                                    onclick="regenerateKey('<%= license.email %>')" 
+                                                    title="Regenerar Chave">
+                                                <i class="fa-solid fa-key"></i>
+                                            </button>
+                                            <button class="btn btn-action btn-sm" 
+                                                    onclick="copyKey('<%= license.key %>')" 
+                                                    title="Copiar Chave">
+                                                <i class="fa-solid fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="mt-5 text-center text-secondary" style="font-size: 0.8rem;">
+            <p>&copy; 2025 Plugin Cripto Woocommerce. Todos os direitos reservados.</p>
+        </footer>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Mensagens de sucesso/erro
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success')) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = '<i class="fa-solid fa-check-circle me-2"></i>Alterações salvas com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+        if (urlParams.get('error')) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = '<i class="fa-solid fa-exclamation-circle me-2"></i>Erro: ' + urlParams.get('error') + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Função para regenerar chave
+        async function regenerateKey(email) {
+            if (!confirm('Tem certeza que deseja regenerar a chave de licença? A chave antiga será invalidada.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/manage-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        action: 'regenerate-key'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Chave regenerada com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erro ao regenerar chave: ' + error.message);
+            }
+        }
+
+        // Função para copiar chave
+        function copyKey(key) {
+            navigator.clipboard.writeText(key).then(() => {
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                }, 2000);
+            });
+        }
+    </script>
+
+</body>
+</html>

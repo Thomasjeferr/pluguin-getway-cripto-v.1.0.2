@@ -1,0 +1,28 @@
+# Dependências
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Variáveis de ambiente
+.env
+.env.local
+configuracao.env
+*.env
+
+# Logs
+logs/
+*.log
+instalacao-log.txt
+
+# Arquivos temporários
+*.tmp
+*.temp
+.cache/
+
+# Backups
+backup-*/
+*.backup
+
+# Sistema
+.DS_Store
+Thumbs.db

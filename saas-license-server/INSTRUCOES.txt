@@ -1,0 +1,38 @@
+========================================
+INSTRUÇÕES PARA INICIAR O SERVIDOR
+========================================
+
+1. Abra um terminal (CMD ou PowerShell) manualmente
+   NÃO use o terminal integrado do Cursor
+
+2. Navegue até a pasta:
+   cd "c:\Users\thoma\OneDrive\Área de Trabalho\Pluguin -Woocomerc-Cripto-pix-usdt\saas-license-server"
+
+3. Execute:
+   npm start
+
+   OU
+
+   node server.js
+
+4. Você deve ver a mensagem:
+   ✅ SaaS Server rodando em http://localhost:3000
+
+5. Acesse no navegador:
+   http://localhost:3000/login
+
+6. Credenciais:
+   Usuário: admin
+   Senha: BinancePix@2025!
+
+========================================
+SE DER ERRO:
+========================================
+
+- Verifique se o Node.js está instalado: node --version
+- Instale as dependências: npm install
+- Verifique se a porta 3000 está livre
+- Se a porta estiver ocupada, o servidor tentará usar a 3001
+
+========================================
+

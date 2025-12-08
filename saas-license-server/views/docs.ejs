@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação - Plugin Cripto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Inter', sans-serif;
+        }
+        .navbar {
+            background-color: #161b22;
+            border-bottom: 1px solid #30363d;
+        }
+        .sidebar {
+            position: sticky;
+            top: 80px;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+            border-right: 1px solid #30363d;
+            padding-right: 20px;
+        }
+        .doc-link {
+            display: block;
+            padding: 8px 12px;
+            color: #8b949e;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .doc-link:hover, .doc-link.active {
+            background-color: #21262d;
+            color: #F0B90B;
+        }
+        .content-area {
+            padding: 40px;
+        }
+        h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+        }
+        h4 {
+            color: #fff;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .code-block {
+            background-color: #161b22;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            font-family: monospace;
+            color: #F0B90B;
+            margin: 15px 0;
+        }
+        .step-img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .alert-info {
+            background-color: rgba(56, 139, 253, 0.1);
+            border: 1px solid rgba(56, 139, 253, 0.4);
+            color: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold text-white" href="/"><i class="fab fa-bitcoin text-warning me-2"></i>Docs</a>
+            <div class="ms-auto">
+                <a href="/minha-conta" class="btn btn-outline-light btn-sm">Voltar para Área do Cliente</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-none d-md-block sidebar pt-4">
+                <h6 class="text-uppercase text-muted small fw-bold mb-3 px-2">Instalação</h6>
+                <a href="#download" class="doc-link active">1. Download e Upload</a>
+                <a href="#ativacao" class="doc-link">2. Ativação da Licença</a>
+                
+                <h6 class="text-uppercase text-muted small fw-bold mb-3 mt-4 px-2">Configuração</h6>
+                <a href="#binance" class="doc-link">3. Criar Credenciais Binance</a>
+                <a href="#woocommerce" class="doc-link">4. Configurar no WooCommerce</a>
+                
+                <h6 class="text-uppercase text-muted small fw-bold mb-3 mt-4 px-2">Solução de Problemas</h6>
+                <a href="#faq" class="doc-link">Erros Comuns</a>
+            </div>
+
+            <!-- Content -->
+            <div class="col-md-9 col-lg-8 content-area">
+                
+                <section id="download">
+                    <h2>1. Download e Instalação</h2>
+                    <p>O primeiro passo é baixar o arquivo do plugin na sua Área do Cliente.</p>
+                    
+                    <h4>Passo a Passo:</h4>
+                    <ol>
+                        <li>Faça login na sua <a href="/minha-conta" class="text-warning">Área do Cliente</a>.</li>
+                        <li>Clique no botão verde <strong>"Baixar Plugin Agora"</strong>.</li>
+                        <li>No seu painel WordPress, vá em <strong>Plugins > Adicionar Novo</strong>.</li>
+                        <li>Clique em <strong>Enviar Plugin</strong> no topo da tela.</li>
+                        <li>Selecione o arquivo <code>.zip</code> baixado e clique em <strong>Instalar Agora</strong>.</li>
+                    </ol>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Não descompacte o arquivo zip antes de enviar. O WordPress precisa dele zipado.
+                    </div>
+                </section>
+
+                <section id="ativacao">
+                    <h2>2. Ativação da Licença</h2>
+                    <p>Após ativar o plugin, você precisa inserir sua chave de licença para desbloquear as funcionalidades.</p>
+                    
+                    <div class="code-block">
+                        LIVEX-XXXX-XXXX-XXXX
+                    </div>
+
+                    <ol>
+                        <li>No menu do WordPress, clique em <strong>Binance Pix</strong>.</li>
+                        <li>Cole sua chave de licença no campo "Chave de Ativação".</li>
+                        <li>Insira o mesmo e-mail usado na compra.</li>
+                        <li>Clique em <strong>Validar Licença</strong>.</li>
+                    </ol>
+                </section>
+
+                <section id="binance">
+                    <h2>3. Obtendo Credenciais da Binance</h2>
+                    <p>Para receber os pagamentos, precisamos conectar o plugin à sua conta Binance Merchant.</p>
+
+                    <h4>Como obter a API Key e Secret Key:</h4>
+                    <ol>
+                        <li>Acesse o <a href="https://merchant.binance.com/en/dashboard" target="_blank" class="text-warning">Painel Binance Merchant</a>.</li>
+                        <li>Faça login com sua conta Binance.</li>
+                        <li>No menu lateral, vá em <strong>Developers > API</strong>.</li>
+                        <li>Clique em <strong>Generate API Key</strong>.</li>
+                        <li>Copie a <strong>API Key</strong> e a <strong>Secret Key</strong>. Guarde a Secret Key em local seguro, ela não será mostrada novamente!</li>
+                    </ol>
+                </section>
+
+                <section id="woocommerce">
+                    <h2>4. Configuração no WooCommerce</h2>
+                    <p>Agora vamos ligar tudo.</p>
+
+                    <ol>
+                        <li>No WordPress, vá em <strong>WooCommerce > Configurações > Pagamentos</strong>.</li>
+                        <li>Ative a opção <strong>Binance Pix</strong> e clique em "Gerenciar".</li>
+                        <li>Cole a <strong>API Key</strong> e <strong>Secret Key</strong> que você pegou na Binance.</li>
+                        <li>Marque a opção "Habilitar Pagamento Pix".</li>
+                        <li>Salve as alterações.</li>
+                    </ol>
+
+                    <p class="text-success mt-3"><i class="fas fa-check-circle me-2"></i> Pronto! Sua loja já está aceitando pagamentos em Pix que caem em Dólar.</p>
+                </section>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
