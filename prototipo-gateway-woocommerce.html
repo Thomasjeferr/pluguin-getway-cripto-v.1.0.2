@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protótipo - Gateway Binance Pay no WooCommerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header WooCommerce Style */
+        .woocommerce-header {
+            background: #fff;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .woocommerce-header .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #96588a;
+        }
+
+        /* Checkout Container */
+        .checkout-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px 50px;
+        }
+
+        .checkout-title {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .checkout-title h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .order-summary h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 500;
+        }
+
+        .item-price {
+            color: #666;
+        }
+
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .total-label {
+            color: #333;
+        }
+
+        .total-value {
+            color: #96588a;
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .payment-methods h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .payment-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-option:hover {
+            border-color: #96588a;
+            background: #fafafa;
+        }
+
+        .payment-option.selected {
+            border-color: #96588a;
+            background: #f9f5fa;
+        }
+
+        .payment-option input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .payment-label {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .payment-icon {
+            margin-left: auto;
+            font-size: 24px;
+        }
+
+        .pix-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .pix-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .binance-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #F0B90B, #ffcd1f);
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        /* Place Order Button */
+        .place-order {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .place-order-button {
+            width: 100%;
+            background: #96588a;
+            color: #fff;
+            border: none;
+            padding: 18px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .place-order-button:hover {
+            background: #7a4670;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(150, 88, 138, 0.3);
+        }
+
+        .place-order-button:active {
+            transform: translateY(0);
+        }
+
+        /* Modal Binance Pay */
+        .binance-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .binance-modal-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .binance-modal-content {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f0f0f0;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #666;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+
+        .binance-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #F0B90B, #ffcd1f);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .modal-subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .qr-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #f0f0f0;
+            margin: 20px auto;
+            display: inline-block;
+            position: relative;
+        }
+
+        .qr-code {
+            width: 220px;
+            height: 220px;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* QR Code Pattern (simulado) */
+        .qr-pattern {
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(0deg, #000 0px, #000 2px, transparent 2px, transparent 4px),
+                repeating-linear-gradient(90deg, #000 0px, #000 2px, transparent 2px, transparent 4px);
+            background-size: 8px 8px;
+            opacity: 0.3;
+        }
+
+        .qr-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .binance-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #F0B90B;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .qr-status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .qr-status.checking {
+            color: #F0B90B;
+            font-weight: 500;
+        }
+
+        .qr-status.success {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .qr-status.expired {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .qr-status.cancelled {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .qr-status.paid {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        /* Timer de Expiração */
+        .payment-timer {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 2px solid #dee2e6;
+        }
+
+        .timer-countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #495057;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .timer-countdown.timer-warning {
+            color: #dc3545;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse-gentle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .binance-pay-button {
+            background: linear-gradient(135deg, #32BCAD, #2a9d8f);
+            color: #fff;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(50, 188, 173, 0.3);
+            width: 100%;
+        }
+
+        .binance-pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(50, 188, 173, 0.4);
+            background: linear-gradient(135deg, #2a9d8f, #32BCAD);
+        }
+
+        .binance-pay-button:active {
+            transform: translateY(0);
+        }
+
+        .binance-pay-button.copied {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .payment-instructions {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+            text-align: left;
+        }
+
+        .payment-instructions h4 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .payment-instructions ol {
+            margin-left: 20px;
+        }
+
+        .payment-instructions li {
+            margin-bottom: 8px;
+        }
+
+        /* Success State */
+        .success-state {
+            display: none;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #28a745;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #fff;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .success-message {
+            font-size: 20px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .checkout-container {
+                padding: 0 15px 30px;
+            }
+
+            .binance-modal-content {
+                padding: 30px 20px;
+                max-width: 95%;
+            }
+
+            .qr-code {
+                width: 180px;
+                height: 180px;
+            }
+        }
+
+        /* Demo Controls */
+        .demo-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+
+        .demo-controls h4 {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .demo-btn {
+            background: #96588a;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .demo-btn:hover {
+            background: #7a4670;
+        }
+    </style>
+</head>
+<body>
+    <!-- WooCommerce Header -->
+    <div class="woocommerce-header">
+        <div class="container">
+            <div class="logo">🛒 Minha Loja</div>
+            <div style="color: #666;">Checkout</div>
+        </div>
+    </div>
+
+    <!-- Checkout Container -->
+    <div class="checkout-container">
+        <div class="checkout-title">
+            <h1>Finalizar Pedido</h1>
+            <p style="color: #666;">Complete seu pedido abaixo</p>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h2>Resumo do Pedido</h2>
+            <div class="order-item">
+                <div>
+                    <div class="item-name">Produto Exemplo Premium</div>
+                    <div style="font-size: 13px; color: #999; margin-top: 5px;">Quantidade: 1</div>
+                </div>
+                <div class="item-price">R$ 297,00</div>
+            </div>
+            <div class="order-item">
+                <div class="item-name">Frete</div>
+                <div class="item-price">Grátis</div>
+            </div>
+            <div class="order-total">
+                <span class="total-label">Total:</span>
+                <span class="total-value">R$ 297,00</span>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="payment-methods">
+            <h2>Método de Pagamento</h2>
+            
+            <div class="payment-option selected" data-payment="binance">
+                <label class="payment-label">
+                    <input type="radio" name="payment_method" value="binance_pix" checked>
+                    <span>Pix / Binance Pay</span>
+                    <span class="binance-badge">INSTANTÂNEO</span>
+                    <span class="payment-icon pix-icon">
+                        <svg width="32" height="32" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="pixGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#32BCAD;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#2a9d8f;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="200" height="200" rx="25" fill="url(#pixGrad)"/>
+                            <g fill="white" opacity="0.95">
+                                <path d="M80 60 L120 60 L100 80 Z"/>
+                                <path d="M120 60 L140 80 L100 80 Z"/>
+                                <path d="M100 80 L140 80 L120 100 Z"/>
+                                <path d="M100 80 L120 100 L80 100 Z"/>
+                            </g>
+                            <circle cx="100" cy="100" r="25" fill="white" opacity="0.9"/>
+                            <path d="M90 100 L100 90 L110 100 L100 110 Z" fill="#32BCAD"/>
+                        </svg>
+                    </span>
+                </label>
+                <div style="margin-top: 10px; padding-left: 30px; font-size: 14px; color: #666;">
+                    Pague com Pix e receba em USDT na sua carteira Binance
+                </div>
+            </div>
+
+            <div class="payment-option" data-payment="card">
+                <label class="payment-label">
+                    <input type="radio" name="payment_method" value="card">
+                    <span>Cartão de Crédito</span>
+                    <span class="payment-icon">💳</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Place Order Button -->
+        <div class="place-order">
+            <button class="place-order-button" id="place-order-btn">
+                Finalizar Pedido
+            </button>
+        </div>
+    </div>
+
+    <!-- Binance Pay Modal -->
+    <div id="binance-modal" class="binance-modal-overlay">
+        <div class="binance-modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            
+            <!-- Loading State -->
+            <div id="modal-loading">
+                <div class="binance-logo">B</div>
+                <div class="binance-spinner"></div>
+                <div class="modal-title">Processando Pagamento</div>
+                <div class="modal-subtitle">Aguarde enquanto geramos seu QR Code...</div>
+            </div>
+
+            <!-- QR Code State -->
+            <div id="modal-qr" style="display: none;">
+                <div class="binance-logo">B</div>
+                
+                <!-- Badge de Modo de Teste -->
+                <div id="testmode-badge" style="display: none; background: linear-gradient(135deg, #ffc107, #ff9800); color: #000; padding: 8px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; margin: 0 auto 15px; text-align: center; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3); max-width: 200px; animation: pulse-gentle 2s infinite;">
+                    🧪 MODO DE TESTE
+                </div>
+                
+                <div class="modal-title">Pague com Pix / Binance</div>
+                <div class="modal-subtitle">Escaneie o QR Code ou copie o código Pix</div>
+                
+                <div class="qr-container">
+                    <div class="qr-code">
+                        <div class="qr-pattern"></div>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 10px; border-radius: 4px;">
+                            <div style="font-size: 24px; font-weight: bold;">QR CODE</div>
+                            <div style="font-size: 10px; color: #999;">Simulação Visual</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qr-status checking" id="qr-status">
+                    ⏳ Aguardando confirmação do pagamento...
+                </div>
+
+                <!-- Timer de Expiração -->
+                <div class="payment-timer" id="payment-timer" style="display: none; background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 12px 20px; border-radius: 10px; margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid #dee2e6;">
+                    <div style="font-size: 20px;">⏱️</div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <span style="font-size: 12px; color: #6c757d; font-weight: 500;">Tempo restante:</span>
+                        <span id="timer-display" class="timer-countdown" style="font-size: 24px; font-weight: bold; color: #495057; font-family: 'Courier New', monospace; letter-spacing: 2px;">15:00</span>
+                    </div>
+                </div>
+
+                <button class="binance-pay-button" id="copy-pix-btn" onclick="copyPixCode()">
+                    📋 Copiar Código Pix
+                </button>
+                
+                <div id="copy-success" style="display: none; margin-top: 10px; color: #28a745; font-weight: 500; font-size: 14px;">
+                    ✅ Código Pix copiado para a área de transferência!
+                </div>
+
+                <div class="payment-instructions">
+                    <h4>Como pagar:</h4>
+                    <ol>
+                        <li>Escaneie o QR Code com o app do seu banco</li>
+                        <li>OU copie o código Pix e cole no app do banco</li>
+                        <li>Confirme o pagamento no app</li>
+                        <li>Aguarde a confirmação automática (5-30 segundos)</li>
+                    </ol>
+                    <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; font-size: 12px; color: #856404;">
+                        💡 <strong>Dica:</strong> O pagamento será convertido automaticamente para USDT na sua carteira Binance.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="modal-error" style="display: none; text-align: center; padding: 20px;">
+                <div style="font-size: 64px; margin-bottom: 20px; animation: shake 0.5s ease;">⚠️</div>
+                <h3 id="error-title" style="color: #dc3545; font-size: 24px; margin-bottom: 15px; font-weight: bold;">Erro no Pagamento</h3>
+                <p id="error-message" style="color: #666; font-size: 16px; margin-bottom: 20px; line-height: 1.6;">Ocorreu um erro ao processar seu pagamento.</p>
+                
+                <div class="error-details" id="error-details" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: left; border-left: 4px solid #dc3545;">
+                    <p style="margin: 5px 0; font-size: 13px;"><strong>Detalhes técnicos:</strong></p>
+                    <p id="error-details-text" style="font-size: 12px; color: #666; margin: 5px 0;"></p>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 25px; justify-content: center; flex-wrap: wrap;">
+                    <button id="retry-payment-btn" style="background: linear-gradient(135deg, #F0B90B, #ffcd1f); color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(240, 185, 11, 0.3);" onclick="retryPayment()">
+                        🔄 Tentar Novamente
+                    </button>
+                    <button id="close-error-btn" style="background: #6c757d; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: all 0.3s;" onclick="closeModal()">
+                        ✕ Fechar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div id="modal-success" class="success-state">
+                <div class="success-icon">✓</div>
+                <div class="success-message">Pagamento Confirmado!</div>
+                <div class="modal-subtitle">Redirecionando para página de sucesso...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Controls -->
+    <div class="demo-controls">
+        <h4>🎮 Controles Demo</h4>
+        <button class="demo-btn" onclick="showLoading()">Mostrar Loading</button>
+        <button class="demo-btn" onclick="showQR()">Mostrar QR Code</button>
+        <button class="demo-btn" onclick="showSuccess()">Simular Sucesso</button>
+        <button class="demo-btn" onclick="showError()">Simular Erro</button>
+        <button class="demo-btn" onclick="showExpired()">Simular Expirado</button>
+        <button class="demo-btn" onclick="toggleTestMode()">Alternar Modo Teste</button>
+        <button class="demo-btn" onclick="resetModal()">Resetar</button>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let timerInterval = null;
+        let pollingInterval = null;
+        let remainingSeconds = 15 * 60; // 15 minutos padrão
+        let testModeActive = false;
+
+        // Simular comportamento do WooCommerce
+        document.getElementById('place-order-btn').addEventListener('click', function() {
+            const selectedPayment = document.querySelector('input[name="payment_method"]:checked').value;
+            
+            if (selectedPayment === 'binance_pix') {
+                openBinanceModal();
+            } else {
+                alert('Outro método de pagamento selecionado');
+            }
+        });
+
+        // Seleção de método de pagamento
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+
+        function openBinanceModal() {
+            const modal = document.getElementById('binance-modal');
+            modal.classList.add('show');
+            
+            // Mostrar loading primeiro
+            showLoading();
+            
+            // Após 2 segundos, mostrar QR Code
+            setTimeout(() => {
+                showQR();
+            }, 2000);
+        }
+
+        function showLoading() {
+            document.getElementById('modal-loading').style.display = 'block';
+            document.getElementById('modal-qr').style.display = 'none';
+            document.getElementById('modal-success').style.display = 'none';
+            document.getElementById('modal-error').style.display = 'none';
+        }
+
+        function showQR() {
+            document.getElementById('modal-loading').style.display = 'none';
+            document.getElementById('modal-qr').style.display = 'block';
+            document.getElementById('modal-success').style.display = 'none';
+            document.getElementById('modal-error').style.display = 'none';
+            
+            // Mostrar badge de teste se ativo
+            if (testModeActive) {
+                document.getElementById('testmode-badge').style.display = 'block';
+            } else {
+                document.getElementById('testmode-badge').style.display = 'none';
+            }
+            
+            // Iniciar timer
+            startExpirationTimer(15); // 15 minutos
+            
+            // Simular polling de status
+            let attempts = 0;
+            const statusEl = document.getElementById('qr-status');
+            
+            pollingInterval = setInterval(() => {
+                attempts++;
+                statusEl.innerHTML = `⏳ Verificando pagamento... (${attempts}/10)`;
+                
+                if (attempts >= 10) {
+                    clearInterval(pollingInterval);
+                    // Não mostrar sucesso automaticamente, deixar usuário testar
+                }
+            }, 2000);
+        }
+
+        function showSuccess() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            const statusEl = document.getElementById('qr-status');
+            statusEl.innerHTML = '✅ <strong>Pagamento confirmado!</strong> Redirecionando...';
+            statusEl.className = 'qr-status paid';
+            document.getElementById('payment-timer').style.display = 'none';
+            
+            document.getElementById('modal-loading').style.display = 'none';
+            document.getElementById('modal-qr').style.display = 'block';
+            document.getElementById('modal-success').style.display = 'none';
+            document.getElementById('modal-error').style.display = 'none';
+            
+            // Redirecionar após 1 segundo
+            setTimeout(() => {
+                alert('✅ Pagamento confirmado! Redirecionando para página de sucesso...');
+                closeModal();
+            }, 1000);
+        }
+
+        function resetModal() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            closeModal();
+            setTimeout(() => {
+                showLoading();
+                // Resetar elementos
+                document.getElementById('qr-status').className = 'qr-status checking';
+                document.getElementById('qr-status').innerHTML = '⏳ Aguardando confirmação do pagamento...';
+                const copyBtn = document.getElementById('copy-pix-btn');
+                copyBtn.disabled = false;
+                copyBtn.textContent = '📋 Copiar Código Pix';
+                copyBtn.style.opacity = '1';
+                document.getElementById('copy-success').style.display = 'none';
+                document.getElementById('payment-timer').style.display = 'none';
+            }, 300);
+        }
+
+        function closeModal() {
+            document.getElementById('binance-modal').classList.remove('show');
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('binance-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function startExpirationTimer(minutes) {
+            remainingSeconds = minutes * 60;
+            const timerDisplay = document.getElementById('timer-display');
+            const timerContainer = document.getElementById('payment-timer');
+            
+            timerContainer.style.display = 'flex';
+            
+            function updateTimer() {
+                const mins = Math.floor(remainingSeconds / 60);
+                const secs = remainingSeconds % 60;
+                const display = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+                timerDisplay.textContent = display;
+                
+                // Mudar cor quando restar menos de 1 minuto
+                if (remainingSeconds <= 60) {
+                    timerDisplay.classList.add('timer-warning');
+                } else {
+                    timerDisplay.classList.remove('timer-warning');
+                }
+                
+                if (remainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    showExpired();
+                    return;
+                }
+                
+                remainingSeconds--;
+            }
+            
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function showExpired() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            const statusEl = document.getElementById('qr-status');
+            const copyBtn = document.getElementById('copy-pix-btn');
+            
+            statusEl.innerHTML = '⏰ <strong>Tempo esgotado!</strong> O pagamento expirou.';
+            statusEl.className = 'qr-status expired';
+            copyBtn.disabled = true;
+            copyBtn.textContent = '⏰ Pagamento Expirado';
+            copyBtn.style.opacity = '0.6';
+            
+            setTimeout(() => {
+                if (confirm('O tempo para realizar o pagamento expirou. Deseja fechar esta janela e tentar novamente?')) {
+                    closeModal();
+                }
+            }, 2000);
+        }
+
+        function showError() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            document.getElementById('modal-loading').style.display = 'none';
+            document.getElementById('modal-qr').style.display = 'none';
+            document.getElementById('modal-success').style.display = 'none';
+            document.getElementById('modal-error').style.display = 'block';
+            
+            document.getElementById('error-title').textContent = 'Erro no Pagamento';
+            document.getElementById('error-message').textContent = 'Não foi possível processar seu pagamento. Por favor, tente novamente.';
+            document.getElementById('error-details').style.display = 'none';
+        }
+
+        function retryPayment() {
+            closeModal();
+            setTimeout(() => {
+                openBinanceModal();
+            }, 300);
+        }
+
+        function toggleTestMode() {
+            testModeActive = !testModeActive;
+            const badge = document.getElementById('testmode-badge');
+            if (testModeActive) {
+                badge.style.display = 'block';
+                alert('Modo de Teste ATIVADO');
+            } else {
+                badge.style.display = 'none';
+                alert('Modo de Teste DESATIVADO');
+            }
+        }
+
+        // Código Pix simulado (em produção viria da API)
+        const pixCode = '00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-4266141740005204000053039865405297.005802BR5925BINANCE PAY MERCHANT6009SAO PAULO62140510PIX202501080630BR6304ABCD';
+
+        function copyPixCode() {
+            // Criar elemento temporário para copiar
+            const tempInput = document.createElement('input');
+            tempInput.value = pixCode;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999); // Para mobile
+            
+            try {
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                
+                // Feedback visual
+                const btn = document.getElementById('copy-pix-btn');
+                const successMsg = document.getElementById('copy-success');
+                
+                btn.textContent = '✅ Código Copiado!';
+                btn.classList.add('copied');
+                successMsg.style.display = 'block';
+                
+                // Resetar após 3 segundos
+                setTimeout(() => {
+                    btn.textContent = '📋 Copiar Código Pix';
+                    btn.classList.remove('copied');
+                    successMsg.style.display = 'none';
+                }, 3000);
+                
+            } catch (err) {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Código Pix: ' + pixCode);
+            }
+        }
+    </script>
+</body>
+</html>

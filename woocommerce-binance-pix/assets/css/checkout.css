@@ -4,50 +4,332 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.75);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 99999;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .binance-modal-content {
     background: white;
-    padding: 30px;
-    border-radius: 15px;
+    padding: 40px;
+    border-radius: 20px;
     text-align: center;
-    max-width: 400px;
+    max-width: 450px;
     width: 90%;
     position: relative;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #f0f0f0;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    color: #666;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    background: #e0e0e0;
+    transform: rotate(90deg);
+}
+
+.binance-logo {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #F0B90B, #ffcd1f);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: #000;
+}
+
+.binance-modal-content h3 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.binance-modal-content p {
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 14px;
 }
 
 .binance-qr-code {
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    height: 220px;
     margin: 20px auto;
-    border: 1px solid #ddd;
-    padding: 5px;
+    border: 2px solid #f0f0f0;
+    padding: 10px;
+    border-radius: 12px;
+    background: #fff;
+    display: block;
 }
 
-.binance-btn {
-    background: #F0B90B;
+.qr-status {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+.qr-status.checking {
+    color: #F0B90B;
+    font-weight: 500;
+}
+
+.qr-status.expired {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.qr-status.paid {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.qr-status.cancelled {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Modal de Erro */
+#modal-error {
+    text-align: center;
+    padding: 20px;
+}
+
+.error-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+#error-title {
+    color: #dc3545;
+    font-size: 24px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+#error-message {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.error-details {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: left;
+    border-left: 4px solid #dc3545;
+}
+
+.error-details p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.error-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.binance-retry-btn {
+    background: linear-gradient(135deg, #F0B90B, #ffcd1f);
     color: #000;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
+    padding: 12px 25px;
+    border-radius: 8px;
     font-weight: bold;
-    display: inline-block;
-    margin-top: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(240, 185, 11, 0.3);
+}
+
+.binance-retry-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(240, 185, 11, 0.4);
+}
+
+.binance-close-btn {
+    background: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.binance-close-btn:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.payment-timer {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 2px solid #dee2e6;
+}
+
+.timer-icon {
+    font-size: 20px;
+}
+
+.timer-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+#timer-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.timer-countdown {
+    font-size: 24px;
+    font-weight: bold;
+    color: #495057;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
+.timer-countdown.timer-warning {
+    color: #dc3545;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.binance-copy-btn {
+    background: linear-gradient(135deg, #32BCAD, #2a9d8f);
+    color: #fff;
+    border: none;
+    padding: 14px 30px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(50, 188, 173, 0.3);
+}
+
+.binance-copy-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(50, 188, 173, 0.4);
+    background: linear-gradient(135deg, #2a9d8f, #32BCAD);
+}
+
+.binance-copy-btn:active {
+    transform: translateY(0);
+}
+
+.binance-copy-btn.copied {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.payment-instructions {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #666;
+    text-align: left;
+}
+
+.payment-instructions h4 {
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 14px;
+}
+
+.payment-instructions ol {
+    margin-left: 20px;
+}
+
+.payment-instructions li {
+    margin-bottom: 8px;
 }
 
 .binance-spinner {
     border: 4px solid #f3f3f3;
     border-top: 4px solid #F0B90B;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     animation: spin 1s linear infinite;
     margin: 0 auto 15px;
 }
@@ -55,5 +337,71 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+#modal-loading {
+    display: block;
+}
+
+/* Badge de Modo de Teste */
+#testmode-badge {
+    display: none;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    animation: pulse-gentle 2s infinite;
+}
+
+@keyframes pulse-gentle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* Acessibilidade: Classe para elementos visíveis apenas para leitores de tela */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Acessibilidade: Foco visível para navegação por teclado */
+#binance-modal:focus,
+#binance-modal button:focus,
+#binance-modal input:focus,
+#binance-modal select:focus,
+#binance-modal textarea:focus,
+#binance-modal [tabindex]:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+/* Acessibilidade: Indicador de foco no modal */
+#binance-modal[tabindex="-1"]:focus {
+    outline: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .binance-modal-content {
+        padding: 30px 20px;
+        max-width: 95%;
+    }
+
+    .binance-qr-code {
+        width: 180px;
+        height: 180px;
+    }
 }
 

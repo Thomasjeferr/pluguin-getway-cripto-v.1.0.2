@@ -2394,39 +2394,11 @@
                                       placeholder="Adicione notas sobre este cliente..."
                                       style="background: #1e293b; color: #f1f5f9; border: 1px solid var(--border-light);"></textarea>
                         </div>
-                        
-                        <!-- Área de Resultado do Diagnóstico -->
-                        <div id="diagnosticResult" style="display: none; margin-top: 1.5rem; margin-bottom: 1rem;">
-                            <div class="card" style="background: var(--bg-tertiary); border: 2px solid var(--border-light); border-radius: 8px; padding: 1rem;">
-                                <div class="d-flex align-items-center mb-2">
-                                    <h6 class="mb-0" style="color: var(--text-primary); font-weight: 600;">
-                                        <i id="diagnosticIcon" class="fa-solid me-2"></i>
-                                        <span id="diagnosticTitle">Resultado do Diagnóstico</span>
-                                    </h6>
-                                </div>
-                                <div id="diagnosticMessage" style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
-                                    <!-- Mensagem será inserida aqui -->
-                                </div>
-                                <div id="diagnosticDetails" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); font-size: 0.85rem; color: var(--text-secondary);">
-                                    <!-- Detalhes adicionais serão inseridos aqui -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="alert alert-warning" style="background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.4); color: var(--warning); padding: 0.75rem 1rem; font-size: 0.875rem; margin-bottom: 1rem;">
-                            <i class="fa-solid fa-info-circle me-2"></i>
-                            <strong>Plano Trial:</strong> O cliente será criado automaticamente com plano Trial (7 dias), igual ao sistema de criação de teste.
-                        </div>
+
                     </div>
                     <div class="modal-footer" style="border-top: 1px solid var(--border-light);">
-                        <div id="diagnosticStatus" class="text-start flex-grow-1" style="color: var(--text-secondary); font-size: 0.85rem;"></div>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: var(--bg-tertiary); border: 1px solid var(--border-light); color: var(--text-primary);">
                             Cancelar
-                        </button>
-                        <!-- Botão com onclick inline simples e direto -->
-                        <button type="button" class="btn btn-outline-secondary" id="btnDiagnostic" style="border-color: var(--border-light); color: var(--text-primary);">
-                            <i class="fa-solid fa-stethoscope me-2"></i>
-                            Diagnóstico
                         </button>
                         <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none; color: #fff;">
                             <i class="fa-solid fa-check me-2"></i>

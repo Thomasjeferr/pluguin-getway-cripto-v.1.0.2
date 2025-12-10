@@ -51,8 +51,61 @@ function wc_binance_pix_add_to_gateways( $gateways ) {
 add_filter( 'woocommerce_payment_gateways', 'wc_binance_pix_add_to_gateways' );
 
 /**
- * License Checker (Placeholder for now)
+ * License Checker - Hook para validação externa (se necessário)
+ * 
+ * Esta função pode ser usada por outros plugins ou hooks do WordPress
+ * para verificar o status da licença do plugin Binance Pix.
+ * 
+ * A validação principal é feita automaticamente pela classe WC_Binance_Pix_Gateway.
  */
 function wc_binance_pix_check_license() {
-    // Logic to check with SaaS API will go here
+    // Esta função está disponível para uso externo se necessário
+    // A validação real é feita pela classe WC_Binance_Pix_Gateway
+    return true; // Retorna true por padrão - validação real está na classe
 }
+
+/**
+ * Adicionar intervalo personalizado de 5 minutos para cron
+ */
+function wc_binance_pix_cron_intervals( $schedules ) {
+    $schedules['wc_binance_pix_5min'] = array(
+        'interval' => 300, // 5 minutos em segundos
+        'display'  => __( 'A cada 5 minutos', 'wc-binance-pix' ),
+    );
+    return $schedules;
+}
+add_filter( 'cron_schedules', 'wc_binance_pix_cron_intervals' );
+
+/**
+ * Ativação do plugin - agendar cron
+ */
+function wc_binance_pix_activate() {
+    // Agendar verificação de pedidos expirados
+    if ( ! wp_next_scheduled( 'wc_binance_pix_check_expired_orders' ) ) {
+        wp_schedule_event( time(), 'wc_binance_pix_5min', 'wc_binance_pix_check_expired_orders' );
+    }
+    
+    // Agendar verificação periódica de licença (diária)
+    if ( ! wp_next_scheduled( 'wc_binance_pix_check_license' ) ) {
+        wp_schedule_event( time(), 'daily', 'wc_binance_pix_check_license' );
+    }
+}
+register_activation_hook( __FILE__, 'wc_binance_pix_activate' );
+
+/**
+ * Desativação do plugin - remover cron
+ */
+function wc_binance_pix_deactivate() {
+    // Remover agendamento do cron de expiração
+    $timestamp = wp_next_scheduled( 'wc_binance_pix_check_expired_orders' );
+    if ( $timestamp ) {
+        wp_unschedule_event( $timestamp, 'wc_binance_pix_check_expired_orders' );
+    }
+    
+    // Remover agendamento do cron de licença
+    $timestamp = wp_next_scheduled( 'wc_binance_pix_check_license' );
+    if ( $timestamp ) {
+        wp_unschedule_event( $timestamp, 'wc_binance_pix_check_license' );
+    }
+}
+register_deactivation_hook( __FILE__, 'wc_binance_pix_deactivate' );
