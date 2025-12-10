@@ -2384,6 +2384,88 @@
                                         </div>
                                     </div>
 
+                                    <!-- Gerenciamento de Produtos -->
+                                    <div class="content-card mb-4" id="products-section">
+                                        <div class="card-header-custom">
+                                            <div class="card-title">
+                                                <i class="fa-solid fa-box me-2 text-secondary"></i>
+                                                Gerenciamento de Produtos
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-accent" onclick="openNewProductModal()">
+                                                <i class="fa-solid fa-plus me-1"></i> Novo Produto
+                                            </button>
+                                        </div>
+                                        <div class="p-4" style="padding: 2rem !important;">
+                                            <div class="alert alert-info mb-4" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: var(--info); padding: 1rem 1.25rem;">
+                                                <i class="fa-solid fa-info-circle me-2"></i>
+                                                <strong>Produtos:</strong> Gerencie múltiplos plugins/produtos. Cada produto pode ter seus próprios preços, trial days e configurações.
+                                            </div>
+                                            
+                                            <!-- Lista de Produtos -->
+                                            <div id="products-list">
+                                                <div class="table-responsive">
+                                                    <table class="table table-dark table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Nome</th>
+                                                                <th>Slug</th>
+                                                                <th>Trial</th>
+                                                                <th>Preço Mensal</th>
+                                                                <th>Preço Anual</th>
+                                                                <th>Status</th>
+                                                                <th>Ordem</th>
+                                                                <th>Ações</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="products-table-body">
+                                                            <% 
+                                                            const productsToShow = typeof allProducts !== 'undefined' ? allProducts : [];
+                                                            if (productsToShow && productsToShow.length > 0) {
+                                                                productsToShow.forEach(function(product) { %>
+                                                                    <tr data-product-id="<%= product._id %>">
+                                                                        <td>
+                                                                            <strong><%= product.name %></strong>
+                                                                            <% if (product.description) { %>
+                                                                                <br><small class="text-secondary"><%= product.description.substring(0, 50) %><%= product.description.length > 50 ? '...' : '' %></small>
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><code class="text-primary"><%= product.slug %></code></td>
+                                                                        <td><%= product.trialDays || 7 %> dias</td>
+                                                                        <td>R$ <%= (product.priceMonthly || 0).toFixed(2).replace('.', ',') %></td>
+                                                                        <td>R$ <%= (product.priceYearly || 0).toFixed(2).replace('.', ',') %></td>
+                                                                        <td>
+                                                                            <% if (product.active) { %>
+                                                                                <span class="badge bg-success">Ativo</span>
+                                                                            <% } else { %>
+                                                                                <span class="badge bg-secondary">Inativo</span>
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><%= product.order || 0 %></td>
+                                                                        <td>
+                                                                            <button class="btn btn-sm btn-primary me-1" onclick="editProduct('<%= product._id %>')" title="Editar">
+                                                                                <i class="fa-solid fa-edit"></i>
+                                                                            </button>
+                                                                            <button class="btn btn-sm btn-danger" onclick="deleteProduct('<%= product._id %>', '<%= product.name %>')" title="Deletar">
+                                                                                <i class="fa-solid fa-trash"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                <% });
+                                                            } else { %>
+                                                                <tr>
+                                                                    <td colspan="8" class="text-center text-secondary py-4">
+                                                                        <i class="fa-solid fa-box-open fa-2x mb-3 d-block"></i>
+                                                                        Nenhum produto cadastrado. Clique em "Novo Produto" para começar.
+                                                                    </td>
+                                                                </tr>
+                                                            <% } %>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Configuração de Email -->
                                     <div class="content-card mb-4">
                                         <div class="card-header-custom">
@@ -3012,6 +3094,121 @@
     </div>
     </div>
 
+    <!-- Modal Novo/Editar Produto -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="productModalLabel">
+                        <i class="fa-solid fa-box me-2"></i>
+                        <span id="productModalTitle">Novo Produto</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm" onsubmit="saveProduct(event)">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
+                        <input type="hidden" name="productId" id="productId">
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small mb-2">
+                                    Nome do Produto <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" name="name" id="productName" class="form-control" required
+                                    placeholder="Ex: Plugin Binance Pix / USDT">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small mb-2">
+                                    Slug (identificador único) <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" name="slug" id="productSlug" class="form-control" required
+                                    placeholder="Ex: binance-pix" pattern="[a-z0-9-]+" 
+                                    title="Apenas letras minúsculas, números e hífens">
+                                <small class="text-secondary">Usado como identificador único. Não pode ser alterado após criação.</small>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label class="form-label text-secondary small mb-2">
+                                    Descrição
+                                </label>
+                                <textarea name="description" id="productDescription" class="form-control" rows="3"
+                                    placeholder="Descrição do produto..."></textarea>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary small mb-2">
+                                    Dias de Trial
+                                </label>
+                                <input type="number" name="trialDays" id="productTrialDays" class="form-control" 
+                                    value="7" min="0" max="365">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary small mb-2">
+                                    Preço Mensal (R$)
+                                </label>
+                                <input type="number" name="priceMonthly" id="productPriceMonthly" class="form-control" 
+                                    step="0.01" min="0" value="97.00">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary small mb-2">
+                                    Preço Anual (R$)
+                                </label>
+                                <input type="number" name="priceYearly" id="productPriceYearly" class="form-control" 
+                                    step="0.01" min="0" value="997.00">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary small mb-2">
+                                    Ordem de Exibição
+                                </label>
+                                <input type="number" name="order" id="productOrder" class="form-control" 
+                                    value="0" min="0">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small mb-2">
+                                    Texto Promocional
+                                </label>
+                                <input type="text" name="promoText" id="productPromoText" class="form-control" 
+                                    placeholder="Ex: Oferta de Lançamento">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small mb-2">
+                                    Ícone (URL ou nome)
+                                </label>
+                                <input type="text" name="icon" id="productIcon" class="form-control" 
+                                    placeholder="Ex: fa-bitcoin ou URL da imagem">
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="active" id="productActive" checked>
+                                    <label class="form-check-label text-secondary" for="productActive">
+                                        Produto Ativo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer border-secondary mt-4">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-accent">
+                                <i class="fa-solid fa-save me-2"></i> Salvar Produto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Novo Cliente - MOVER PARA ANTES DOS SCRIPTS -->
     <div class="modal fade" id="newClientModal" tabindex="-1" aria-labelledby="newClientModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -3431,6 +3628,176 @@
                     console.error('Erro ao fechar modal:', error);
                 }
             };
+
+        // ============================================
+        // GERENCIAMENTO DE PRODUTOS
+        // ============================================
+        
+        window.openNewProductModal = function() {
+            try {
+                const modal = document.getElementById('productModal');
+                if (!modal) {
+                    alert('Modal de produto não encontrado!');
+                    return;
+                }
+                
+                // Resetar formulário
+                document.getElementById('productForm').reset();
+                document.getElementById('productId').value = '';
+                document.getElementById('productModalTitle').textContent = 'Novo Produto';
+                document.getElementById('productSlug').disabled = false;
+                document.getElementById('productActive').checked = true;
+                
+                // Abrir modal
+                if (typeof bootstrap !== 'undefined') {
+                    const bsModal = new bootstrap.Modal(modal);
+                    bsModal.show();
+                } else {
+                    modal.style.display = 'block';
+                    modal.classList.add('show');
+                }
+            } catch (error) {
+                console.error('Erro ao abrir modal de produto:', error);
+                alert('Erro: ' + error.message);
+            }
+        };
+
+        window.editProduct = async function(productId) {
+            try {
+                // Buscar dados do produto
+                const response = await fetch(`/admin/products/${productId}`);
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar produto');
+                }
+                
+                const product = await response.json();
+                
+                // Preencher formulário
+                document.getElementById('productId').value = product._id;
+                document.getElementById('productName').value = product.name || '';
+                document.getElementById('productSlug').value = product.slug || '';
+                document.getElementById('productSlug').disabled = true; // Não pode alterar slug
+                document.getElementById('productDescription').value = product.description || '';
+                document.getElementById('productTrialDays').value = product.trialDays || 7;
+                document.getElementById('productPriceMonthly').value = product.priceMonthly || 0;
+                document.getElementById('productPriceYearly').value = product.priceYearly || 0;
+                document.getElementById('productOrder').value = product.order || 0;
+                document.getElementById('productPromoText').value = product.promoText || '';
+                document.getElementById('productIcon').value = product.icon || '';
+                document.getElementById('productActive').checked = product.active !== false;
+                
+                document.getElementById('productModalTitle').textContent = 'Editar Produto';
+                
+                // Abrir modal
+                const modal = document.getElementById('productModal');
+                if (typeof bootstrap !== 'undefined') {
+                    const bsModal = new bootstrap.Modal(modal);
+                    bsModal.show();
+                } else {
+                    modal.style.display = 'block';
+                    modal.classList.add('show');
+                }
+            } catch (error) {
+                console.error('Erro ao editar produto:', error);
+                alert('Erro: ' + error.message);
+            }
+        };
+
+        window.saveProduct = async function(event) {
+            event.preventDefault();
+            
+            const form = document.getElementById('productForm');
+            const formData = new FormData(form);
+            const productId = formData.get('productId');
+            const isEdit = !!productId;
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Salvando...';
+            
+            try {
+                const csrfToken = formData.get('_csrf');
+                const data = {
+                    name: formData.get('name'),
+                    slug: formData.get('slug'),
+                    description: formData.get('description') || '',
+                    trialDays: parseInt(formData.get('trialDays')) || 7,
+                    priceMonthly: parseFloat(formData.get('priceMonthly')) || 0,
+                    priceYearly: parseFloat(formData.get('priceYearly')) || 0,
+                    order: parseInt(formData.get('order')) || 0,
+                    promoText: formData.get('promoText') || '',
+                    icon: formData.get('icon') || '',
+                    active: formData.get('active') === 'on',
+                    _csrf: csrfToken
+                };
+                
+                const url = isEdit ? `/admin/products/${productId}` : '/admin/products';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken,
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Salvo!';
+                    submitBtn.classList.remove('btn-accent');
+                    submitBtn.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error(result.message || 'Erro ao salvar produto');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar produto:', error);
+                alert('Erro: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        };
+
+        window.deleteProduct = async function(productId, productName) {
+            if (!confirm(`Tem certeza que deseja deletar o produto "${productName}"?\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            
+            try {
+                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+                
+                const response = await fetch(`/admin/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken,
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ _csrf: csrfToken })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Produto deletado com sucesso!');
+                    window.location.reload();
+                } else {
+                    throw new Error(result.message || 'Erro ao deletar produto');
+                }
+            } catch (error) {
+                console.error('Erro ao deletar produto:', error);
+                alert('Erro: ' + error.message);
+            }
+        };
         } // FIM DA FUNÇÃO initModalFunctions
 
         // FUNÇÃO PARA SUBMETER FORMULÁRIO

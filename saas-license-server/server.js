@@ -1950,6 +1950,9 @@ app.get('/admin', requireAdmin, async (req, res) => {
         // Buscar produtos ativos para filtro
         const products = await Product.find({ active: true }).sort({ order: 1, name: 1 });
         
+        // Buscar todos os produtos para gerenciamento (não apenas ativos)
+        const allProducts = await Product.find().sort({ order: 1, name: 1 });
+        
         // Calcular estatísticas para gráficos (otimizado - usar queries agregadas)
         // Buscar apenas campos necessários para melhor performance
         const allLicenses = await License.find().select('active plan createdAt productSlug').lean();
@@ -2083,7 +2086,8 @@ app.get('/admin', requireAdmin, async (req, res) => {
         
         res.render('dashboard', { 
             licenses, 
-            products, // Lista de produtos para filtro
+            products, // Lista de produtos ativos para filtro
+            allProducts: allProducts || [], // Todos os produtos para gerenciamento
             config: safeConfig,
             search,
             filterStatus,
@@ -2117,7 +2121,8 @@ app.get('/admin', requireAdmin, async (req, res) => {
             notifications: {
                 unread: unreadNotifications,
                 totalUnread: totalUnreadNotifications
-            }
+            },
+            csrfToken: res.locals.csrfToken || (req.csrfToken ? req.csrfToken() : null)
         });
     } catch (e) { res.send("Erro banco de dados: " + e.message); }
 });
@@ -2179,6 +2184,152 @@ app.get('/admin/vendas', requireAdmin, async (req, res) => {
         });
     } catch (e) {
         res.send("Erro: " + e.message);
+    }
+});
+
+// ============================================
+// ROTAS DE GERENCIAMENTO DE PRODUTOS
+// ============================================
+
+// Listar todos os produtos (JSON)
+app.get('/admin/products', requireAdmin, async (req, res) => {
+    try {
+        const products = await Product.find().sort({ order: 1, name: 1 });
+        res.json(products);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Buscar produto específico
+app.get('/admin/products/:id', requireAdmin, async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ error: 'Produto não encontrado' });
+        }
+        res.json(product);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Criar novo produto
+app.post('/admin/products',
+    requireAdmin,
+    body ? [
+        body('name').trim().isLength({ min: 1, max: 255 }).withMessage('Nome é obrigatório'),
+        body('slug').trim().matches(/^[a-z0-9-]+$/).withMessage('Slug inválido (apenas letras minúsculas, números e hífens)'),
+        body('trialDays').optional().isInt({ min: 0, max: 365 }),
+        body('priceMonthly').optional().isFloat({ min: 0 }),
+        body('priceYearly').optional().isFloat({ min: 0 }),
+        body('order').optional().isInt({ min: 0 }),
+        body('promoText').optional().trim().isLength({ max: 500 }),
+        body('description').optional().trim().isLength({ max: 2000 }),
+        body('icon').optional().trim().isLength({ max: 255 })
+    ] : [],
+    validateRequest,
+    async (req, res) => {
+    try {
+        const { name, slug, description, trialDays, priceMonthly, priceYearly, order, promoText, icon, active } = req.body;
+        
+        // Verificar se slug já existe
+        const existingProduct = await Product.findOne({ slug: slug.toLowerCase() });
+        if (existingProduct) {
+            return res.status(400).json({ success: false, message: 'Já existe um produto com este slug' });
+        }
+        
+        const product = await Product.create({
+            name: name.trim(),
+            slug: slug.toLowerCase().trim(),
+            description: description ? description.trim() : '',
+            trialDays: parseInt(trialDays) || 7,
+            priceMonthly: parseFloat(priceMonthly) || 0,
+            priceYearly: parseFloat(priceYearly) || 0,
+            order: parseInt(order) || 0,
+            promoText: promoText ? promoText.trim() : '',
+            icon: icon ? icon.trim() : '',
+            active: active !== false
+        });
+        
+        await logAdminActivity(req, 'product_created', `Produto "${product.name}" criado`, null, null, product.slug);
+        
+        res.json({ success: true, message: 'Produto criado com sucesso', product });
+    } catch (e) {
+        console.error('Erro ao criar produto:', e);
+        res.status(500).json({ success: false, message: 'Erro ao criar produto: ' + e.message });
+    }
+});
+
+// Atualizar produto
+app.put('/admin/products/:id',
+    requireAdmin,
+    body ? [
+        body('name').optional().trim().isLength({ min: 1, max: 255 }),
+        body('trialDays').optional().isInt({ min: 0, max: 365 }),
+        body('priceMonthly').optional().isFloat({ min: 0 }),
+        body('priceYearly').optional().isFloat({ min: 0 }),
+        body('order').optional().isInt({ min: 0 }),
+        body('promoText').optional().trim().isLength({ max: 500 }),
+        body('description').optional().trim().isLength({ max: 2000 }),
+        body('icon').optional().trim().isLength({ max: 255 })
+    ] : [],
+    validateRequest,
+    async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Produto não encontrado' });
+        }
+        
+        // Atualizar campos (slug não pode ser alterado)
+        if (req.body.name !== undefined) product.name = req.body.name.trim();
+        if (req.body.description !== undefined) product.description = req.body.description.trim();
+        if (req.body.trialDays !== undefined) product.trialDays = parseInt(req.body.trialDays) || 7;
+        if (req.body.priceMonthly !== undefined) product.priceMonthly = parseFloat(req.body.priceMonthly) || 0;
+        if (req.body.priceYearly !== undefined) product.priceYearly = parseFloat(req.body.priceYearly) || 0;
+        if (req.body.order !== undefined) product.order = parseInt(req.body.order) || 0;
+        if (req.body.promoText !== undefined) product.promoText = req.body.promoText.trim();
+        if (req.body.icon !== undefined) product.icon = req.body.icon.trim();
+        if (req.body.active !== undefined) product.active = req.body.active !== false;
+        
+        product.updatedAt = new Date();
+        await product.save();
+        
+        await logAdminActivity(req, 'product_updated', `Produto "${product.name}" atualizado`, null, null, product.slug);
+        
+        res.json({ success: true, message: 'Produto atualizado com sucesso', product });
+    } catch (e) {
+        console.error('Erro ao atualizar produto:', e);
+        res.status(500).json({ success: false, message: 'Erro ao atualizar produto: ' + e.message });
+    }
+});
+
+// Deletar produto
+app.delete('/admin/products/:id', requireAdmin, async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Produto não encontrado' });
+        }
+        
+        // Verificar se há licenças associadas
+        const licensesCount = await License.countDocuments({ productSlug: product.slug });
+        if (licensesCount > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Não é possível deletar este produto. Existem ${licensesCount} licença(s) associada(s). Desative o produto ao invés de deletá-lo.` 
+            });
+        }
+        
+        await Product.findByIdAndDelete(req.params.id);
+        
+        await logAdminActivity(req, 'product_deleted', `Produto "${product.name}" deletado`, null, null, product.slug);
+        
+        res.json({ success: true, message: 'Produto deletado com sucesso' });
+    } catch (e) {
+        console.error('Erro ao deletar produto:', e);
+        res.status(500).json({ success: false, message: 'Erro ao deletar produto: ' + e.message });
     }
 });
 
