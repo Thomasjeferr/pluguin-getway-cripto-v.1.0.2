@@ -453,6 +453,30 @@
                     
                     console.log('✅ [HEAD] Função toggleRowDetails definida no escopo global');
                     console.log('✅ [HEAD] window.toggleRowDetails:', typeof window.toggleRowDetails);
+
+                    // Função para abrir modal de novo cliente (definir no HEAD para garantir disponibilidade)
+                    // Esta será sobrescrita quando Bootstrap carregar, mas serve como fallback
+                    window.openNewClientModal = function() {
+                        console.log('🔍 [HEAD] Tentando abrir modal de novo cliente...');
+                        const modal = document.getElementById('newClientModal');
+                        if (modal) {
+                            // Tentar usar Bootstrap se disponível
+                            if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+                                const bsModal = new bootstrap.Modal(modal);
+                                bsModal.show();
+                            } else {
+                                // Fallback manual
+                                modal.style.display = 'block';
+                                modal.classList.add('show');
+                                document.body.classList.add('modal-open');
+                            }
+                        } else {
+                            console.error('❌ Modal newClientModal não encontrado');
+                        }
+                    };
+                    
+                    console.log('✅ [HEAD] Função openNewClientModal definida no escopo global');
+                    console.log('✅ [HEAD] window.openNewClientModal:', typeof window.openNewClientModal);
                 </script>
 
                 <!-- OVERRIDE CRÍTICO DO BOOTSTRAP - REMOVER CORES ESCURAS DOS PLACEHOLDERS -->
@@ -2493,17 +2517,10 @@
                                                     title="Exportar lista de clientes">
                                                     <i class="fa-solid fa-file-csv me-1"></i> Exportar CSV
                                                 </a>
-                                                <form action="/process-checkout" method="POST" target="_blank"
-                                                    style="display: inline;">
-                                                    <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
-                                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                        <% } %>
-                                                            <input type="hidden" name="email"
-                                                                value="teste-admin@demo.com">
-                                                            <button type="submit" class="btn btn-nav btn-sm">
-                                                                <i class="fa-solid fa-plus me-1"></i> Criar Teste
-                                                            </button>
-                                                </form>
+                                                <button type="button" class="btn btn-nav btn-sm" id="btnCriarTeste"
+                                                    onclick="if(typeof window.openNewClientModal==='function'){window.openNewClientModal();}else{console.error('openNewClientModal não disponível');alert('Erro: Função não disponível. Recarregue a página.');}return false;">
+                                                    <i class="fa-solid fa-plus me-1"></i> Criar Teste
+                                                </button>
                                             </div>
                                         </div>
 
@@ -4106,8 +4123,9 @@
             setTimeout(setupExpandButtons, 100);
         });
 
-        // Função para adicionar event listener ao botão (como fallback caso data-bs-toggle não funcione)
+        // Função para adicionar event listener aos botões (Novo Cliente e Criar Teste)
         function setupButtonListener() {
+            // Botão Novo Cliente
             const btnNovoCliente = document.getElementById('btnNovoCliente');
             if (btnNovoCliente) {
                 // Adicionar listener adicional como backup
@@ -4124,11 +4142,28 @@
                     }, 100);
                 });
                 console.log('✅ Event listener de backup adicionado ao botão Novo Cliente');
-                return true;
             } else {
-                console.warn('⚠️ Botão btnNovoCliente não encontrado, tentando novamente em 100ms...');
-                setTimeout(setupButtonListener, 100);
-                return false;
+                console.warn('⚠️ Botão btnNovoCliente não encontrado');
+            }
+            
+            // Botão Criar Teste
+            const btnCriarTeste = document.getElementById('btnCriarTeste');
+            if (btnCriarTeste) {
+                btnCriarTeste.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🖱️ Botão Criar Teste clicado');
+                    if (typeof window.openNewClientModal === 'function') {
+                        window.openNewClientModal();
+                    } else {
+                        console.error('❌ openNewClientModal não está disponível');
+                        alert('Erro: Função não disponível. Recarregue a página.');
+                    }
+                    return false;
+                });
+                console.log('✅ Event listener adicionado ao botão Criar Teste');
+            } else {
+                console.warn('⚠️ Botão btnCriarTeste não encontrado');
             }
         }
 
