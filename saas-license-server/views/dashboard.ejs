@@ -11,195 +11,722 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <style>
+    <%- include('partials/admin-layout-styles') %>
+    
+    <!-- OVERRIDE CRÍTICO DO BOOTSTRAP - REMOVER CORES ESCURAS DOS PLACEHOLDERS -->
+    <style type="text/css">
+        /* DESABILITAR COMPLETAMENTE OS ESTILOS DE PLACEHOLDER DO BOOTSTRAP */
+        /* O Bootstrap 5 por padrão usa cores escuras/cinzas nos placeholders */
+        /* Este estilo deve ser aplicado IMEDIATAMENTE após o Bootstrap ser carregado */
+        
+        /* Sobrescrever variáveis CSS do Bootstrap se existirem */
         :root {
-            --bg-body: #0d1117;
-            --bg-card: #161b22;
-            --border-color: #30363d;
-            --text-primary: #f0f6fc;
-            --text-secondary: #c9d1d9;
-            --accent-color: #F0B90B;
-            --success-color: #238636;
-            --danger-color: #da3633;
+            --bs-secondary-color: #ffffff !important;
+            --bs-placeholder-color: #ffffff !important;
+        }
+        
+        /* Forçar placeholders brancos em TODOS os inputs */
+        .form-control::placeholder,
+        .form-control::-webkit-input-placeholder,
+        .form-control::-moz-placeholder,
+        .form-control:-ms-input-placeholder,
+        input.form-control::placeholder,
+        input.form-control::-webkit-input-placeholder,
+        input.form-control::-moz-placeholder,
+        input.form-control:-ms-input-placeholder,
+        input[type="text"].form-control::placeholder,
+        input[type="text"].form-control::-webkit-input-placeholder,
+        input[type="text"].form-control::-moz-placeholder,
+        input[type="text"].form-control:-ms-input-placeholder,
+        input[type="password"].form-control::placeholder,
+        input[type="password"].form-control::-webkit-input-placeholder,
+        input[type="password"].form-control::-moz-placeholder,
+        input[type="password"].form-control:-ms-input-placeholder,
+        input[type="email"].form-control::placeholder,
+        input[type="email"].form-control::-webkit-input-placeholder,
+        input[type="email"].form-control::-moz-placeholder,
+        input[type="email"].form-control:-ms-input-placeholder,
+        input[type="number"].form-control::placeholder,
+        input[type="number"].form-control::-webkit-input-placeholder,
+        input[type="number"].form-control::-moz-placeholder,
+        input[type="number"].form-control:-ms-input-placeholder,
+        textarea.form-control::placeholder,
+        textarea.form-control::-webkit-input-placeholder,
+        textarea.form-control::-moz-placeholder,
+        textarea.form-control:-ms-input-placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            font-weight: 500 !important;
+        }
+    </style>
+    
+    <!-- ESTILO IMEDIATO PARA SOBRESCREVER BOOTSTRAP - PLACEHOLDERS E BACKGROUND -->
+    <style id="bootstrap-placeholder-override">
+        /* FORÇAR BACKGROUND ESCURO SEMPRE - SOBRESCREVER BOOTSTRAP COMPLETAMENTE */
+        .form-control,
+        .form-control:not(:placeholder-shown),
+        .form-control:valid,
+        .form-control:invalid,
+        .form-control[value],
+        .form-control[value]:not([value=""]),
+        input.form-control,
+        input.form-control:not(:placeholder-shown),
+        input.form-control:valid,
+        input.form-control:invalid,
+        input.form-control[value],
+        input.form-control[value]:not([value=""]),
+        textarea.form-control,
+        textarea.form-control:not(:placeholder-shown) {
+            background: #1e293b !important;
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+        }
+        
+        /* FORÇAR PLACEHOLDERS BRANCOS - SOBRESCREVER BOOTSTRAP COMPLETAMENTE */
+        .form-control::placeholder,
+        .form-control::-webkit-input-placeholder,
+        .form-control::-moz-placeholder,
+        .form-control:-ms-input-placeholder,
+        input.form-control::placeholder,
+        input.form-control::-webkit-input-placeholder,
+        input.form-control::-moz-placeholder,
+        input.form-control:-ms-input-placeholder,
+        input[type="text"].form-control::placeholder,
+        input[type="text"].form-control::-webkit-input-placeholder,
+        input[type="text"].form-control::-moz-placeholder,
+        input[type="text"].form-control:-ms-input-placeholder,
+        input[type="password"].form-control::placeholder,
+        input[type="password"].form-control::-webkit-input-placeholder,
+        input[type="password"].form-control::-moz-placeholder,
+        input[type="password"].form-control:-ms-input-placeholder,
+        input[type="email"].form-control::placeholder,
+        input[type="email"].form-control::-webkit-input-placeholder,
+        input[type="email"].form-control::-moz-placeholder,
+        input[type="email"].form-control:-ms-input-placeholder,
+        input[type="number"].form-control::placeholder,
+        input[type="number"].form-control::-webkit-input-placeholder,
+        input[type="number"].form-control::-moz-placeholder,
+        input[type="number"].form-control:-ms-input-placeholder,
+        textarea.form-control::placeholder,
+        textarea.form-control::-webkit-input-placeholder,
+        textarea.form-control::-moz-placeholder,
+        textarea.form-control:-ms-input-placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            font-weight: 600 !important;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+        }
+    </style>
+    
+    <style>
+        /* Estilos específicos do Dashboard - usando variáveis do admin-layout-styles */
+
+        /* Layout com Sidebar */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
         }
 
-        body {
-            background-color: var(--bg-body);
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, rgba(19, 23, 34, 0.95) 0%, rgba(13, 17, 26, 0.95) 100%);
+            border-right: 1px solid rgba(30, 37, 50, 0.6);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(19, 23, 34, 0.5);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(30, 37, 50, 0.6);
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        .sidebar-brand i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .sidebar-menu {
+            padding: 1.5rem 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.875rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .menu-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .menu-item.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .menu-section {
+            padding: 1rem 1.5rem 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Navbar Superior */
+        .top-navbar {
+            background: rgba(19, 23, 34, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(30, 37, 50, 0.5);
+            padding: 1.25rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block !important;
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(30, 37, 50, 0.5);
+            border: 1px solid rgba(30, 37, 50, 0.8);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
         }
 
         /* Navbar */
         .navbar {
-            background-color: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 0;
+            background: rgba(19, 23, 34, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(30, 37, 50, 0.5);
+            padding: 1.25rem 0;
+            box-shadow: var(--shadow-sm);
         }
 
         .navbar-brand {
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-primary) !important;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            letter-spacing: -0.5px;
         }
 
         .navbar-brand i {
-            color: var(--accent-color);
+            color: var(--primary);
             font-size: 1.4rem;
         }
 
         .btn-nav {
-            background-color: transparent;
-            border: 1px solid var(--border-color);
+            background: rgba(30, 37, 50, 0.5);
+            border: 1px solid rgba(30, 37, 50, 0.8);
             color: var(--text-primary);
-            font-size: 0.85rem;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            transition: all 0.2s;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
         }
 
         .btn-nav:hover {
-            background-color: #21262d;
-            border-color: #8b949e;
-            color: #fff;
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
         }
 
         .btn-accent {
-            background-color: var(--accent-color);
-            border: 1px solid rgba(240, 185, 11, 0.4);
-            color: #000;
-            font-weight: 500;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
         }
 
         .btn-accent:hover {
-            background-color: #e5b00a;
-            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
         }
 
         /* Stats Cards */
         .stat-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
             padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .stat-trend.up {
+            color: var(--success);
+        }
+        
+        .stat-trend.down {
+            color: var(--danger);
+        }
+        
+        .stat-trend.neutral {
+            color: var(--text-muted);
+        }
+        
+        .stat-link {
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: gap 0.2s;
+        }
+        
+        .stat-link:hover {
+            gap: 0.5rem;
+            color: var(--accent);
         }
 
         .stat-label {
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            font-weight: 600;
         }
 
         .stat-value {
-            font-size: 1.8rem;
-            font-weight: 600;
+            font-size: 2rem;
+            font-weight: 700;
             color: var(--text-primary);
+            letter-spacing: -1px;
+            line-height: 1.2;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-value.highlight-success {
+            color: var(--success);
+        }
+        
+        .stat-value.highlight-primary {
+            color: var(--primary);
+        }
+        
+        .stat-value.highlight-info {
+            color: var(--info);
         }
 
         .stat-icon {
-            color: var(--text-secondary);
-            opacity: 0.5;
-            font-size: 1.5rem;
+            font-size: 2.75rem;
+            opacity: 0.08;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover .stat-icon {
+            opacity: 0.15;
         }
 
         /* Main Content */
         .content-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            overflow: hidden; /* Para a tabela não vazar bordas */
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+        
+        /* Padding para cards de gráficos */
+        .content-card > .card-title:first-child {
+            padding: 1.75rem 2rem 1.25rem 2rem;
+            margin: 0;
+        }
+        
+        .content-card > canvas {
+            padding: 0 2rem 2rem 2rem;
+            display: block;
+        }
+        
+        /* Para cards que usam card-header-custom, manter padding original */
+        .content-card > .card-header-custom + * {
+            padding: 1.5rem 2rem;
+        }
+
+        .content-card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border);
         }
 
         .card-header-custom {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1.5rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            backdrop-filter: blur(10px);
         }
 
         .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
             margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+        
+        .card-title i,
+        .content-card .card-title i {
+            color: var(--text-secondary) !important;
         }
 
-        /* Table */
-        .table {
+        /* Table Container - FORÇAR FUNDO ESCURO */
+        .table-container,
+        .table-responsive.table-container,
+        div.table-responsive {
+            background: var(--bg-card) !important;
+            background-color: var(--bg-card) !important;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+        
+        /* Table - FORÇAR FUNDO ESCURO */
+        .table,
+        .table.table-expandable,
+        table.table {
             margin-bottom: 0;
             color: var(--text-primary);
+            background: var(--bg-card) !important;
+            background-color: var(--bg-card) !important;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        /* Remover qualquer fundo branco do Bootstrap */
+        .table tbody,
+        .table tbody tr,
+        .table tbody tr td {
+            background-color: transparent !important;
         }
 
         .table thead th {
-            background-color: #21262d;
-            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            border-bottom: 2px solid var(--border-light);
             color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.8rem;
+            font-weight: 700;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            padding: 1rem 1.5rem;
+            letter-spacing: 1px;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .table tbody {
+            background: var(--bg-card) !important;
+            background-color: var(--bg-card) !important;
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+            background: var(--bg-secondary) !important;
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .table tbody tr:nth-child(even) {
+            background: rgba(30, 41, 59, 0.5) !important;
+            background-color: rgba(30, 41, 59, 0.5) !important;
+        }
+        
+        .table tbody tr td {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        /* Garantir que o fundo da linha seja visível através das células */
+        .table tbody tr td {
+            background-color: transparent !important;
+        }
+        
+        /* Linhas alternadas - aplicar fundo na linha, não nas células */
+        .table tbody tr:nth-child(odd) {
+            background-color: var(--bg-secondary) !important;
+        }
+        
+        .table tbody tr:nth-child(even) {
+            background-color: rgba(30, 41, 59, 0.5) !important;
+        }
+        
+        /* Garantir que o texto seja sempre visível */
+        .table tbody tr td {
+            color: var(--text-primary) !important;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.2);
         }
 
         .table td {
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            padding: 1.25rem 1.5rem;
             vertical-align: middle;
             font-size: 0.9rem;
+            color: var(--text-primary);
         }
 
         .table tr:last-child td {
             border-bottom: none;
         }
+        
+        /* Melhorar contraste do texto na tabela */
+        .table td a {
+            color: var(--text-primary) !important;
+            font-weight: 500;
+        }
+        
+        .table td a:hover {
+            color: var(--primary) !important;
+        }
+        
+        .table td .text-secondary {
+            color: var(--text-secondary) !important;
+        }
+        
+        /* Nome do cliente - alto contraste máximo */
+        .client-name-link {
+            color: #ffffff !important; /* Branco puro para máximo contraste */
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: inline-block;
+            transition: all 0.2s ease;
+            letter-spacing: -0.2px;
+            line-height: 1.4;
+        }
+        
+        .client-name-link:hover {
+            color: var(--primary) !important;
+        }
+        
+        .client-email {
+            color: #cbd5e1 !important; /* Slate 300 - cinza claro bem visível */
+            font-weight: 400;
+            margin-top: 4px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        
+        /* Garantir contraste mesmo em linhas alternadas e hover */
+        .table tbody tr .client-name-link,
+        .table tbody tr:nth-child(even) .client-name-link,
+        .table tbody tr:hover .client-name-link {
+            color: #ffffff !important;
+        }
+        
+        .table tbody tr:hover .client-name-link:hover {
+            color: var(--primary) !important;
+        }
+        
+        .table tbody tr .client-email,
+        .table tbody tr:nth-child(even) .client-email,
+        .table tbody tr:hover .client-email {
+            color: #cbd5e1 !important;
+        }
+        
+        /* Garantir contraste em todas as células */
+        .table td {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Container do cliente - melhor organização */
+        .table td > .d-flex.align-items-center {
+            min-height: 42px;
+        }
+        
+        .table td > .d-flex.align-items-center > div:last-child {
+            flex: 1;
+            min-width: 0;
+        }
 
         .user-avatar {
-            width: 32px;
-            height: 32px;
-            background-color: #30363d;
-            color: var(--text-secondary);
-            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.2) 100%);
+            color: var(--primary);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-right: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-right: 14px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .license-code {
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-            background-color: rgba(110, 118, 129, 0.1);
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: var(--accent-color);
-            font-size: 0.85rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%);
+            padding: 6px 12px;
+            border-radius: 8px;
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            letter-spacing: 0.5px;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            padding: 4px 10px;
-            border-radius: 20px;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 0.75rem;
             font-weight: 600;
+            letter-spacing: 0.3px;
             border: 1px solid transparent;
         }
 
         .status-active {
-            background-color: rgba(35, 134, 54, 0.15);
-            color: #3fb950;
-            border-color: rgba(35, 134, 54, 0.2);
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.3);
         }
 
         .status-blocked {
-            background-color: rgba(218, 54, 51, 0.15);
-            color: #f85149;
-            border-color: rgba(218, 54, 51, 0.2);
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Badge de plano na tabela */
+        .table .badge {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            padding: 6px 12px;
+            font-weight: 500;
+            font-size: 0.75rem;
         }
 
         .domain-link {
@@ -219,192 +746,1179 @@
 
         /* Action Buttons */
         .btn-action {
-            padding: 4px 10px;
-            font-size: 0.8rem;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            background: transparent;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-tertiary);
             color: var(--text-primary);
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            min-width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        
+        .btn-action i {
+            color: var(--text-primary);
         }
 
         .btn-action:hover {
-            background-color: #21262d;
-            border-color: #8b949e;
+            background: var(--bg-card);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-action.danger {
+            color: var(--text-primary);
         }
 
         .btn-action.danger:hover {
-            color: #f85149;
-            border-color: #f85149;
+            color: var(--danger);
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .btn-action.success {
+            color: var(--text-primary);
         }
 
         .btn-action.success:hover {
-            color: #3fb950;
-            border-color: #3fb950;
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .form-control, .form-select {
+            background: var(--bg-secondary) !important;
+            background-color: var(--bg-secondary) !important;
+            border: 1px solid var(--border-light);
+            color: var(--text-primary) !important;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        /* GARANTIR QUE BACKGROUND PERMANEÇA ESCURO MESMO QUANDO PREENCHIDO */
+        .form-control:not(:placeholder-shown),
+        .form-control:valid,
+        .form-control:invalid,
+        .form-control[value]:not([value=""]),
+        .form-control:not([value=""]) {
+            background: var(--bg-secondary) !important;
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* GARANTIR QUE PLACEHOLDERS NÃO HERDEM A COR DO TEXTO E SEJAM SEMPRE BRANCOS */
+        .form-control::placeholder,
+        .form-control::-webkit-input-placeholder,
+        .form-control::-moz-placeholder,
+        .form-control:-ms-input-placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            font-weight: 600 !important;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        /* GARANTIR QUE PLACEHOLDERS SEJAM BRANCOS MESMO QUANDO INPUT TEM VALOR (para inputs vazios) */
+        .form-control:placeholder-shown::placeholder,
+        .form-control:placeholder-shown::-webkit-input-placeholder,
+        .form-control:placeholder-shown::-moz-placeholder,
+        .form-control:placeholder-shown:-ms-input-placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            font-weight: 600 !important;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        /* Placeholders com MÁXIMO CONTRASTE - BRANCO PURO */
+        input::placeholder,
+        input::-webkit-input-placeholder,
+        input::-moz-placeholder,
+        input:-ms-input-placeholder,
+        textarea::placeholder,
+        textarea::-webkit-input-placeholder,
+        textarea::-moz-placeholder,
+        textarea:-ms-input-placeholder {
+            color: #ffffff !important; /* BRANCO PURO */
+            opacity: 1 !important;
+            font-weight: 500 !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        /* Placeholders para .form-control - BRANCO PURO */
+        .form-control::placeholder,
+        .form-control::-webkit-input-placeholder,
+        .form-control::-moz-placeholder,
+        .form-control:-ms-input-placeholder,
+        input.form-control::placeholder,
+        input.form-control::-webkit-input-placeholder,
+        input.form-control::-moz-placeholder,
+        input.form-control:-ms-input-placeholder {
+            color: #ffffff !important; /* BRANCO PURO */
+            opacity: 1 !important;
+            font-weight: 500 !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        .form-control:focus::placeholder,
+        .form-control:focus::-webkit-input-placeholder,
+        .form-control:focus::-moz-placeholder,
+        .form-control:focus:-ms-input-placeholder {
+            color: #ffffff !important; /* BRANCO PURO mesmo no foco */
+            opacity: 0.95 !important;
+        }
+        
+        /* Placeholders para inputs de busca */
+        .form-control-search::placeholder,
+        .form-control-search::-webkit-input-placeholder,
+        .form-control-search::-moz-placeholder,
+        .form-control-search:-ms-input-placeholder {
+            color: #ffffff !important; /* BRANCO PURO */
+            opacity: 1 !important;
+        }
+        
+        /* Forçar placeholder visível em TODOS os inputs, especialmente password */
+        input[type="text"]::placeholder,
+        input[type="password"]::placeholder,
+        input[type="email"]::placeholder,
+        input[type="number"]::placeholder,
+        input[type="text"]::-webkit-input-placeholder,
+        input[type="password"]::-webkit-input-placeholder,
+        input[type="email"]::-webkit-input-placeholder,
+        input[type="number"]::-webkit-input-placeholder,
+        input[type="text"]::-moz-placeholder,
+        input[type="password"]::-moz-placeholder,
+        input[type="email"]::-moz-placeholder,
+        input[type="number"]::-moz-placeholder {
+            color: #ffffff !important; /* BRANCO PURO */
+            opacity: 1 !important;
+            font-weight: 500 !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        /* ESPECÍFICO para form-control password - MÁXIMA PRIORIDADE - FORÇA ABSOLUTA */
+        input.form-control[type="password"]::placeholder,
+        input.form-control[type="password"]::-webkit-input-placeholder,
+        input.form-control[type="password"]::-moz-placeholder,
+        input.form-control[type="password"]:-ms-input-placeholder,
+        .form-control[type="password"]::placeholder,
+        .form-control[type="password"]::-webkit-input-placeholder,
+        .form-control[type="password"]::-moz-placeholder,
+        .form-control[type="password"]:-ms-input-placeholder,
+        input[type="password"].form-control::placeholder,
+        input[type="password"].form-control::-webkit-input-placeholder,
+        input[type="password"].form-control::-moz-placeholder,
+        input[type="password"].form-control:-ms-input-placeholder {
+            color: #ffffff !important; /* BRANCO PURO - MÁXIMA VISIBILIDADE */
+            opacity: 1 !important;
+            font-weight: 500 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* ESPECÍFICO para form-control text - MÁXIMA PRIORIDADE - FORÇA ABSOLUTA */
+        input.form-control[type="text"]::placeholder,
+        input.form-control[type="text"]::-webkit-input-placeholder,
+        input.form-control[type="text"]::-moz-placeholder,
+        input.form-control[type="text"]:-ms-input-placeholder,
+        .form-control[type="text"]::placeholder,
+        .form-control[type="text"]::-webkit-input-placeholder,
+        .form-control[type="text"]::-moz-placeholder,
+        .form-control[type="text"]:-ms-input-placeholder,
+        input[type="text"].form-control::placeholder,
+        input[type="text"].form-control::-webkit-input-placeholder,
+        input[type="text"].form-control::-moz-placeholder,
+        input[type="text"].form-control:-ms-input-placeholder {
+            color: #ffffff !important; /* BRANCO PURO - MÁXIMA VISIBILIDADE */
+            opacity: 1 !important;
+            font-weight: 500 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* SOBRESCREVER QUALQUER CSS DO BOOTSTRAP OU OUTRO FRAMEWORK */
+        .form-control::placeholder,
+        .form-control::-webkit-input-placeholder,
+        .form-control::-moz-placeholder,
+        .form-control:-ms-input-placeholder {
+            color: #ffffff !important; /* BRANCO PURO */
+            opacity: 1 !important;
+            font-weight: 500 !important;
+        }
+        
+        /* GARANTIR PARA TODOS OS INPUTS */
+        input::placeholder,
+        input::-webkit-input-placeholder,
+        input::-moz-placeholder,
+        input:-ms-input-placeholder {
+            color: #ffffff !important; /* BRANCO PURO */
+            opacity: 1 !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--bg-card) !important;
+            background-color: var(--bg-card) !important;
+            border-color: var(--primary);
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+        
+        /* GARANTIR QUE BACKGROUND NUNCA MUDE PARA BRANCO - SOBRESCREVER BOOTSTRAP */
+        .form-control:not(:placeholder-shown),
+        .form-control:valid,
+        .form-control:invalid,
+        .form-control[value],
+        .form-control[value]:not([value=""]),
+        input.form-control:not([value=""]),
+        input.form-control[value] {
+            background: var(--bg-secondary) !important;
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .form-select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        /* Select pequeno na tabela */
+        .table .form-select-sm,
+        .table .plan-select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary) !important;
+            font-weight: 500;
+            min-height: 36px;
+        }
+        
+        .table .form-select-sm:focus,
+        .table .plan-select:focus {
+            background: var(--bg-card);
+            border-color: var(--primary);
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .table .form-select-sm option,
+        .table .plan-select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 0.5rem;
+        }
+
+        /* Input Groups */
+        .input-group-text {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            border-radius: 8px;
+        }
+        
+        /* Seção de Filtros Moderna */
+        .filters-section {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filters-form {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .input-group-search {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-group-search i {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-secondary);
+            z-index: 1;
+        }
+        
+        .form-control-search {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control-search:focus {
+            background: var(--bg-card);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+        
+        .form-control-search::placeholder,
+        .form-control-search::-webkit-input-placeholder,
+        .form-control-search::-moz-placeholder,
+        .form-control-search:-ms-input-placeholder {
+            color: #cbd5e1 !important; /* Slate 300 - cinza claro bem visível */
+            opacity: 1 !important;
+        }
+        
+        .form-select-filter {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .form-select-filter:focus {
+            background: var(--bg-card);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+        
+        .form-select-filter option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .btn-filter {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            border: none;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-filter:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
+        }
+        
+        .btn-filter:active {
+            transform: translateY(0);
+        }
+        
+        .btn-clear-filter {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .btn-clear-filter:hover {
+            background: var(--bg-card);
+            border-color: var(--border);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .filters-form {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            .filter-actions {
+                width: 100%;
+            }
+            
+            .btn-filter {
+                flex: 1;
+            }
+        }
+        
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: var(--info);
+        }
+
+        /* Pagination */
+        .pagination .page-link {
+            background: rgba(26, 31, 46, 0.6);
+            border: 1px solid rgba(30, 37, 50, 0.6);
+            color: var(--text-primary);
+            border-radius: 8px;
+            margin: 0 4px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination .page-link:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .pagination .page-item.active .page-link {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: 12px;
+            border: 1px solid transparent;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: var(--warning);
+        }
+
+        .alert-danger {
+            background: rgba(255, 59, 48, 0.1);
+            border-color: rgba(255, 59, 48, 0.3);
+            color: var(--danger-color);
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Selection */
+        ::selection {
+            background: rgba(99, 102, 241, 0.3);
+            color: var(--text-primary);
+        }
+
+        /* Tabela Expansível */
+        .table-expandable .table-row-main {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .table-expandable .table-row-main:hover {
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+
+        .table-expandable .table-row-main.expanded {
+            background-color: rgba(99, 102, 241, 0.08);
+        }
+
+        .btn-expand-row {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-expand-row:hover {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+        }
+        
+        .btn-expand-row i {
+            font-size: 0.75rem;
+        }
+
+        .btn-expand-row i {
+            transition: transform 0.2s ease;
+        }
+
+        .btn-expand-row.expanded i {
+            transform: rotate(90deg);
+        }
+
+        .table-row-details {
+            background-color: rgba(19, 23, 34, 0.5);
+        }
+
+        .row-details-content {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(19, 23, 34, 0.6) 0%, rgba(26, 31, 46, 0.6) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(30, 37, 50, 0.3);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .detail-label {
+                min-width: auto;
+            }
         }
 
     </style>
+    
+    <!-- ESTILO FINAL PARA SOBRESCREVER BOOTSTRAP - PLACEHOLDERS BRANCOS E BACKGROUND ESCURO -->
+    <!-- ESTE ESTILO DEVE SER O ÚLTIMO PARA GARANTIR QUE SOBRESCREVA TUDO, INCLUINDO BOOTSTRAP -->
+    <style id="final-placeholder-override" type="text/css">
+        /* FORÇAR BACKGROUND ESCURO SEMPRE - SOBRESCREVER BOOTSTRAP COMPLETAMENTE COM VALORES FIXOS */
+        html body .form-control,
+        html body .form-control:not(:placeholder-shown),
+        html body .form-control:valid,
+        html body .form-control:invalid,
+        html body .form-control[value],
+        html body .form-control[value]:not([value=""]),
+        html body input.form-control,
+        html body input.form-control:not(:placeholder-shown),
+        html body input.form-control:valid,
+        html body input.form-control:invalid,
+        html body input.form-control[value],
+        html body input.form-control[value]:not([value=""]),
+        html body textarea.form-control,
+        html body textarea.form-control:not(:placeholder-shown) {
+            background: #1e293b !important;
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+        }
+        
+        /* FORÇAR PLACEHOLDERS BRANCOS - SOBRESCREVER BOOTSTRAP E QUALQUER OUTRO CSS COM VALORES FIXOS */
+        html body .form-control::placeholder,
+        html body .form-control::-webkit-input-placeholder,
+        html body .form-control::-moz-placeholder,
+        html body .form-control:-ms-input-placeholder,
+        html body input.form-control::placeholder,
+        html body input.form-control::-webkit-input-placeholder,
+        html body input.form-control::-moz-placeholder,
+        html body input.form-control:-ms-input-placeholder,
+        html body input[type="text"].form-control::placeholder,
+        html body input[type="text"].form-control::-webkit-input-placeholder,
+        html body input[type="text"].form-control::-moz-placeholder,
+        html body input[type="text"].form-control:-ms-input-placeholder,
+        html body input[type="password"].form-control::placeholder,
+        html body input[type="password"].form-control::-webkit-input-placeholder,
+        html body input[type="password"].form-control::-moz-placeholder,
+        html body input[type="password"].form-control:-ms-input-placeholder,
+        html body input[type="email"].form-control::placeholder,
+        html body input[type="email"].form-control::-webkit-input-placeholder,
+        html body input[type="email"].form-control::-moz-placeholder,
+        html body input[type="email"].form-control:-ms-input-placeholder,
+        html body input[type="number"].form-control::placeholder,
+        html body input[type="number"].form-control::-webkit-input-placeholder,
+        html body input[type="number"].form-control::-moz-placeholder,
+        html body input[type="number"].form-control:-ms-input-placeholder,
+        html body textarea.form-control::placeholder,
+        html body textarea.form-control::-webkit-input-placeholder,
+        html body textarea.form-control::-moz-placeholder,
+        html body textarea.form-control:-ms-input-placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            font-weight: 600 !important;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+        }
+    </style>
+    
+    <!-- ESTILO CRÍTICO FINAL - FORÇA BRANCO ABSOLUTO NOS PLACEHOLDERS - DEVE SER O ÚLTIMO ANTES DO </head> -->
+    <style type="text/css">
+        /* FORÇA ABSOLUTA - SOBRESCREVER QUALQUER CSS DO BOOTSTRAP OU OUTROS FRAMEWORKS */
+        /* Usando seletores com máxima especificidade e valores fixos */
+        html body form input.form-control::placeholder,
+        html body form input.form-control::-webkit-input-placeholder,
+        html body form input.form-control::-moz-placeholder,
+        html body form input.form-control:-ms-input-placeholder,
+        html body form textarea.form-control::placeholder,
+        html body form textarea.form-control::-webkit-input-placeholder,
+        html body form textarea.form-control::-moz-placeholder,
+        html body form textarea.form-control:-ms-input-placeholder,
+        html body div input.form-control::placeholder,
+        html body div input.form-control::-webkit-input-placeholder,
+        html body div input.form-control::-moz-placeholder,
+        html body div input.form-control:-ms-input-placeholder,
+        html body div textarea.form-control::placeholder,
+        html body div textarea.form-control::-webkit-input-placeholder,
+        html body div textarea.form-control::-moz-placeholder,
+        html body div textarea.form-control:-ms-input-placeholder,
+        html body .form-control::placeholder,
+        html body .form-control::-webkit-input-placeholder,
+        html body .form-control::-moz-placeholder,
+        html body .form-control:-ms-input-placeholder,
+        html body input[type="text"].form-control::placeholder,
+        html body input[type="text"].form-control::-webkit-input-placeholder,
+        html body input[type="text"].form-control::-moz-placeholder,
+        html body input[type="text"].form-control:-ms-input-placeholder,
+        html body input[type="password"].form-control::placeholder,
+        html body input[type="password"].form-control::-webkit-input-placeholder,
+        html body input[type="password"].form-control::-moz-placeholder,
+        html body input[type="password"].form-control:-ms-input-placeholder,
+        html body input[type="email"].form-control::placeholder,
+        html body input[type="email"].form-control::-webkit-input-placeholder,
+        html body input[type="email"].form-control::-moz-placeholder,
+        html body input[type="email"].form-control:-ms-input-placeholder,
+        html body input[type="number"].form-control::placeholder,
+        html body input[type="number"].form-control::-webkit-input-placeholder,
+        html body input[type="number"].form-control::-moz-placeholder,
+        html body input[type="number"].form-control:-ms-input-placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            font-weight: 500 !important;
+        }
+        
+        /* Garantir que inputs vazios mostrem placeholder branco */
+        html body input.form-control:placeholder-shown::placeholder,
+        html body input.form-control:placeholder-shown::-webkit-input-placeholder,
+        html body input.form-control:placeholder-shown::-moz-placeholder,
+        html body input.form-control:placeholder-shown:-ms-input-placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+    </style>
 </head>
 <body>
+    <div class="admin-layout">
+        <%- include('partials/admin-sidebar', { currentPage: typeof currentPage !== 'undefined' ? currentPage : 'dashboard', notifications: typeof notifications !== 'undefined' ? notifications : null }) %>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fa-brands fa-bitcoin"></i>
-                Plugin Cripto
-            </a>
-            
-            <div class="d-flex gap-2">
-                <a href="/download-plugin" class="btn btn-nav">
-                    <i class="fa-solid fa-download me-2"></i>Plugin
-                </a>
-                <a href="/comprar" target="_blank" class="btn btn-nav btn-accent">
-                    <i class="fa-solid fa-cart-shopping me-2"></i>Vendas
-                </a>
-                <a href="/logout" class="btn btn-nav text-danger border-danger">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </a>
-            </div>
-        </div>
-    </nav>
+        <!-- Conteúdo Principal -->
+        <div class="main-content">
+            <!-- Navbar Superior -->
+            <nav class="top-navbar">
+                <div class="top-navbar-content">
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')" style="background: transparent; border: 1px solid var(--border-light); color: var(--text-primary); padding: 0.5rem; border-radius: 8px; cursor: pointer; display: none;">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                        <div class="breadcrumbs">
+                            <a href="/admin">Dashboard</a>
+                            <span class="separator">/</span>
+                            <span class="current">Visão Geral</span>
+                        </div>
+                    </div>
+                    <div class="top-navbar-actions">
+                        <button type="button" class="quick-action-btn" id="btnNovoCliente" data-bs-toggle="modal" data-bs-target="#newClientModal">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Novo Cliente</span>
+                        </button>
+                        <div class="user-menu" id="userMenu">
+                            <button class="user-menu-btn" onclick="toggleUserMenu()">
+                                <i class="fa-solid fa-user-circle"></i>
+                                <span>Admin</span>
+                                <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+                            </button>
+                            <div class="user-menu-dropdown">
+                                <a href="/admin" class="user-menu-item">
+                                    <i class="fa-solid fa-user me-2"></i>Perfil
+                                </a>
+                                <a href="/admin" class="user-menu-item">
+                                    <i class="fa-solid fa-gear me-2"></i>Configurações
+                                </a>
+                                <a href="/logout" class="user-menu-item danger">
+                                    <i class="fa-solid fa-right-from-bracket me-2"></i>Sair
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
 
-    <div class="container pb-5">
+            <div class="container pb-5" style="padding: 2rem;">
         
         <!-- Welcome Section -->
-        <div class="mb-4">
-            <h5 class="mb-1 text-white">Visão Geral</h5>
-            <p class="text-secondary" style="font-size: 0.9rem;">Gerencie suas licenças e faturamento.</p>
+        <div class="mb-5">
+            <h2 class="mb-2 text-white" style="font-weight: 800; letter-spacing: -1px; font-size: 2rem;">Visão Geral</h2>
+            <p class="text-secondary" style="font-size: 1rem; font-weight: 400;">Gerencie suas licenças e faturamento de forma eficiente.</p>
         </div>
 
         <!-- Stats Grid -->
         <div class="row g-4 mb-4">
             <!-- Card 1 -->
-            <div class="col-md-4">
-                <div class="stat-card d-flex justify-content-between align-items-center">
-                    <div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="stat-label">Licenças Ativas</div>
-                        <div class="stat-value text-success">
-                            <%= licenses.filter(l => l.active).length %>
+                        <div class="stat-icon">
+                            <i class="fa-solid fa-circle-check"></i>
                         </div>
                     </div>
-                    <div class="stat-icon">
-                        <i class="fa-solid fa-circle-check"></i>
+                    <div class="stat-value highlight-success">
+                        <%= typeof stats !== 'undefined' ? stats.activeLicenses : licenses.filter(l => l.active).length %>
                     </div>
+                    <% if (typeof stats !== 'undefined' && stats.activeLicensesTrend !== undefined && stats.activeLicensesTrend !== null) { 
+                        const trend = stats.activeLicensesTrend;
+                        const trendClass = trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral';
+                        const trendIcon = trend > 0 ? 'up' : trend < 0 ? 'down' : 'minus';
+                        const trendValue = Math.abs(trend);
+                    %>
+                        <div class="stat-trend <%= trendClass %>">
+                            <i class="fa-solid fa-arrow-<%= trendIcon %>"></i>
+                            <span><%= trendValue %>% vs mês anterior</span>
+                        </div>
+                    <% } %>
+                    <a href="/admin?status=active" class="stat-link">
+                        Ver detalhes <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
 
             <!-- Card 2 -->
-            <div class="col-md-4">
-                <div class="stat-card d-flex justify-content-between align-items-center">
-                    <div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="stat-label">Total de Clientes</div>
-                        <div class="stat-value">
-                            <%= licenses.length %>
+                        <div class="stat-icon">
+                            <i class="fa-solid fa-users"></i>
                         </div>
                     </div>
-                    <div class="stat-icon">
-                        <i class="fa-solid fa-users"></i>
+                    <div class="stat-value highlight-primary">
+                        <%= typeof stats !== 'undefined' ? stats.totalLicenses : licenses.length %>
                     </div>
+                    <% if (typeof stats !== 'undefined' && stats.totalLicensesTrend !== undefined && stats.totalLicensesTrend !== null) { 
+                        const trend = stats.totalLicensesTrend;
+                        const trendClass = trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral';
+                        const trendIcon = trend > 0 ? 'up' : trend < 0 ? 'down' : 'minus';
+                        const trendValue = Math.abs(trend);
+                    %>
+                        <div class="stat-trend <%= trendClass %>">
+                            <i class="fa-solid fa-arrow-<%= trendIcon %>"></i>
+                            <span><%= trendValue %>% vs mês anterior</span>
+                        </div>
+                    <% } %>
+                    <a href="/admin" class="stat-link">
+                        Ver todos <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
 
             <!-- Card 3 -->
-            <div class="col-md-4">
-                <div class="stat-card d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="stat-label">Receita Estimada</div>
-                        <div class="stat-value" style="color: var(--accent-color);">
-                            R$ <%= licenses.length * config.priceMonthly %>,00
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="stat-label">Receita Mensal Estimada</div>
+                        <div class="stat-icon">
+                            <i class="fa-solid fa-chart-line"></i>
                         </div>
                     </div>
-                    <div class="stat-icon">
-                        <i class="fa-solid fa-chart-line"></i>
+                    <div class="stat-value highlight-success">
+                        R$ <%= typeof stats !== 'undefined' ? stats.estimatedMonthlyRevenue.toFixed(2).replace('.', ',') : (licenses.length * config.priceMonthly).toFixed(2).replace('.', ',') %>
                     </div>
+                    <% if (typeof stats !== 'undefined' && stats.revenueTrend !== undefined && stats.revenueTrend !== null) { 
+                        const trend = stats.revenueTrend;
+                        const trendClass = trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral';
+                        const trendIcon = trend > 0 ? 'up' : trend < 0 ? 'down' : 'minus';
+                        const trendValue = Math.abs(trend);
+                    %>
+                        <div class="stat-trend <%= trendClass %>">
+                            <i class="fa-solid fa-arrow-<%= trendIcon %>"></i>
+                            <span><%= trendValue %>% vs mês anterior</span>
+                        </div>
+                    <% } %>
+                    <a href="/admin/vendas" class="stat-link">
+                        Ver relatório <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="stat-label">Taxa de Conversão</div>
+                        <div class="stat-icon">
+                            <i class="fa-solid fa-percent"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value highlight-info">
+                        <%= typeof stats !== 'undefined' ? stats.conversionRate : '0' %>%
+                    </div>
+                    <% if (typeof stats !== 'undefined' && stats.conversionTrend !== undefined && stats.conversionTrend !== null) { 
+                        const trend = stats.conversionTrend;
+                        const trendClass = trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral';
+                        const trendIcon = trend > 0 ? 'up' : trend < 0 ? 'down' : 'minus';
+                        const trendValue = Math.abs(trend);
+                    %>
+                        <div class="stat-trend <%= trendClass %>">
+                            <i class="fa-solid fa-arrow-<%= trendIcon %>"></i>
+                            <span><%= trend !== 0 ? trendValue + '% vs mês anterior' : 'Sem mudança' %></span>
+                        </div>
+                    <% } %>
+                    <a href="/admin/vendas" class="stat-link">
+                        Ver análise <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
 
+        <!-- Alertas de Trials Expirando -->
+        <% if (typeof stats !== 'undefined' && (stats.expiringTrialsCount > 0 || stats.expiredTrialsCount > 0)) { %>
+            <div class="content-card mb-4" style="border: 2px solid <%= stats.expiredTrialsCount > 0 ? 'var(--danger)' : 'var(--warning)' %> !important;">
+                <div class="card-header-custom">
+                    <div class="card-title">
+                        <i class="fa-solid fa-exclamation-triangle me-2" style="color: <%= stats.expiredTrialsCount > 0 ? 'var(--danger)' : 'var(--warning)' %>;"></i>
+                        Alertas de Trials
+                    </div>
+                </div>
+                <div class="p-4" style="padding: 1.5rem 2rem !important;">
+                    <% if (stats.expiredTrialsCount > 0) { %>
+                        <div class="alert alert-danger d-flex align-items-center mb-3" style="padding: 1rem 1.25rem;">
+                            <i class="fa-solid fa-ban me-2"></i>
+                            <div>
+                                <strong><%= stats.expiredTrialsCount %></strong> trial(s) expirado(s) ainda ativo(s).
+                                <a href="/admin?plan=trial&amp;status=active" class="text-decoration-none ms-2" style="color: inherit; text-decoration: underline !important;">
+                                    Ver trials expirados <i class="fa-solid fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    <% } %>
+                    <% if (stats.expiringTrialsCount > 0) { %>
+                        <div class="alert d-flex align-items-center mb-0" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: var(--warning); padding: 1rem 1.25rem;">
+                            <i class="fa-solid fa-clock me-2"></i>
+                            <div>
+                                <strong><%= stats.expiringTrialsCount %></strong> trial(s) expirando nos próximos 3 dias.
+                                <a href="/admin?plan=trial&amp;status=active" class="text-decoration-none ms-2" style="color: inherit; text-decoration: underline !important;">
+                                    Ver trials expirando <i class="fa-solid fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- Gráficos -->
+        <div class="row g-4 mb-4">
+            <!-- Gráfico de Receita ao Longo do Tempo -->
+            <div class="col-md-8">
+                <div class="content-card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-chart-line me-2 text-secondary"></i>
+                        Receita Mensal Estimada
+                    </div>
+                    <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Distribuição de Planos -->
+            <div class="col-md-4">
+                <div class="content-card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-chart-pie me-2 text-secondary"></i>
+                        Distribuição de Planos
+                    </div>
+                    <canvas id="planChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Novos Clientes -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-12">
+                <div class="content-card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-user-plus me-2 text-secondary"></i>
+                        Novos Clientes por Mês (Últimos 6 Meses)
+                    </div>
+                    <canvas id="clientsChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notificações Não Lidas -->
+        <% if (typeof notifications !== 'undefined' && notifications.unread && notifications.unread.length > 0) { %>
+            <div class="content-card mb-4" style="border: 2px solid var(--info) !important;">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <div class="card-title">
+                        <i class="fa-solid fa-bell me-2" style="color: var(--info);"></i>
+                        Notificações Pendentes (<%= notifications.totalUnread %>)
+                    </div>
+                    <a href="/admin/notifications" class="btn btn-sm btn-nav">
+                        Ver Todas <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="p-4" style="padding: 1.5rem 2rem !important;">
+                    <% notifications.unread.slice(0, 5).forEach(function(notif) { %>
+                        <div class="d-flex justify-content-between align-items-start mb-3 pb-3 border-bottom border-secondary" style="<%= notif === notifications.unread[notifications.unread.length - 1] ? 'border-bottom: none !important; margin-bottom: 0 !important; padding-bottom: 0 !important;' : '' %>">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <% if (notif.type === 'payment_failed') { %>
+                                        <i class="fa-solid fa-credit-card text-danger me-2"></i>
+                                    <% } else if (notif.type === 'subscription_cancelled') { %>
+                                        <i class="fa-solid fa-ban me-2" style="color: var(--warning);"></i>
+                                    <% } else if (notif.type === 'trial_expiring') { %>
+                                        <i class="fa-solid fa-clock me-2" style="color: var(--warning);"></i>
+                                    <% } else { %>
+                                        <i class="fa-solid fa-info-circle text-info me-2"></i>
+                                    <% } %>
+                                    <strong class="text-white"><%= notif.title %></strong>
+                                    <span class="badge bg-secondary ms-2" style="font-size: 0.7rem;">
+                                        <%= new Date(notif.createdAt).toLocaleDateString('pt-BR') %>
+                                    </span>
+                                </div>
+                                <p class="text-secondary mb-0" style="font-size: 0.85rem;">
+                                    <%= notif.message %>
+                                </p>
+                                <% if (notif.email) { %>
+                                    <a href="/admin/client/<%= encodeURIComponent(notif.email) %>" class="text-decoration-none mt-1 d-inline-block" style="color: #58a6ff; font-size: 0.8rem;">
+                                        Ver cliente <i class="fa-solid fa-external-link-alt ms-1" style="font-size: 0.7rem;"></i>
+                                    </a>
+                                <% } %>
+                            </div>
+                            <button class="btn btn-sm btn-action ms-2" onclick="markAsRead('<%= notif._id %>')" title="Marcar como lida">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        <% } %>
+
         <!-- Settings Section -->
-        <div class="content-card mb-4">
+        <div class="content-card mb-4" id="config-section">
             <div class="card-header-custom">
                 <div class="card-title">
                     <i class="fa-solid fa-cog me-2 text-secondary"></i>
                     Configurações de Vendas
                 </div>
             </div>
-            <div class="p-4">
+            <div class="p-4" style="padding: 2rem !important;">
                 <form action="/admin/update-config" method="POST">
-                    <div class="row g-3">
+                    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <% } %>
+                    <div class="row g-4 mb-4">
                         <div class="col-md-3">
-                            <label class="form-label text-secondary small">Dias de Teste (Trial)</label>
+                            <label class="form-label text-secondary small mb-2">Dias de Teste (Trial)</label>
                             <div class="input-group">
-                                <input type="number" name="trialDays" class="form-control bg-dark text-white border-secondary" value="<%= config.trialDays || 7 %>">
-                                <span class="input-group-text bg-dark text-secondary border-secondary">Dias</span>
+                                <input type="number" name="trialDays" class="form-control" value="<%= config.trialDays || 7 %>">
+                                <span class="input-group-text">Dias</span>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label text-secondary small">Preço Mensal</label>
+                            <label class="form-label text-secondary small mb-2">Preço Mensal</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-dark text-secondary border-secondary">R$</span>
-                                <input type="number" name="priceMonthly" step="0.01" class="form-control bg-dark text-white border-secondary" value="<%= config.priceMonthly || 97.00 %>">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" name="priceMonthly" step="0.01" class="form-control" value="<%= config.priceMonthly || 97.00 %>">
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label text-secondary small">Preço Anual</label>
+                            <label class="form-label text-secondary small mb-2">Preço Anual</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-dark text-secondary border-secondary">R$</span>
-                                <input type="number" name="priceYearly" step="0.01" class="form-control bg-dark text-white border-secondary" value="<%= config.priceYearly || 997.00 %>">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" name="priceYearly" step="0.01" class="form-control" value="<%= config.priceYearly || 997.00 %>">
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label text-secondary small">Texto Promocional</label>
-                            <input type="text" name="promoText" class="form-control bg-dark text-white border-secondary" value="<%= config.promoText || 'Oferta de Lançamento' %>">
+                            <label class="form-label text-secondary small mb-2">Texto Promocional</label>
+                            <input type="text" name="promoText" class="form-control" value="<%= config.promoText || 'Oferta de Lançamento' %>">
                         </div>
                     </div>
 
                     <!-- Stripe Configuration -->
-                    <div class="mt-4 pt-4 border-top border-secondary">
-                        <h6 class="text-white mb-3">
-                            <i class="fa-brands fa-stripe me-2 text-primary"></i>
+                    <div class="mt-5 pt-5 border-top" style="border-color: var(--border-light) !important;">
+                        <h6 class="text-white mb-4" style="font-weight: 600; font-size: 1rem;">
+                            <i class="fa-brands fa-stripe me-2" style="color: var(--primary);"></i>
                             Configuração Stripe
                         </h6>
-                        <div class="row g-3">
+                        <div class="row g-4">
                             <div class="col-md-4">
-                                <label class="form-label text-secondary small">
+                                <label class="form-label text-secondary small mb-2">
                                     Stripe Secret Key
                                     <i class="fa-solid fa-info-circle ms-1" data-bs-toggle="tooltip" title="Chave secreta do Stripe (sk_live_... ou sk_test_...)"></i>
                                 </label>
-                                <input type="password" name="stripeSecretKey" class="form-control bg-dark text-white border-secondary" 
+                                <input type="password" name="stripeSecretKey" class="form-control" 
                                        value="<%= config.stripeSecretKey || '' %>" 
-                                       placeholder="sk_live_... ou sk_test_...">
+                                       placeholder="sk_live_... ou sk_test_..."
+                                       style="color: var(--text-primary);"
+                                       data-placeholder-color="#ffffff">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-secondary small">
+                                <label class="form-label text-secondary small mb-2">
                                     Stripe Publishable Key
                                     <i class="fa-solid fa-info-circle ms-1" data-bs-toggle="tooltip" title="Chave pública do Stripe (pk_live_... ou pk_test_...)"></i>
                                 </label>
-                                <input type="text" name="stripePublishableKey" class="form-control bg-dark text-white border-secondary" 
+                                <input type="text" name="stripePublishableKey" class="form-control" 
                                        value="<%= config.stripePublishableKey || '' %>" 
-                                       placeholder="pk_live_... ou pk_test_...">
+                                       placeholder="pk_live_... ou pk_test_..."
+                                       style="color: var(--text-primary);"
+                                       data-placeholder-color="#ffffff">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label text-secondary small">
+                                <label class="form-label text-secondary small mb-2">
                                     Webhook Secret
                                     <i class="fa-solid fa-info-circle ms-1" data-bs-toggle="tooltip" title="Secret do webhook do Stripe (whsec_...)"></i>
                                 </label>
-                                <input type="password" name="stripeWebhookSecret" class="form-control bg-dark text-white border-secondary" 
+                                <input type="password" name="stripeWebhookSecret" class="form-control" 
                                        value="<%= config.stripeWebhookSecret || '' %>" 
-                                       placeholder="whsec_...">
-                                <small class="text-secondary">URL do webhook: <code>http://seu-dominio.com/webhook/stripe</code></small>
+                                       placeholder="whsec_..."
+                                       style="color: var(--text-primary);"
+                                       data-placeholder-color="#ffffff">
+                                <small class="text-secondary d-block mt-2" style="font-size: 0.75rem;">URL do webhook: <code style="color: var(--primary);">http://seu-dominio.com/webhook/stripe</code></small>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-12 text-end mt-4">
-                        <button type="submit" class="btn btn-accent btn-sm">
-                            <i class="fa-solid fa-save me-1"></i> Salvar Alterações
+                    <div class="col-12 text-end mt-5">
+                        <button type="submit" class="btn btn-accent">
+                            <i class="fa-solid fa-save me-2"></i> Salvar Alterações
                         </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Configuração de Email -->
+        <div class="content-card mb-4">
+            <div class="card-header-custom">
+                <div class="card-title">
+                    <i class="fa-solid fa-envelope me-2 text-secondary"></i>
+                    Configuração de Email
+                </div>
+            </div>
+            <div class="p-4" style="padding: 2rem !important;">
+                <form action="/admin/update-config" method="POST">
+                    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <% } %>
+                    <div class="alert alert-info mb-4" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: var(--info); padding: 1rem 1.25rem;">
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        <strong>Importante:</strong> Configure o SMTP para enviar emails automáticos com chaves de licença. 
+                        Se não configurar, as chaves serão apenas exibidas na tela. Para Gmail, use "Senha de App" ao invés da senha normal.
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small mb-2">Servidor SMTP:</label>
+                            <input type="text" 
+                                   name="smtpHost" 
+                                   class="form-control" 
+                                   value="<%= config.emailConfig && config.emailConfig.smtpHost ? config.emailConfig.smtpHost : '' %>"
+                                   placeholder="smtp.gmail.com">
+                            <small class="text-secondary d-block mt-1" style="font-size: 0.75rem;">Ex: smtp.gmail.com, smtp.outlook.com</small>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-secondary small mb-2">Porta:</label>
+                            <input type="number" 
+                                   name="smtpPort" 
+                                   class="form-control" 
+                                   value="<%= config.emailConfig && config.emailConfig.smtpPort ? config.emailConfig.smtpPort : 587 %>"
+                                   placeholder="587">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-secondary small mb-2">SSL/TLS:</label>
+                            <select name="smtpSecure" class="form-select">
+                                <option value="false" <%= !config.emailConfig || !config.emailConfig.smtpSecure ? 'selected' : '' %>>Não (TLS)</option>
+                                <option value="true" <%= config.emailConfig && config.emailConfig.smtpSecure ? 'selected' : '' %>>Sim (SSL)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small mb-2">Usuário SMTP:</label>
+                            <input type="text" 
+                                   name="smtpUser" 
+                                   class="form-control" 
+                                   value="<%= config.emailConfig && config.emailConfig.smtpUser ? config.emailConfig.smtpUser : '' %>"
+                                   placeholder="seu-email@gmail.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small mb-2">Senha SMTP:</label>
+                            <input type="password" 
+                                   name="smtpPassword" 
+                                   class="form-control" 
+                                   value=""
+                                   placeholder="••••••••">
+                            <small class="text-secondary d-block mt-1" style="font-size: 0.75rem;">Deixe em branco para não alterar</small>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label text-secondary small mb-2">Email Remetente:</label>
+                            <input type="email" 
+                                   name="fromEmail" 
+                                   class="form-control" 
+                                   value="<%= config.emailConfig && config.emailConfig.fromEmail ? config.emailConfig.fromEmail : '' %>"
+                                   placeholder="noreply@seudominio.com">
+                            <small class="text-secondary d-block mt-1" style="font-size: 0.75rem;">Email que aparecerá como remetente</small>
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <button type="submit" class="btn btn-accent">
+                                <i class="fa-solid fa-save me-2"></i>Salvar Configurações de Email
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -415,33 +1929,104 @@
             <div class="card-header-custom">
                 <div class="card-title">
                     <i class="fa-solid fa-list-ul me-2 text-secondary"></i>
-                    Assinaturas Recentes
+                    Assinaturas
+                    <% if (typeof pagination !== 'undefined' && pagination.totalLicenses > 0) { %>
+                        <span class="text-secondary" style="font-size: 0.85rem; font-weight: normal;">
+                            (<%= pagination.totalLicenses %> total)
+                        </span>
+                    <% } %>
                 </div>
                 
-                <form action="/process-checkout" method="POST" target="_blank">
+            <div class="d-flex gap-2">
+                <a href="/admin/notifications" class="btn btn-nav btn-sm position-relative" title="Notificações">
+                    <i class="fa-solid fa-bell me-1"></i> Notificações
+                    <% if (typeof notifications !== 'undefined' && notifications.totalUnread > 0) { %>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                            <%= notifications.totalUnread > 99 ? '99+' : notifications.totalUnread %>
+                        </span>
+                    <% } %>
+                </a>
+                <a href="/admin/activity-log" class="btn btn-nav btn-sm" title="Ver log de atividades">
+                    <i class="fa-solid fa-history me-1"></i> Log de Atividades
+                </a>
+                <a href="/admin/export-csv" class="btn btn-nav btn-sm" title="Exportar lista de clientes">
+                    <i class="fa-solid fa-file-csv me-1"></i> Exportar CSV
+                </a>
+                <form action="/process-checkout" method="POST" target="_blank" style="display: inline;">
+                    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <% } %>
                     <input type="hidden" name="email" value="teste-admin@demo.com">
                     <button type="submit" class="btn btn-nav btn-sm">
                         <i class="fa-solid fa-plus me-1"></i> Criar Teste
                     </button>
                 </form>
             </div>
+            </div>
+            
+            <!-- Busca e Filtros -->
+            <div class="filters-section">
+                <form method="GET" action="/admin" class="filters-form">
+                    <!-- Campo de Busca -->
+                    <div class="filter-group">
+                        <div class="input-group-search">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control-search" 
+                                   placeholder="Buscar por email ou domínio..."
+                                   value="<%= typeof search !== 'undefined' ? search : '' %>">
+                        </div>
+                    </div>
+                    
+                    <!-- Filtro por Status -->
+                    <div class="filter-group">
+                        <select name="status" class="form-select-filter">
+                            <option value="all" <%= typeof filterStatus !== 'undefined' && filterStatus === 'all' ? 'selected' : '' %>>Todos os Status</option>
+                            <option value="active" <%= typeof filterStatus !== 'undefined' && filterStatus === 'active' ? 'selected' : '' %>>Apenas Ativos</option>
+                            <option value="blocked" <%= typeof filterStatus !== 'undefined' && filterStatus === 'blocked' ? 'selected' : '' %>>Apenas Bloqueados</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Filtro por Plano -->
+                    <div class="filter-group">
+                        <select name="plan" class="form-select-filter">
+                            <option value="all" <%= typeof filterPlan !== 'undefined' && filterPlan === 'all' ? 'selected' : '' %>>Todos os Planos</option>
+                            <option value="trial" <%= typeof filterPlan !== 'undefined' && filterPlan === 'trial' ? 'selected' : '' %>>Trial</option>
+                            <option value="monthly" <%= typeof filterPlan !== 'undefined' && filterPlan === 'monthly' ? 'selected' : '' %>>Mensal</option>
+                            <option value="yearly" <%= typeof filterPlan !== 'undefined' && filterPlan === 'yearly' ? 'selected' : '' %>>Anual</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-filter">
+                            <i class="fa-solid fa-filter"></i>
+                            Filtrar
+                        </button>
+                        <a href="/admin" class="btn-clear-filter" title="Limpar filtros">
+                            <i class="fa-solid fa-times"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
 
-            <div class="table-responsive">
-                <table class="table">
+            <div class="table-responsive table-container" style="background: var(--bg-card) !important;">
+                <table class="table table-expandable" style="background: var(--bg-card) !important;">
                     <thead>
                         <tr>
+                            <th style="width: 40px;"></th>
                             <th>Cliente</th>
-                            <th>Plano</th>
                             <th>Chave de Licença</th>
-                            <th>Domínio</th>
+                            <th>Plano</th>
                             <th>Status</th>
                             <th class="text-end">Ações</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style="background: var(--bg-card) !important;">
                         <% if (licenses.length === 0) { %>
-                            <tr>
-                                <td colspan="5">
+                            <tr style="background: var(--bg-secondary) !important;">
+                                <td colspan="6" style="background: transparent !important;">
                                     <div class="empty-state">
                                         <i class="fa-solid fa-inbox fa-2x mb-3 opacity-25"></i>
                                         <p class="m-0">Nenhuma licença encontrada.</p>
@@ -449,44 +2034,78 @@
                                 </td>
                             </tr>
                         <% } else { %>
-                            <% licenses.forEach(function(license) { %>
-                                <tr>
-                                    <td>
+                            <% licenses.forEach(function(license, index) { 
+                                // Calcular data de expiração
+                                let expiresAt = null;
+                                let daysLeft = 0;
+                                let isExpired = false;
+                                let isExpiringSoon = false;
+                                
+                                if (license.plan === 'trial' && license.trialExpiresAt) {
+                                    expiresAt = new Date(license.trialExpiresAt);
+                                } else if ((license.plan === 'monthly' || license.plan === 'yearly') && license.planExpiresAt) {
+                                    expiresAt = new Date(license.planExpiresAt);
+                                }
+                                
+                                if (expiresAt) {
+                                    const now = new Date();
+                                    daysLeft = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
+                                    isExpired = daysLeft <= 0;
+                                    isExpiringSoon = daysLeft <= 7 && daysLeft > 0;
+                                }
+                                
+                                // Produto
+                                let productName = 'Padrão';
+                                if (license.productId && typeof license.productId === 'object' && license.productId.name) {
+                                    productName = license.productId.name;
+                                }
+                            %>
+                                <tr class="table-row-main" data-license-id="license-<%= index %>" style="background: var(--bg-secondary) !important;">
+                                    <td style="background: transparent !important;">
+                                        <button class="btn-expand-row" onclick="toggleRowDetails('<%= index %>')" aria-label="Expandir detalhes">
+                                            <i class="fa-solid fa-chevron-right"></i>
+                                        </button>
+                                    </td>
+                                    <td style="background: transparent !important;">
                                         <div class="d-flex align-items-center">
                                             <div class="user-avatar">
                                                 <%= license.email.charAt(0).toUpperCase() %>
                                             </div>
                                             <div>
-                                                <div class="text-white" style="font-weight: 500;"><%= license.email.split('@')[0] %></div>
-                                                <div class="text-secondary" style="font-size: 0.8rem;"><%= license.email %></div>
+                                                <a href="/admin/client/<%= encodeURIComponent(license.email) %>" 
+                                                   class="client-name-link text-decoration-none" 
+                                                   title="Ver detalhes do cliente">
+                                                    <%= license.email.split('@')[0] %>
+                                                    <i class="fa-solid fa-external-link-alt ms-1" style="font-size: 0.7rem; opacity: 0.5;"></i>
+                                                </a>
+                                                <div class="client-email"><%= license.email %></div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        <form action="/admin/change-plan" method="POST" onchange="this.submit()">
+                                    <td style="background: transparent !important;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <code style="background: rgba(99, 102, 241, 0.15); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(99, 102, 241, 0.3); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<%= license.key %>">
+                                                <%= license.key %>
+                                            </code>
+                                            <button class="btn btn-sm btn-action" onclick="copyKey('<%= license.key %>')" title="Copiar chave" style="padding: 2px 6px;">
+                                                <i class="fa-solid fa-copy" style="font-size: 0.7rem;"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td style="background: transparent !important;">
+                                        <form action="/admin/change-plan" method="POST" onchange="this.submit()" onclick="event.stopPropagation();">
+                                            <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                            <% } %>
                                             <input type="hidden" name="email" value="<%= license.email %>">
-                                            <select name="newPlan" class="form-select form-select-sm bg-dark text-light border-secondary" style="width: 110px; font-size: 0.75rem;">
+                                            <select name="newPlan" class="form-select form-select-sm plan-select" style="width: 110px; font-size: 0.8rem; font-weight: 500;">
                                                 <option value="trial" <%= license.plan === 'trial' ? 'selected' : '' %>>Trial</option>
                                                 <option value="monthly" <%= license.plan === 'monthly' ? 'selected' : '' %>>Mensal</option>
                                                 <option value="yearly" <%= license.plan === 'yearly' ? 'selected' : '' %>>Anual</option>
                                             </select>
                                         </form>
                                     </td>
-                                    <td>
-                                        <span class="license-code"><%= license.key %></span>
-                                    </td>
-                                    <td>
-                                        <% if (license.domain) { %>
-                                            <a href="http://<%= license.domain %>" target="_blank" class="domain-link">
-                                                <i class="fa-solid fa-link me-1"></i><%= license.domain %>
-                                            </a>
-                                        <% } else { %>
-                                            <span class="text-secondary fst-italic">
-                                                <i class="fa-regular fa-clock me-1"></i>Pendente
-                                            </span>
-                                        <% } %>
-                                    </td>
-                                    <td>
+                                    <td style="background: transparent !important;">
                                         <% if (license.active) { %>
                                             <span class="status-badge status-active">
                                                 <i class="fa-solid fa-check me-1" style="font-size: 0.7rem;"></i> Ativo
@@ -497,9 +2116,12 @@
                                             </span>
                                         <% } %>
                                     </td>
-                                    <td class="text-end">
-                                        <div class="d-flex gap-1 justify-content-end">
+                                    <td class="text-end" style="background: transparent !important;">
+                                        <div class="d-flex gap-1 justify-content-end" onclick="event.stopPropagation();">
                                             <form action="/toggle-license" method="POST" style="display:inline;">
+                                                <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                <% } %>
                                                 <input type="hidden" name="email" value="<%= license.email %>">
                                                 <% if (license.active) { %>
                                                     <button type="submit" class="btn btn-action danger btn-sm" title="Bloquear Acesso">
@@ -511,16 +2133,108 @@
                                                     </button>
                                                 <% } %>
                                             </form>
-                                            <button class="btn btn-action btn-sm" 
-                                                    onclick="regenerateKey('<%= license.email %>')" 
-                                                    title="Regenerar Chave">
-                                                <i class="fa-solid fa-key"></i>
-                                            </button>
-                                            <button class="btn btn-action btn-sm" 
-                                                    onclick="copyKey('<%= license.key %>')" 
-                                                    title="Copiar Chave">
-                                                <i class="fa-solid fa-copy"></i>
-                                            </button>
+                                            <a href="/admin/client/<%= encodeURIComponent(license.email) %>" class="btn btn-action btn-sm" title="Ver Detalhes">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-details" id="details-<%= index %>" style="display: none;">
+                                    <td colspan="6">
+                                        <div class="row-details-content">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="detail-item">
+                                                        <span class="detail-label">
+                                                            <i class="fa-solid fa-key me-2"></i>Chave de Licença:
+                                                        </span>
+                                                        <div class="detail-value">
+                                                            <span class="license-code"><%= license.key %></span>
+                                                            <button class="btn btn-sm btn-action ms-2" onclick="copyKey('<%= license.key %>')" title="Copiar">
+                                                                <i class="fa-solid fa-copy"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-action ms-1" onclick="regenerateKey('<%= license.email %>')" title="Regenerar">
+                                                                <i class="fa-solid fa-key"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="detail-item">
+                                                        <span class="detail-label">
+                                                            <i class="fa-solid fa-box me-2"></i>Produto:
+                                                        </span>
+                                                        <span class="detail-value">
+                                                            <span class="badge bg-info"><%= productName %></span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="detail-item">
+                                                        <span class="detail-label">
+                                                            <i class="fa-solid fa-globe me-2"></i>Domínio:
+                                                        </span>
+                                                        <span class="detail-value">
+                                                            <% if (license.domain) { %>
+                                                                <a href="http://<%= license.domain %>" target="_blank" class="domain-link">
+                                                                    <i class="fa-solid fa-link me-1"></i><%= license.domain %>
+                                                                </a>
+                                                            <% } else { %>
+                                                                <span class="text-secondary fst-italic">
+                                                                    <i class="fa-regular fa-clock me-1"></i>Pendente
+                                                                </span>
+                                                            <% } %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="detail-item">
+                                                        <span class="detail-label">
+                                                            <i class="fa-solid fa-calendar me-2"></i>Data de Expiração:
+                                                        </span>
+                                                        <span class="detail-value">
+                                                            <% if (expiresAt) { %>
+                                                                <%= expiresAt.toLocaleDateString('pt-BR') %>
+                                                                <% if (isExpired) { %>
+                                                                    <span class="badge bg-danger ms-2">
+                                                                        <i class="fa-solid fa-exclamation-triangle me-1"></i>Expirado
+                                                                    </span>
+                                                                <% } else if (isExpiringSoon) { %>
+                                                                    <span class="badge bg-warning text-dark ms-2">
+                                                                        <i class="fa-solid fa-clock me-1"></i>Expira em <%= daysLeft %> dia<%= daysLeft !== 1 ? 's' : '' %>
+                                                                    </span>
+                                                                <% } else { %>
+                                                                    <span class="text-secondary ms-2">
+                                                                        (em <%= daysLeft %> dia<%= daysLeft !== 1 ? 's' : '' %>)
+                                                                    </span>
+                                                                <% } %>
+                                                            <% } else { %>
+                                                                <span class="text-secondary">Não definida</span>
+                                                            <% } %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="detail-item">
+                                                        <span class="detail-label">
+                                                            <i class="fa-solid fa-calendar-plus me-2"></i>Data de Criação:
+                                                        </span>
+                                                        <span class="detail-value">
+                                                            <%= new Date(license.createdAt).toLocaleDateString('pt-BR') %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="detail-item">
+                                                        <span class="detail-label">
+                                                            <i class="fa-solid fa-clock-rotate-left me-2"></i>Última Atualização:
+                                                        </span>
+                                                        <span class="detail-value">
+                                                            <%= license.updatedAt ? new Date(license.updatedAt).toLocaleDateString('pt-BR') : 'Nunca' %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -529,42 +2243,670 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Paginação -->
+            <% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+                <div class="p-4 border-top border-secondary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-secondary" style="font-size: 0.85rem;">
+                            Mostrando <%= (pagination.page - 1) * pagination.limit + 1 %> - 
+                            <%= Math.min(pagination.page * pagination.limit, pagination.totalLicenses) %> 
+                            de <%= pagination.totalLicenses %> licenças
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <% if (pagination.hasPrev) { %>
+                                    <li class="page-item">
+                                        <a class="page-link bg-dark text-white border-secondary" 
+                                           href="/admin?page=<%= pagination.page - 1 %><%= typeof search !== 'undefined' && search ? '&amp;search=' + encodeURIComponent(search) : '' %><%= typeof filterStatus !== 'undefined' && filterStatus !== 'all' ? '&amp;status=' + filterStatus : '' %><%= typeof filterPlan !== 'undefined' && filterPlan !== 'all' ? '&amp;plan=' + filterPlan : '' %><%= typeof filters !== 'undefined' && filters.product && filters.product !== 'all' ? '&amp;product=' + filters.product : '' %>">
+                                            <i class="fa-solid fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                <% } else { %>
+                                    <li class="page-item disabled">
+                                        <span class="page-link bg-dark text-secondary border-secondary">
+                                            <i class="fa-solid fa-chevron-left"></i>
+                                        </span>
+                                    </li>
+                                <% } %>
+                                
+                                <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+                                    <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                                        <a class="page-link bg-dark text-white border-secondary <%= i === pagination.page ? 'bg-primary' : '' %>" 
+                                           href="/admin?page=<%= i %><%= typeof search !== 'undefined' && search ? '&amp;search=' + encodeURIComponent(search) : '' %><%= typeof filterStatus !== 'undefined' && filterStatus !== 'all' ? '&amp;status=' + filterStatus : '' %><%= typeof filterPlan !== 'undefined' && filterPlan !== 'all' ? '&amp;plan=' + filterPlan : '' %><%= typeof filters !== 'undefined' && filters.product && filters.product !== 'all' ? '&amp;product=' + filters.product : '' %>">
+                                            <%= i %>
+                                        </a>
+                                    </li>
+                                <% } %>
+                                
+                                <% if (pagination.hasNext) { %>
+                                    <li class="page-item">
+                                        <a class="page-link bg-dark text-white border-secondary" 
+                                           href="/admin?page=<%= pagination.page + 1 %><%= typeof search !== 'undefined' && search ? '&amp;search=' + encodeURIComponent(search) : '' %><%= typeof filterStatus !== 'undefined' && filterStatus !== 'all' ? '&amp;status=' + filterStatus : '' %><%= typeof filterPlan !== 'undefined' && filterPlan !== 'all' ? '&amp;plan=' + filterPlan : '' %><%= typeof filters !== 'undefined' && filters.product && filters.product !== 'all' ? '&amp;product=' + filters.product : '' %>">
+                                            <i class="fa-solid fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                <% } else { %>
+                                    <li class="page-item disabled">
+                                        <span class="page-link bg-dark text-secondary border-secondary">
+                                            <i class="fa-solid fa-chevron-right"></i>
+                                        </span>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            <% } %>
         </div>
 
-        <footer class="mt-5 text-center text-secondary" style="font-size: 0.8rem;">
-            <p>&copy; 2025 Plugin Cripto Woocommerce. Todos os direitos reservados.</p>
-        </footer>
+                <footer class="mt-5 text-center text-secondary" style="font-size: 0.8rem; padding: 2rem;">
+                    <p>&copy; 2025 Plugin Cripto Woocommerce. Todos os direitos reservados.</p>
+                </footer>
+            </div>
+        </div>
+    </div>
+    </div>
 
+    <!-- Modal Novo Cliente - MOVER PARA ANTES DOS SCRIPTS -->
+    <div class="modal fade" id="newClientModal" tabindex="-1" aria-labelledby="newClientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-light);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-light);">
+                    <h5 class="modal-title" id="newClientModalLabel" style="color: var(--text-primary);">
+                        <i class="fa-solid fa-user-plus me-2" style="color: var(--primary);"></i>
+                        Novo Cliente
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar" style="filter: invert(1);"></button>
+                </div>
+                <form id="newClientForm" onsubmit="submitNewClient(event)">
+                    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <% } %>
+                    <div class="modal-body" style="padding: 2rem;">
+                        <div class="mb-3">
+                            <label for="clientEmail" class="form-label" style="color: var(--text-secondary); font-weight: 500;">
+                                Email do Cliente <span style="color: var(--danger);">*</span>
+                            </label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="clientEmail" 
+                                   name="email" 
+                                   placeholder="cliente@exemplo.com" 
+                                   required
+                                   style="background: #1e293b; color: #f1f5f9; border: 1px solid var(--border-light);">
+                            <small class="text-secondary" style="font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                                O email será usado para login e recebimento da chave de licença
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="clientPlan" class="form-label" style="color: var(--text-secondary); font-weight: 500;">
+                                Plano <span style="color: var(--danger);">*</span>
+                            </label>
+                            <select class="form-select" 
+                                    id="clientPlan" 
+                                    name="plan" 
+                                    required
+                                    style="background: #1e293b; color: #f1f5f9; border: 1px solid var(--border-light);">
+                                <option value="trial">Trial (7 dias)</option>
+                                <option value="monthly">Mensal</option>
+                                <option value="yearly">Anual</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="clientPassword" class="form-label" style="color: var(--text-secondary); font-weight: 500;">
+                                Senha <span style="color: var(--danger);">*</span>
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="clientPassword" 
+                                   name="password" 
+                                   placeholder="Digite a senha do cliente"
+                                   required
+                                   minlength="6"
+                                   style="background: #1e293b; color: #f1f5f9; border: 1px solid var(--border-light);">
+                            <small class="text-secondary" style="font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                                Mínimo de 6 caracteres. O cliente usará esta senha para fazer login.
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="clientDomain" class="form-label" style="color: var(--text-secondary); font-weight: 500;">
+                                Domínio (Opcional)
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="clientDomain" 
+                                   name="domain" 
+                                   placeholder="exemplo.com.br"
+                                   style="background: #1e293b; color: #f1f5f9; border: 1px solid var(--border-light);">
+                            <small class="text-secondary" style="font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                                Domínio onde a licença será usada (pode ser definido depois)
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="clientNotes" class="form-label" style="color: var(--text-secondary); font-weight: 500;">
+                                Notas (Opcional)
+                            </label>
+                            <textarea class="form-control" 
+                                      id="clientNotes" 
+                                      name="notes" 
+                                      rows="3"
+                                      placeholder="Adicione notas sobre este cliente..."
+                                      style="background: #1e293b; color: #f1f5f9; border: 1px solid var(--border-light);"></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: var(--info); padding: 0.75rem 1rem; font-size: 0.875rem;">
+                            <i class="fa-solid fa-info-circle me-2"></i>
+                            Uma chave de licença será gerada automaticamente e enviada por email ao cliente.
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid var(--border-light);">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: var(--bg-tertiary); border: 1px solid var(--border-light); color: var(--text-primary);">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none; color: #fff;">
+                            <i class="fa-solid fa-check me-2"></i>
+                            Criar Cliente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
     <script>
+        // FUNÇÕES GLOBAIS DO MODAL - AGUARDAR BOOTSTRAP CARREGAR
+        // Usar função que aguarda o Bootstrap estar disponível
+        function initModalFunctions() {
+            // Verificar se Bootstrap está disponível
+            if (typeof bootstrap === 'undefined' || typeof bootstrap.Modal === 'undefined') {
+                console.warn('⚠️ Bootstrap ainda não está carregado, aguardando...');
+                setTimeout(initModalFunctions, 100);
+                return;
+            }
+            
+            console.log('✅ Bootstrap carregado, definindo funções do modal');
+            
+            // FUNÇÃO PARA ABRIR MODAL - VERSÃO SIMPLIFICADA
+            window.openNewClientModal = function() {
+                try {
+                    console.log('🔍 Tentando abrir modal...');
+                    const modalElement = document.getElementById('newClientModal');
+                    if (!modalElement) {
+                        console.error('❌ Modal newClientModal não encontrado!');
+                        alert('Erro: Modal não encontrado. Recarregue a página.');
+                        return;
+                    }
+                    
+                    // Verificar se Bootstrap está disponível
+                    if (typeof bootstrap === 'undefined' || typeof bootstrap.Modal === 'undefined') {
+                        console.error('❌ Bootstrap não está carregado!');
+                        alert('Erro: Bootstrap não está disponível. Recarregue a página.');
+                        return;
+                    }
+                    
+                    console.log('✅ Modal encontrado, Bootstrap disponível');
+                    
+                    // Método 1: Tentar usar Bootstrap Modal API
+                    try {
+                        let bsModal = bootstrap.Modal.getInstance(modalElement);
+                        if (!bsModal) {
+                            console.log('📦 Criando nova instância do modal Bootstrap...');
+                            bsModal = new bootstrap.Modal(modalElement, {
+                                backdrop: true,
+                                keyboard: true,
+                                focus: true
+                            });
+                        }
+                        
+                        if (bsModal && typeof bsModal.show === 'function') {
+                            bsModal.show();
+                            console.log('✅ Modal aberto com Bootstrap API!');
+                            return;
+                        }
+                    } catch (bsError) {
+                        console.warn('⚠️ Erro ao usar Bootstrap API:', bsError);
+                    }
+                    
+                    // Método 2: Fallback - Manipulação direta do DOM
+                    console.log('📦 Usando fallback manual para abrir modal...');
+                    modalElement.classList.add('show');
+                    modalElement.style.display = 'block';
+                    modalElement.setAttribute('aria-hidden', 'false');
+                    modalElement.removeAttribute('aria-hidden');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Criar backdrop manualmente
+                    let backdrop = document.getElementById('modalBackdrop');
+                    if (!backdrop) {
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        backdrop.id = 'modalBackdrop';
+                        document.body.appendChild(backdrop);
+                    }
+                    
+                    // Adicionar evento para fechar ao clicar no backdrop
+                    backdrop.addEventListener('click', function() {
+                        window.closeNewClientModal();
+                    });
+                    
+                    console.log('✅ Modal aberto manualmente!');
+                } catch (error) {
+                    console.error('❌ Erro ao abrir modal:', error);
+                    console.error('Stack trace:', error.stack);
+                    alert('Erro ao abrir modal: ' + error.message);
+                }
+            };
+            
+            // FUNÇÃO PARA FECHAR MODAL
+            window.closeNewClientModal = function() {
+                try {
+                    const modal = document.getElementById('newClientModal');
+                    if (modal && typeof bootstrap !== 'undefined') {
+                        const bsModal = bootstrap.Modal.getInstance(modal);
+                        if (bsModal) {
+                            bsModal.hide();
+                        } else {
+                            // Fallback: remover manualmente
+                            modal.classList.remove('show');
+                            modal.style.display = 'none';
+                            document.body.classList.remove('modal-open');
+                            const backdrop = document.getElementById('modalBackdrop');
+                            if (backdrop) backdrop.remove();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao fechar modal:', error);
+                }
+            };
+        } // FIM DA FUNÇÃO initModalFunctions
+        
+        // FUNÇÃO PARA SUBMETER FORMULÁRIO
+        window.submitNewClient = async function(event) {
+            event.preventDefault();
+            console.log('📝 Iniciando submissão do formulário...');
+            
+            const form = event.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Desabilitar botão
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Criando...';
+            
+            try {
+                // Coletar dados do formulário
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData);
+                
+                // Log dos dados que serão enviados (sem mostrar senha completa)
+                console.log('📤 Dados do formulário:', {
+                    email: data.email,
+                    plan: data.plan,
+                    password: data.password ? '***' + data.password.substring(data.password.length - 2) : '(vazio)',
+                    domain: data.domain || '(vazio)',
+                    notes: data.notes || '(vazio)',
+                    hasCsrf: !!data._csrf
+                });
+                
+                // Preparar headers
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                
+                // Adicionar CSRF token se existir
+                if (data._csrf) {
+                    headers['X-CSRF-Token'] = data._csrf;
+                }
+                
+                // Remover CSRF do body JSON (enviar apenas no header se necessário)
+                const requestData = {
+                    email: data.email,
+                    plan: data.plan,
+                    password: data.password,
+                    domain: data.domain || null,
+                    notes: data.notes || null
+                };
+                
+                console.log('🌐 Enviando requisição para /admin/create-client...');
+                const response = await fetch('/admin/create-client', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(requestData),
+                    credentials: 'same-origin' // Incluir cookies/sessão
+                });
+                
+                console.log('📥 Resposta recebida:', response.status, response.statusText);
+                
+                // Verificar se a resposta é JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('❌ Resposta não é JSON:', text);
+                    throw new Error('Resposta do servidor não é JSON. Status: ' + response.status);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Resultado:', result);
+                
+                if (result.success) {
+                    console.log('✅ Cliente criado com sucesso!');
+                    // Mostrar mensagem de sucesso
+                    alert('Cliente criado com sucesso!');
+                    // Fechar modal
+                    window.closeNewClientModal();
+                    // Recarregar página após 1 segundo
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    console.error('❌ Erro ao criar cliente:', result.message);
+                    alert(result.message || 'Erro ao criar cliente');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao criar cliente:', error);
+                console.error('Stack:', error.stack);
+                alert('Erro ao criar cliente: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        };
+        
+        // Dados dos gráficos
+        const revenueData = <%= typeof stats !== 'undefined' && stats.revenueByMonth ? JSON.stringify(stats.revenueByMonth) : '[]' %>;
+        const clientsData = <%= typeof stats !== 'undefined' && stats.newClientsByMonth ? JSON.stringify(stats.newClientsByMonth) : '[]' %>;
+        const planData = <%= typeof stats !== 'undefined' && stats.planDistribution ? JSON.stringify(stats.planDistribution) : '{"trial": 0, "monthly": 0, "yearly": 0}' %>;
+        
+        // Configuração de cores
+        const chartColors = {
+                            primary: '#6366f1',
+            success: '#3fb950',
+            danger: '#f85149',
+            info: '#58a6ff',
+            warning: '#d29922',
+            secondary: '#8b949e'
+        };
+        
+        // Gráfico de Receita
+        if (revenueData.length > 0) {
+            const revenueCtx = document.getElementById('revenueChart');
+            if (revenueCtx) {
+                new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: revenueData.map(d => d.month),
+                        datasets: [{
+                            label: 'Receita Mensal (R$)',
+                            data: revenueData.map(d => d.revenue),
+                            borderColor: chartColors.primary,
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: {
+                                    color: '#c9d1d9'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: '#c9d1d9',
+                                    callback: function(value) {
+                                        return 'R$ ' + value.toFixed(2).replace('.', ',');
+                                    }
+                                },
+                                grid: {
+                                    color: '#30363d'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: '#c9d1d9'
+                                },
+                                grid: {
+                                    color: '#30363d'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Gráfico de Distribuição de Planos
+        const planCtx = document.getElementById('planChart');
+        if (planCtx) {
+            new Chart(planCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Trial', 'Mensal', 'Anual'],
+                    datasets: [{
+                        data: [planData.trial || 0, planData.monthly || 0, planData.yearly || 0],
+                        backgroundColor: [
+                            chartColors.warning,
+                            chartColors.info,
+                            chartColors.success
+                        ],
+                        borderColor: '#161b22',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#c9d1d9',
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico de Novos Clientes
+        if (clientsData.length > 0) {
+            const clientsCtx = document.getElementById('clientsChart');
+            if (clientsCtx) {
+                new Chart(clientsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: clientsData.map(d => d.month),
+                        datasets: [{
+                            label: 'Novos Clientes',
+                            data: clientsData.map(d => d.count),
+                            backgroundColor: chartColors.info,
+                            borderColor: chartColors.info,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: {
+                                    color: '#c9d1d9'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: '#c9d1d9',
+                                    stepSize: 1
+                                },
+                                grid: {
+                                    color: '#30363d'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: '#c9d1d9'
+                                },
+                                grid: {
+                                    color: '#30363d'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
         // Tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        // Mensagens de sucesso/erro
+        // Sistema de Toast Notifications
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : type === 'warning' ? 'var(--warning)' : 'var(--info)'};
+                color: #fff;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                min-width: 300px;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-triangle-exclamation',
+                info: 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${icons[type]}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #fff; margin-left: auto; cursor: pointer; padding: 0.25rem;">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+        
+        // Adicionar animações CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Mensagens de sucesso/erro (usando toasts)
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('success')) {
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
-            alert.style.zIndex = '9999';
-            alert.innerHTML = '<i class="fa-solid fa-check-circle me-2"></i>Alterações salvas com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
-            document.body.appendChild(alert);
-            setTimeout(() => alert.remove(), 3000);
+            showToast('Alterações salvas com sucesso!', 'success');
         }
         if (urlParams.get('error')) {
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
-            alert.style.zIndex = '9999';
-            alert.innerHTML = '<i class="fa-solid fa-exclamation-circle me-2"></i>Erro: ' + urlParams.get('error') + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
-            document.body.appendChild(alert);
-            setTimeout(() => alert.remove(), 5000);
+            showToast('Erro: ' + urlParams.get('error'), 'error');
         }
+        
+        // Toggle Sidebar (global)
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('adminSidebar');
+            const icon = document.getElementById('sidebarToggleIcon');
+            if (sidebar && icon) {
+                sidebar.classList.toggle('collapsed');
+                icon.classList.toggle('fa-chevron-left');
+                icon.classList.toggle('fa-chevron-right');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            }
+        };
+        
+        // Restaurar estado da sidebar
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                const sidebar = document.getElementById('adminSidebar');
+                const icon = document.getElementById('sidebarToggleIcon');
+                if (sidebar && icon) {
+                    sidebar.classList.add('collapsed');
+                    icon.classList.remove('fa-chevron-left');
+                    icon.classList.add('fa-chevron-right');
+                }
+            }
+        });
+        
+        // Toggle User Menu (global)
+        window.toggleUserMenu = function() {
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) {
+                userMenu.classList.toggle('active');
+            }
+        };
+        
+        // Fechar user menu ao clicar fora
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu && !userMenu.contains(e.target)) {
+                userMenu.classList.remove('active');
+            }
+        });
 
         // Função para regenerar chave
         async function regenerateKey(email) {
@@ -607,7 +2949,152 @@
                 }, 2000);
             });
         }
+
+        // Marcar notificação como lida
+        async function markAsRead(notificationId) {
+            try {
+                const response = await fetch(`/admin/notification/${notificationId}/read`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Erro ao marcar notificação como lida:', error);
+            }
+        }
+
+        // Função para expandir/colapsar detalhes da linha
+        function toggleRowDetails(index) {
+            const detailsRow = document.getElementById(`details-${index}`);
+            const mainRow = document.querySelector(`[data-license-id="license-${index}"]`);
+            const expandBtn = mainRow.querySelector('.btn-expand-row');
+            
+            if (detailsRow.style.display === 'none' || !detailsRow.style.display) {
+                detailsRow.style.display = 'table-row';
+                mainRow.classList.add('expanded');
+                expandBtn.classList.add('expanded');
+            } else {
+                detailsRow.style.display = 'none';
+                mainRow.classList.remove('expanded');
+                expandBtn.classList.remove('expanded');
+            }
+        }
+        
+        // TESTE: Função simplificada para placeholders - removendo estilos inline que podem interferir
+        // COMENTADO TEMPORARIAMENTE PARA TESTAR SE OS ESTILOS CSS ESTÁTICOS SÃO SUFICIENTES
+        /*
+        function forcePlaceholderStyles() {
+            // REMOVIDO: Aplicação de estilos inline que podem interferir com placeholders
+            // REMOVIDO: Criação dinâmica de múltiplos elementos <style>
+            // REMOVIDO: Múltiplas execuções com setTimeouts
+            
+            console.log('⚠️ Função forcePlaceholderStyles DESABILITADA para teste');
+        }
+        
+        // DESABILITADO: Execução automática
+        // if (document.readyState === 'loading') {
+        //     document.addEventListener('DOMContentLoaded', forcePlaceholderStyles);
+        // } else {
+        //     forcePlaceholderStyles();
+        // }
+        // setTimeout(forcePlaceholderStyles, 50);
+        // setTimeout(forcePlaceholderStyles, 200);
+        // setTimeout(forcePlaceholderStyles, 500);
+        // setTimeout(forcePlaceholderStyles, 1000);
+        // setTimeout(forcePlaceholderStyles, 2000);
+        
+        // DESABILITADO: MutationObserver que executava a função múltiplas vezes
+        // const observer = new MutationObserver(function(mutations) {
+        //     mutations.forEach(function(mutation) {
+        //         if (mutation.addedNodes.length) {
+        //             forcePlaceholderStyles();
+        //         }
+        //     });
+        // });
+        // observer.observe(document.body, { childList: true, subtree: true });
+        
+        // DESABILITADO: Event listener de foco
+        // document.addEventListener('focusin', function(e) {
+        //     if (e.target && e.target.classList && e.target.classList.contains('form-control')) {
+        //         setTimeout(forcePlaceholderStyles, 10);
+        //     }
+        // });
+        */
+        
+        console.log('✅ JavaScript de placeholders DESABILITADO - usando apenas CSS estático para teste');
+
+        // Permitir clicar na linha principal para expandir (exceto em botões e links)
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainRows = document.querySelectorAll('.table-row-main');
+            mainRows.forEach(row => {
+                row.addEventListener('click', function(e) {
+                    // Não expandir se clicar em botões, links ou selects
+                    if (e.target.closest('button, a, select, form')) {
+                        return;
+                    }
+                    const licenseId = row.getAttribute('data-license-id');
+                    const index = licenseId.replace('license-', '');
+                    toggleRowDetails(index);
+                });
+            });
+        });
+        
+        // Função para adicionar event listener ao botão (como fallback caso data-bs-toggle não funcione)
+        function setupButtonListener() {
+            const btnNovoCliente = document.getElementById('btnNovoCliente');
+            if (btnNovoCliente) {
+                // Adicionar listener adicional como backup
+                btnNovoCliente.addEventListener('click', function(e) {
+                    // Se o data-bs-toggle não funcionar, usar nossa função
+                    setTimeout(function() {
+                        const modal = document.getElementById('newClientModal');
+                        if (modal && !modal.classList.contains('show')) {
+                            console.log('🔄 data-bs-toggle não funcionou, usando função manual...');
+                            if (typeof window.openNewClientModal === 'function') {
+                                window.openNewClientModal();
+                            }
+                        }
+                    }, 100);
+                });
+                console.log('✅ Event listener de backup adicionado ao botão Novo Cliente');
+                return true;
+            } else {
+                console.warn('⚠️ Botão btnNovoCliente não encontrado, tentando novamente em 100ms...');
+                setTimeout(setupButtonListener, 100);
+                return false;
+            }
+        }
+        
+        // Inicializar funções do modal quando a página carregar
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('✅ DOM carregado, iniciando funções do modal');
+                initModalFunctions();
+                setupButtonListener();
+            });
+        } else {
+            // DOM já carregado
+            console.log('✅ DOM já carregado, iniciando funções do modal imediatamente');
+            initModalFunctions();
+            setupButtonListener();
+        }
+        
+        // Tentar inicializar também quando a janela carregar completamente
+        window.addEventListener('load', function() {
+            console.log('✅ Window carregada completamente');
+            if (typeof window.openNewClientModal !== 'function') {
+                console.warn('⚠️ Função ainda não definida após window.load, tentando novamente...');
+                initModalFunctions();
+            }
+            setupButtonListener();
+        });
+        
     </script>
 
+            </div>
+        </div>
+    </div>
 </body>
 </html>
