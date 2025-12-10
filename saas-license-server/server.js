@@ -3653,6 +3653,46 @@ app.get('/admin/export-csv', requireAdmin, async (req, res) => {
     }
 });
 
+// Rota para deletar cliente completamente
+app.post('/admin/delete-client', requireAdmin, 
+    body ? [
+        body('email').isEmail().normalizeEmail().withMessage('Email inválido')
+    ] : [],
+    validateRequest,
+    async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        // Sanitizar email
+        const sanitizedEmail = email.trim().toLowerCase();
+
+        // 1. Buscar licença para confirmar que existe
+        const license = await License.findOne({ email: sanitizedEmail });
+        if (!license) {
+            return res.status(404).json({ success: false, message: 'Cliente não encontrado' });
+        }
+
+        // 2. Deletar em ordem (para evitar referências órfãs)
+        await ActivityLog.deleteMany({ email: sanitizedEmail });
+        await Notification.deleteMany({ email: sanitizedEmail });
+        await User.deleteOne({ email: sanitizedEmail });
+        await License.deleteOne({ email: sanitizedEmail });
+
+        // 3. Registrar ação no log do admin
+        await AdminActivityLog.create({
+            action: 'delete_client',
+            details: `Cliente ${sanitizedEmail} deletado completamente do sistema`,
+            adminUser: req.session.user || 'admin',
+            timestamp: new Date()
+        });
+
+        res.json({ success: true, message: 'Cliente excluído com sucesso' });
+    } catch (error) {
+        console.error('Erro ao deletar cliente:', error);
+        res.status(500).json({ success: false, message: 'Erro ao excluir cliente: ' + error.message });
+    }
+});
+
 // 8. Documentação
 app.get('/docs', (req, res) => {
     res.render('docs');
