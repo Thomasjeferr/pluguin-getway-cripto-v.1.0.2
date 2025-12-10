@@ -628,6 +628,9 @@
                     </div>
 
                     <form id="checkoutForm" method="POST" action="">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>" id="csrfTokenInput">
+                        <% } %>
                         <input type="hidden" name="planId" id="planIdInput">
                         
                         <div class="mb-3">

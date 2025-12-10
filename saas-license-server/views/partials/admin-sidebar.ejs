@@ -1,0 +1,61 @@
+<!-- Sidebar -->
+<aside class="sidebar" id="adminSidebar">
+    <div class="sidebar-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <a href="/admin" class="sidebar-brand">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Painel Admin</span>
+        </a>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='var(--bg-tertiary)'; this.style.color='var(--primary)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">
+            <i class="fa-solid fa-chevron-left" id="sidebarToggleIcon"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-menu">
+        <div class="menu-section">Principal</div>
+        <a href="/admin" class="menu-item <%= typeof currentPage === 'undefined' || currentPage === 'dashboard' ? 'active' : '' %>">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="/admin/vendas" class="menu-item <%= typeof currentPage !== 'undefined' && currentPage === 'vendas' ? 'active' : '' %>">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Vendas</span>
+        </a>
+        
+        <div class="menu-section">Gerenciamento</div>
+        <a href="/admin" class="menu-item <%= typeof currentPage !== 'undefined' && currentPage === 'clientes' ? 'active' : '' %>">
+            <i class="fa-solid fa-users"></i>
+            <span>Clientes</span>
+        </a>
+        <a href="/admin/activity-log" class="menu-item <%= typeof currentPage !== 'undefined' && currentPage === 'atividades' ? 'active' : '' %>">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Atividades</span>
+        </a>
+        <a href="/admin/notifications" class="menu-item <%= typeof currentPage !== 'undefined' && currentPage === 'notificacoes' ? 'active' : '' %>">
+            <i class="fa-solid fa-bell"></i>
+            <span>Notificações</span>
+            <% if (typeof notifications !== 'undefined' && notifications.totalUnread > 0) { %>
+                <span class="badge ms-auto" style="background: var(--danger); color: #fff; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 12px; font-weight: 600;">
+                    <%= notifications.totalUnread > 99 ? '99+' : notifications.totalUnread %>
+                </span>
+            <% } %>
+        </a>
+        
+        <div class="menu-section">Configurações</div>
+        <a href="/admin" class="menu-item" onclick="document.getElementById('config-section').scrollIntoView({behavior: 'smooth'}); return false;">
+            <i class="fa-solid fa-gear"></i>
+            <span>Configurações</span>
+        </a>
+        
+        <div class="menu-section">Utilitários</div>
+        <a href="/download-plugin" class="menu-item" target="_blank">
+            <i class="fa-solid fa-download"></i>
+            <span>Download Plugin</span>
+        </a>
+        
+        <div class="menu-section" style="margin-top: 2rem;"></div>
+        <a href="/logout" class="menu-item text-danger">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Sair</span>
+        </a>
+    </nav>
+</aside>

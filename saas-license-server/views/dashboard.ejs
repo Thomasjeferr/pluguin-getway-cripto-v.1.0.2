@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+        <meta name="csrf-token" content="<%= csrfToken %>">
+    <% } %>
     <title>Painel Administrativo - Plugin Cripto Woocommerce</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -2319,7 +2322,7 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar" style="filter: invert(1);"></button>
                 </div>
-                <form id="newClientForm" onsubmit="submitNewClient(event)">
+                <form id="newClientForm">
                     <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <% } %>
@@ -2340,19 +2343,12 @@
                             </small>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="clientPlan" class="form-label" style="color: var(--text-secondary); font-weight: 500;">
-                                Plano <span style="color: var(--danger);">*</span>
-                            </label>
-                            <select class="form-select" 
-                                    id="clientPlan" 
-                                    name="plan" 
-                                    required
-                                    style="background: #1e293b; color: #f1f5f9; border: 1px solid var(--border-light);">
-                                <option value="trial">Trial (7 dias)</option>
-                                <option value="monthly">Mensal</option>
-                                <option value="yearly">Anual</option>
-                            </select>
+                        <!-- Campo hidden para sempre enviar "trial" -->
+                        <input type="hidden" name="plan" value="trial">
+                        
+                        <div class="alert alert-warning" style="background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.4); color: var(--warning); padding: 0.75rem 1rem; font-size: 0.875rem; margin-bottom: 1rem;">
+                            <i class="fa-solid fa-info-circle me-2"></i>
+                            <strong>Plano Trial:</strong> O cliente será criado automaticamente com plano Trial (7 dias), igual ao sistema de criação de teste.
                         </div>
                         
                         <div class="mb-3">
@@ -2399,14 +2395,38 @@
                                       style="background: #1e293b; color: #f1f5f9; border: 1px solid var(--border-light);"></textarea>
                         </div>
                         
-                        <div class="alert alert-info" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: var(--info); padding: 0.75rem 1rem; font-size: 0.875rem;">
+                        <!-- Área de Resultado do Diagnóstico -->
+                        <div id="diagnosticResult" style="display: none; margin-top: 1.5rem; margin-bottom: 1rem;">
+                            <div class="card" style="background: var(--bg-tertiary); border: 2px solid var(--border-light); border-radius: 8px; padding: 1rem;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0" style="color: var(--text-primary); font-weight: 600;">
+                                        <i id="diagnosticIcon" class="fa-solid me-2"></i>
+                                        <span id="diagnosticTitle">Resultado do Diagnóstico</span>
+                                    </h6>
+                                </div>
+                                <div id="diagnosticMessage" style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
+                                    <!-- Mensagem será inserida aqui -->
+                                </div>
+                                <div id="diagnosticDetails" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); font-size: 0.85rem; color: var(--text-secondary);">
+                                    <!-- Detalhes adicionais serão inseridos aqui -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning" style="background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.4); color: var(--warning); padding: 0.75rem 1rem; font-size: 0.875rem; margin-bottom: 1rem;">
                             <i class="fa-solid fa-info-circle me-2"></i>
-                            Uma chave de licença será gerada automaticamente e enviada por email ao cliente.
+                            <strong>Plano Trial:</strong> O cliente será criado automaticamente com plano Trial (7 dias), igual ao sistema de criação de teste.
                         </div>
                     </div>
                     <div class="modal-footer" style="border-top: 1px solid var(--border-light);">
+                        <div id="diagnosticStatus" class="text-start flex-grow-1" style="color: var(--text-secondary); font-size: 0.85rem;"></div>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: var(--bg-tertiary); border: 1px solid var(--border-light); color: var(--text-primary);">
                             Cancelar
+                        </button>
+                        <!-- Botão com onclick inline simples e direto -->
+                        <button type="button" class="btn btn-outline-secondary" id="btnDiagnostic" style="border-color: var(--border-light); color: var(--text-primary);">
+                            <i class="fa-solid fa-stethoscope me-2"></i>
+                            Diagnóstico
                         </button>
                         <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none; color: #fff;">
                             <i class="fa-solid fa-check me-2"></i>
@@ -2423,6 +2443,9 @@
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Script de diagnóstico externo (evita CSP inline) -->
+    <script src="/diagnostic-fix.js"></script>
     
     <script>
         // FUNÇÕES GLOBAIS DO MODAL - AGUARDAR BOOTSTRAP CARREGAR
@@ -2471,8 +2494,17 @@
                         
                         if (bsModal && typeof bsModal.show === 'function') {
                             bsModal.show();
-                            console.log('✅ Modal aberto com Bootstrap API!');
-                            return;
+                    // Ocultar área de resultado do diagnóstico ao abrir o modal
+                    const diagnosticResult = document.getElementById('diagnosticResult');
+                    if (diagnosticResult) {
+                        diagnosticResult.style.display = 'none';
+                    }
+                    // Garantir que o listener do botão de diagnóstico está anexado
+                    setTimeout(() => {
+                        setupDiagnosticButton();
+                    }, 100);
+                    console.log('✅ Modal aberto com Bootstrap API!');
+                    return;
                         }
                     } catch (bsError) {
                         console.warn('⚠️ Erro ao usar Bootstrap API:', bsError);
@@ -2500,6 +2532,16 @@
                     backdrop.addEventListener('click', function() {
                         window.closeNewClientModal();
                     });
+                    
+                    // Ocultar área de resultado do diagnóstico ao abrir o modal
+                    const diagnosticResult = document.getElementById('diagnosticResult');
+                    if (diagnosticResult) {
+                        diagnosticResult.style.display = 'none';
+                    }
+                    // Garantir que o listener do botão de diagnóstico está anexado
+                    setTimeout(() => {
+                        setupDiagnosticButton();
+                    }, 100);
                     
                     console.log('✅ Modal aberto manualmente!');
                 } catch (error) {
@@ -2533,15 +2575,21 @@
         } // FIM DA FUNÇÃO initModalFunctions
         
         // FUNÇÃO PARA SUBMETER FORMULÁRIO
+        let isSubmitting = false; // Flag global para prevenir múltiplos envios
+
         window.submitNewClient = async function(event) {
             event.preventDefault();
+            
+            if (isSubmitting) return;
+            
             console.log('📝 Iniciando submissão do formulário...');
             
             const form = event.target;
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             
-            // Desabilitar botão
+            // Bloquear submissão visualmente e logicamente
+            isSubmitting = true;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Criando...';
             
@@ -2550,85 +2598,184 @@
                 const formData = new FormData(form);
                 const data = Object.fromEntries(formData);
                 
-                // Log dos dados que serão enviados (sem mostrar senha completa)
-                console.log('📤 Dados do formulário:', {
-                    email: data.email,
-                    plan: data.plan,
-                    password: data.password ? '***' + data.password.substring(data.password.length - 2) : '(vazio)',
-                    domain: data.domain || '(vazio)',
-                    notes: data.notes || '(vazio)',
-                    hasCsrf: !!data._csrf
-                });
-                
-                // Preparar headers
-                const headers = {
-                    'Content-Type': 'application/json',
-                };
-                
-                // Adicionar CSRF token se existir
-                if (data._csrf) {
-                    headers['X-CSRF-Token'] = data._csrf;
+                // Obter token CSRF
+                let csrfToken = data._csrf || '';
+                if (!csrfToken) {
+                    const metaCsrf = document.querySelector('meta[name="csrf-token"]');
+                    if (metaCsrf) csrfToken = metaCsrf.getAttribute('content');
                 }
                 
-                // Remover CSRF do body JSON (enviar apenas no header se necessário)
-                const requestData = {
+                // Enviar usando JSON
+                const requestBody = {
                     email: data.email,
-                    plan: data.plan,
+                    plan: 'trial', // Sempre trial
                     password: data.password,
                     domain: data.domain || null,
-                    notes: data.notes || null
+                    notes: data.notes || null,
+                    _csrf: csrfToken
                 };
                 
-                console.log('🌐 Enviando requisição para /admin/create-client...');
+                console.log('🌐 Enviando requisição para /admin/create-client (JSON)...');
+                
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (csrfToken) {
+                    headers['CSRF-Token'] = csrfToken;
+                    headers['X-CSRF-Token'] = csrfToken;
+                }
+
                 const response = await fetch('/admin/create-client', {
                     method: 'POST',
                     headers: headers,
-                    body: JSON.stringify(requestData),
-                    credentials: 'same-origin' // Incluir cookies/sessão
+                    body: JSON.stringify(requestBody),
+                    credentials: 'same-origin'
                 });
                 
-                console.log('📥 Resposta recebida:', response.status, response.statusText);
+                console.log('📥 Resposta recebida:', response.status);
                 
-                // Verificar se a resposta é JSON
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    console.error('❌ Resposta não é JSON:', text);
-                    throw new Error('Resposta do servidor não é JSON. Status: ' + response.status);
+                if (!response.ok) {
+                    // Tentar ler erro como JSON, fallback para texto
+                    let errorMessage = `Erro do servidor (${response.status})`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) errorMessage = errorData.message;
+                    } catch (e) {
+                        const text = await response.text();
+                        if (text) errorMessage = text.substring(0, 100);
+                    }
+                    throw new Error(errorMessage);
                 }
                 
                 const result = await response.json();
                 console.log('✅ Resultado:', result);
                 
                 if (result.success) {
+                    // SUCESSO - Feedback visual suave
                     console.log('✅ Cliente criado com sucesso!');
-                    // Mostrar mensagem de sucesso
-                    alert('Cliente criado com sucesso!');
-                    // Fechar modal
-                    window.closeNewClientModal();
-                    // Recarregar página após 1 segundo
+                    
+                    submitBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Sucesso!';
+                    submitBtn.classList.remove('btn-primary');
+                    submitBtn.classList.add('btn-success');
+                    
+                    // Fechar modal e recarregar
                     setTimeout(() => {
+                        window.closeNewClientModal();
                         window.location.reload();
                     }, 1000);
                 } else {
-                    console.error('❌ Erro ao criar cliente:', result.message);
-                    alert(result.message || 'Erro ao criar cliente');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    // ERRO DO SERVIDOR
+                    throw new Error(result.message || 'Erro ao criar cliente');
                 }
             } catch (error) {
-                console.error('❌ Erro ao criar cliente:', error);
-                console.error('Stack:', error.stack);
-                alert('Erro ao criar cliente: ' + error.message);
+                // ERRO - Mostrar alert e liberar botão
+                console.error('❌ Erro:', error);
+                alert('Erro: ' + error.message);
+                
+                isSubmitting = false;
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             }
         };
+
+        // Botão de diagnóstico: faz um POST de teste para /admin/create-client com dados falsos
+        window.runCreateClientDiagnostic = async function() {
+            console.log('🧪 === INICIANDO DIAGNÓSTICO ===');
+            try {
+                const modal = document.getElementById('newClientModal');
+                if (!modal) {
+                    console.error('❌ Modal não encontrado!');
+                    alert('Erro: Modal não encontrado. Recarregue a página.');
+                    return;
+                }
+                
+                const csrfInput = modal.querySelector('input[name="_csrf"]');
+                const csrfToken = csrfInput ? csrfInput.value : '';
+                console.log('🔑 CSRF Token:', csrfToken ? 'Presente' : 'Ausente');
+
+                const testEmail = `diagnostic+${Date.now()}@example.com`;
+                console.log('📧 Email de teste:', testEmail);
+                
+                const formData = new FormData();
+                formData.append('email', testEmail);
+                formData.append('plan', 'trial');
+                formData.append('password', 'senha123456');
+                formData.append('domain', 'diagnostic.test');
+                formData.append('notes', 'Cliente de diagnóstico automático');
+                if (csrfToken) formData.append('_csrf', csrfToken);
+
+                // Mostrar resultado no modal
+                console.log('📤 Mostrando resultado no modal...');
+                updateDiagnosticResult(
+                    'Executando Diagnóstico',
+                    'Enviando requisição para o servidor...',
+                    'Aguarde enquanto testamos a criação de cliente.',
+                    'info'
+                );
+                updateDiagnosticStatus('Executando diagnóstico', 'Enviando requisição...', 'info');
+                console.log('✅ Área de resultado exibida');
+
+                const response = await fetch('/admin/create-client', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    const text = await response.text().catch(() => '(sem corpo)');
+                    const errorMsg = text.length > 200 ? text.substring(0, 200) + '...' : text;
+                    updateDiagnosticResult(
+                        '❌ Diagnóstico Falhou',
+                        `O servidor retornou um erro HTTP ${response.status}.`,
+                        `Resposta: ${errorMsg}`,
+                        'error'
+                    );
+                    updateDiagnosticStatus('Falhou', `HTTP ${response.status}: ${errorMsg}`, 'error');
+                    return;
+                }
+
+                const result = await response.json().catch(() => null);
+
+                if (result && result.success) {
+                    const email = result.license?.email || testEmail;
+                    const key = result.license?.key || 'não retornada';
+                    const keyDisplay = key.length > 30 ? key.substring(0, 30) + '...' : key;
+                    updateDiagnosticResult(
+                        '✅ Diagnóstico OK',
+                        `Cliente teste criado com sucesso!`,
+                        `<strong>Email:</strong> ${email}<br><strong>Chave de Licença:</strong> <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">${keyDisplay}</code>`,
+                        'success'
+                    );
+                    updateDiagnosticStatus('Sucesso', `Cliente: ${email} | Chave: ${keyDisplay}`, 'success');
+                } else {
+                    const msg = result?.message || 'resposta inesperada';
+                    updateDiagnosticResult(
+                        '❌ Diagnóstico Falhou',
+                        `Não foi possível criar o cliente teste.`,
+                        `Erro: ${msg}`,
+                        'error'
+                    );
+                    updateDiagnosticStatus('Falhou', msg, 'error');
+                }
+            } catch (err) {
+                updateDiagnosticResult(
+                    '❌ Erro no Diagnóstico',
+                    `Ocorreu um erro ao executar o diagnóstico.`,
+                    `Erro: ${err.message}`,
+                    'error'
+                );
+                updateDiagnosticStatus('Erro', err.message, 'error');
+            }
+        }
         
-        // Dados dos gráficos
-        const revenueData = <%= typeof stats !== 'undefined' && stats.revenueByMonth ? JSON.stringify(stats.revenueByMonth) : '[]' %>;
-        const clientsData = <%= typeof stats !== 'undefined' && stats.newClientsByMonth ? JSON.stringify(stats.newClientsByMonth) : '[]' %>;
-        const planData = <%= typeof stats !== 'undefined' && stats.planDistribution ? JSON.stringify(stats.planDistribution) : '{"trial": 0, "monthly": 0, "yearly": 0}' %>;
+        // Dados dos gráficos (simplificado para evitar erro de sintaxe)
+        <% const safeRevenueData = (stats && stats.revenueByMonth) ? stats.revenueByMonth : []; %>
+        <% const safeClientsData = (stats && stats.newClientsByMonth) ? stats.newClientsByMonth : []; %>
+        <% const safePlanData = (stats && stats.planDistribution) ? stats.planDistribution : {trial: 0, monthly: 0, yearly: 0}; %>
+        const revenueData = <%- JSON.stringify(safeRevenueData) %>;
+        const clientsData = <%- JSON.stringify(safeClientsData) %>;
+        const planData = <%- JSON.stringify(safePlanData) %>;
         
         // Configuração de cores
         const chartColors = {
@@ -3067,18 +3214,172 @@
             }
         }
         
+        // Função para adicionar listener ao botão de diagnóstico (usando event delegation)
+        function setupDiagnosticButton() {
+            // Usar event delegation no modal para garantir que funcione sempre
+            const modal = document.getElementById('newClientModal');
+            if (!modal) {
+                console.warn('⚠️ Modal não encontrado para anexar listener de diagnóstico');
+                return;
+            }
+            
+            // Remover listener anterior se existir (usando uma flag)
+            if (modal._diagnosticListenerAttached) {
+                console.log('ℹ️ Listener de diagnóstico já anexado');
+                return;
+            }
+            
+            // Usar event delegation no modal - funciona mesmo se o botão for criado depois
+            modal.addEventListener('click', function(e) {
+                // Verificar se o clique foi no botão de diagnóstico
+                if (e.target && (e.target.id === 'btnDiagnostic' || e.target.closest('#btnDiagnostic'))) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔍 Botão de diagnóstico clicado via event delegation!');
+                    if (typeof window.runCreateClientDiagnostic === 'function') {
+                        window.runCreateClientDiagnostic();
+                    } else {
+                        console.error('❌ Função runCreateClientDiagnostic não está definida!');
+                        alert('Erro: Função de diagnóstico não está disponível. Recarregue a página.');
+                    }
+                }
+            });
+            
+            modal._diagnosticListenerAttached = true;
+            console.log('✅ Event delegation de diagnóstico anexado ao modal');
+        }
+
+        // Atualiza a área de resultado do diagnóstico dentro do modal
+        function updateDiagnosticResult(title, message, details = '', type = 'info') {
+            console.log('📝 updateDiagnosticResult chamado:', { title, message, details, type });
+            const resultDiv = document.getElementById('diagnosticResult');
+            const iconEl = document.getElementById('diagnosticIcon');
+            const titleEl = document.getElementById('diagnosticTitle');
+            const messageEl = document.getElementById('diagnosticMessage');
+            const detailsEl = document.getElementById('diagnosticDetails');
+            
+            if (!resultDiv) {
+                console.error('❌ Elemento diagnosticResult não encontrado!');
+                return;
+            }
+            console.log('✅ Elemento diagnosticResult encontrado, exibindo...');
+            
+            // Mostrar área de resultado
+            resultDiv.style.display = 'block';
+            
+            // Configurar cores e ícones baseado no tipo
+            const config = {
+                info: {
+                    icon: 'fa-spinner fa-spin',
+                    color: '#3b82f6',
+                    bgColor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: 'rgba(59, 130, 246, 0.4)'
+                },
+                success: {
+                    icon: 'fa-check-circle',
+                    color: '#10b981',
+                    bgColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: 'rgba(16, 185, 129, 0.4)'
+                },
+                error: {
+                    icon: 'fa-times-circle',
+                    color: '#ef4444',
+                    bgColor: 'rgba(239, 68, 68, 0.1)',
+                    borderColor: 'rgba(239, 68, 68, 0.4)'
+                }
+            };
+            
+            const cfg = config[type] || config.info;
+            
+            // Atualizar ícone e título
+            if (iconEl) {
+                iconEl.className = `fa-solid ${cfg.icon} me-2`;
+                iconEl.style.color = cfg.color;
+            }
+            if (titleEl) {
+                titleEl.textContent = title;
+                titleEl.style.color = cfg.color;
+            }
+            
+            // Atualizar mensagem
+            if (messageEl) {
+                messageEl.innerHTML = message;
+                messageEl.style.color = 'var(--text-primary)';
+            }
+            
+            // Atualizar detalhes
+            if (detailsEl) {
+                if (details) {
+                    detailsEl.innerHTML = `<strong>Detalhes:</strong> ${details}`;
+                    detailsEl.style.display = 'block';
+                } else {
+                    detailsEl.style.display = 'none';
+                }
+            }
+            
+            // Atualizar estilo do card
+            const card = resultDiv.querySelector('.card');
+            if (card) {
+                card.style.borderColor = cfg.borderColor;
+                card.style.background = cfg.bgColor;
+            }
+            
+            // Scroll para o resultado
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Atualiza a área de status do diagnóstico (texto objetivo no rodapé do modal)
+        function updateDiagnosticStatus(status, detail = '', type = 'info') {
+            const el = document.getElementById('diagnosticStatus');
+            if (!el) return;
+            const colors = {
+                info: 'var(--text-secondary)',
+                success: '#10b981',
+                error: '#ef4444'
+            };
+            el.style.color = colors[type] || colors.info;
+            
+            const icons = {
+                info: '⏳',
+                success: '✅',
+                error: '❌'
+            };
+            const icon = icons[type] || icons.info;
+            el.innerHTML = `<strong>${icon} ${status}</strong>${detail ? ' — ' + detail : ''}`;
+        }
+        
+        // Função para adicionar listener ao formulário (SEM onsubmit inline - CSP bloqueava)
+        function setupFormListener() {
+            const form = document.getElementById('newClientForm');
+            if (form) {
+                console.log('✅ Formulário encontrado, anexando listener...');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('📝 Formulário submetido!');
+                    submitNewClient(e);
+                });
+                console.log('✅ Listener do formulário anexado com sucesso!');
+            } else {
+                console.warn('⚠️ Formulário newClientForm não encontrado');
+            }
+        }
+        
         // Inicializar funções do modal quando a página carregar
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('✅ DOM carregado, iniciando funções do modal');
                 initModalFunctions();
                 setupButtonListener();
+                setupDiagnosticButton();
+                setupFormListener(); // Anexar listener do formulário
             });
         } else {
             // DOM já carregado
             console.log('✅ DOM já carregado, iniciando funções do modal imediatamente');
             initModalFunctions();
             setupButtonListener();
+            setupDiagnosticButton();
+            setupFormListener(); // Anexar listener do formulário
         }
         
         // Tentar inicializar também quando a janela carregar completamente
@@ -3089,6 +3390,20 @@
                 initModalFunctions();
             }
             setupButtonListener();
+            setupDiagnosticButton();
+            setupFormListener(); // Anexar listener do formulário
+            
+            // Adicionar listener para quando o modal Bootstrap for mostrado
+            const modalElement = document.getElementById('newClientModal');
+            if (modalElement && typeof bootstrap !== 'undefined') {
+                modalElement.addEventListener('shown.bs.modal', function() {
+                    console.log('📦 Modal Bootstrap foi mostrado, re-anexando listeners...');
+                    setTimeout(() => {
+                        setupDiagnosticButton();
+                        setupFormListener();
+                    }, 100);
+                });
+            }
         });
         
     </script>

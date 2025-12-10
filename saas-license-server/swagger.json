@@ -1,0 +1,202 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de Licenciamento - Plugin Cripto Woocommerce",
+    "version": "1.0.0",
+    "description": "API para validação e gerenciamento de licenças de plugins",
+    "contact": {
+      "name": "Suporte",
+      "email": "suporte@example.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Servidor de desenvolvimento"
+    },
+    {
+      "url": "https://seu-dominio.com",
+      "description": "Servidor de produção"
+    }
+  ],
+  "paths": {
+    "/api/validate": {
+      "post": {
+        "summary": "Validar licença",
+        "description": "Valida uma licença de plugin verificando email, chave e domínio",
+        "tags": ["Licenças"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "license_key"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email do cliente",
+                    "example": "cliente@example.com"
+                  },
+                  "license_key": {
+                    "type": "string",
+                    "description": "Chave de licença (formato: LIVEX-XXXXXXXXX-XXXXXXXXX)",
+                    "example": "LIVEX-ABC123XYZ-DEF456UVW"
+                  },
+                  "domain": {
+                    "type": "string",
+                    "description": "Domínio onde o plugin está instalado",
+                    "example": "meusite.com.br"
+                  },
+                  "product": {
+                    "type": "string",
+                    "description": "Slug do produto/plugin (opcional, padrão: binance-pix)",
+                    "example": "binance-pix"
+                  },
+                  "plugin_slug": {
+                    "type": "string",
+                    "description": "Alias para product (opcional)",
+                    "example": "binance-pix"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Licença válida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "plan": {
+                          "type": "string",
+                          "enum": ["trial", "monthly", "yearly"],
+                          "example": "monthly"
+                        },
+                        "active": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "trialExpiresAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "planExpiresAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Email é obrigatório"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Licença inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Licença inválida"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Licença suspensa, expirada ou domínio incorreto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Trial expirado. Por favor, assine um plano para continuar usando o plugin."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Erro interno do servidor"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  },
+  "security": []
+}

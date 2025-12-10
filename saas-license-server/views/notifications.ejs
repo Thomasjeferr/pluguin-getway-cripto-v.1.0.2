@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificações - Plugin Cripto</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <%- include('partials/admin-layout-styles') %>
+    <style>
+        .content-card {
+            background: linear-gradient(135deg, rgba(19, 23, 34, 0.95) 0%, rgba(26, 31, 46, 0.95) 100%);
+            border: 1px solid rgba(30, 37, 50, 0.6);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: #21262d;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item.unread {
+            background-color: rgba(99, 102, 241, 0.05);
+            border-left: 3px solid var(--primary);
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+        }
+
+        .icon-payment-failed {
+            background-color: rgba(218, 54, 51, 0.2);
+            color: #f85149;
+        }
+
+        .icon-subscription-cancelled {
+            background-color: rgba(251, 188, 5, 0.2);
+            color: #d29922;
+        }
+
+        .icon-trial-expiring {
+            background-color: rgba(251, 188, 5, 0.2);
+            color: #d29922;
+        }
+
+        .icon-license-deactivated {
+            background-color: rgba(218, 54, 51, 0.2);
+            color: #f85149;
+        }
+
+        .icon-default {
+            background-color: rgba(88, 166, 255, 0.2);
+            color: #58a6ff;
+        }
+
+        .btn-nav {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-nav:hover {
+            background-color: #21262d;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <%- include('partials/admin-sidebar', { currentPage: 'notificacoes', notifications: typeof notificationsMenu !== 'undefined' ? notificationsMenu : { totalUnread: 0 } }) %>
+        
+        <div class="main-content">
+            <nav class="top-navbar">
+                <div class="d-flex justify-content-between align-items-center">
+                    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h4 class="mb-0">
+                        <i class="fa-solid fa-bell me-2" style="color: var(--primary);"></i>
+                        Notificações
+                    </h4>
+                    <div></div>
+                </div>
+            </nav>
+
+            <div class="container pb-5" style="padding: 2rem;">
+        
+        <!-- Filtros -->
+        <div class="content-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="card-title mb-0">
+                    <i class="fa-solid fa-filter me-2 text-secondary"></i>
+                    Filtros
+                </div>
+                <% if (totalUnread > 0) { %>
+                    <form action="/admin/notifications/read-all" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-nav" onclick="return confirm('Marcar todas as notificações como lidas?')">
+                            <i class="fa-solid fa-check-double me-1"></i>Marcar Todas como Lidas
+                        </button>
+                    </form>
+                <% } %>
+            </div>
+            
+            <form method="GET" action="/admin/notifications" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small">Tipo:</label>
+                    <select name="type" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+                        <option value="all" <%= filterType === 'all' ? 'selected' : '' %>>Todos os Tipos</option>
+                        <option value="payment_failed" <%= filterType === 'payment_failed' ? 'selected' : '' %>>Pagamento Falhado</option>
+                        <option value="subscription_cancelled" <%= filterType === 'subscription_cancelled' ? 'selected' : '' %>>Assinatura Cancelada</option>
+                        <option value="trial_expiring" <%= filterType === 'trial_expiring' ? 'selected' : '' %>>Trial Expirando</option>
+                        <option value="trial_expired" <%= filterType === 'trial_expired' ? 'selected' : '' %>>Trial Expirado</option>
+                        <option value="license_deactivated" <%= filterType === 'license_deactivated' ? 'selected' : '' %>>Licença Desativada</option>
+                        <option value="payment_action_required" <%= filterType === 'payment_action_required' ? 'selected' : '' %>>Ação Requerida</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small">Status:</label>
+                    <select name="read" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+                        <option value="all" <%= filterRead === 'all' ? 'selected' : '' %>>Todas</option>
+                        <option value="unread" <%= filterRead === 'unread' ? 'selected' : '' %>>Não Lidas</option>
+                        <option value="read" <%= filterRead === 'read' ? 'selected' : '' %>>Lidas</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-secondary small">&nbsp;</label>
+                    <a href="/admin/notifications" class="btn btn-nav btn-sm w-100">
+                        <i class="fa-solid fa-times"></i>Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Lista de Notificações -->
+        <div class="content-card">
+            <div class="card-title">
+                <i class="fa-solid fa-bell me-2 text-secondary"></i>
+                Notificações
+                <% if (totalUnread > 0) { %>
+                    <span class="badge bg-danger ms-2"><%= totalUnread %> não lidas</span>
+                <% } %>
+            </div>
+            
+            <% if (notifications.length === 0) { %>
+                <div class="text-center py-5 text-secondary">
+                    <i class="fa-solid fa-inbox fa-3x mb-3 opacity-25"></i>
+                    <p>Nenhuma notificação encontrada.</p>
+                </div>
+            <% } else { %>
+                <% notifications.forEach(function(notif) { %>
+                    <div class="notification-item <%= !notif.read ? 'unread' : '' %>">
+                        <div class="d-flex">
+                            <div class="notification-icon 
+                                <%= notif.type === 'payment_failed' ? 'icon-payment-failed' : '' %>
+                                <%= notif.type === 'subscription_cancelled' ? 'icon-subscription-cancelled' : '' %>
+                                <%= notif.type === 'trial_expiring' ? 'icon-trial-expiring' : '' %>
+                                <%= notif.type === 'trial_expired' ? 'icon-license-deactivated' : '' %>
+                                <%= notif.type === 'license_deactivated' ? 'icon-license-deactivated' : '' %>
+                                <%= !['payment_failed', 'subscription_cancelled', 'trial_expiring', 'trial_expired', 'license_deactivated'].includes(notif.type) ? 'icon-default' : '' %>">
+                                <% if (notif.type === 'payment_failed') { %>
+                                    <i class="fa-solid fa-credit-card"></i>
+                                <% } else if (notif.type === 'subscription_cancelled') { %>
+                                    <i class="fa-solid fa-ban"></i>
+                                <% } else if (notif.type === 'trial_expiring') { %>
+                                    <i class="fa-solid fa-clock"></i>
+                                <% } else if (notif.type === 'trial_expired') { %>
+                                    <i class="fa-solid fa-hourglass-end"></i>
+                                <% } else if (notif.type === 'license_deactivated') { %>
+                                    <i class="fa-solid fa-power-off"></i>
+                                <% } else { %>
+                                    <i class="fa-solid fa-info-circle"></i>
+                                <% } %>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1 text-white">
+                                            <%= notif.title %>
+                                            <% if (!notif.read) { %>
+                                                <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Nova</span>
+                                            <% } %>
+                                        </h6>
+                                        <p class="text-secondary mb-0" style="font-size: 0.9rem;">
+                                            <%= notif.message %>
+                                        </p>
+                                    </div>
+                                    <div class="text-end ms-3">
+                                        <div class="text-secondary" style="font-size: 0.75rem;">
+                                            <%= new Date(notif.createdAt).toLocaleString('pt-BR') %>
+                                        </div>
+                                        <% if (!notif.read) { %>
+                                            <button class="btn btn-sm btn-nav mt-2" onclick="markAsRead('<%= notif._id %>')" title="Marcar como lida">
+                                                <i class="fa-solid fa-check me-1"></i>Marcar como Lida
+                                            </button>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <% if (notif.email) { %>
+                                    <a href="/admin/client/<%= encodeURIComponent(notif.email) %>" class="text-decoration-none" style="color: #58a6ff; font-size: 0.85rem;">
+                                        <i class="fa-solid fa-user me-1"></i>Ver cliente: <%= notif.email %>
+                                        <i class="fa-solid fa-external-link-alt ms-1" style="font-size: 0.7rem;"></i>
+                                    </a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+                
+                <!-- Paginação -->
+                <% if (pagination.totalPages > 1) { %>
+                    <div class="mt-4 pt-3 border-top border-secondary">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-secondary" style="font-size: 0.85rem;">
+                                Mostrando <%= (pagination.page - 1) * pagination.limit + 1 %> - 
+                                <%= Math.min(pagination.page * pagination.limit, pagination.totalNotifications) %> 
+                                de <%= pagination.totalNotifications %> notificações
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <% if (pagination.hasPrev) { %>
+                                        <li class="page-item">
+                                            <a class="page-link bg-dark text-white border-secondary" 
+                                               href="/admin/notifications?page=<%= pagination.page - 1 %><%= filterType !== 'all' ? '&type=' + filterType : '' %><%= filterRead !== 'all' ? '&read=' + filterRead : '' %>">
+                                                <i class="fa-solid fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <span class="page-link bg-dark text-secondary border-secondary">
+                                                <i class="fa-solid fa-chevron-left"></i>
+                                            </span>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+                                        <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                                            <a class="page-link bg-dark text-white border-secondary <%= i === pagination.page ? 'bg-primary' : '' %>" 
+                                               href="/admin/notifications?page=<%= i %><%= filterType !== 'all' ? '&type=' + filterType : '' %><%= filterRead !== 'all' ? '&read=' + filterRead : '' %>">
+                                                <%= i %>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% if (pagination.hasNext) { %>
+                                        <li class="page-item">
+                                            <a class="page-link bg-dark text-white border-secondary" 
+                                               href="/admin/notifications?page=<%= pagination.page + 1 %><%= filterType !== 'all' ? '&type=' + filterType : '' %><%= filterRead !== 'all' ? '&read=' + filterRead : '' %>">
+                                                <i class="fa-solid fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <span class="page-link bg-dark text-secondary border-secondary">
+                                                <i class="fa-solid fa-chevron-right"></i>
+                                            </span>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                <% } %>
+            <% } %>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        async function markAsRead(notificationId) {
+            try {
+                const response = await fetch(`/admin/notification/${notificationId}/read`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erro ao marcar notificação como lida');
+                }
+            } catch (error) {
+                alert('Erro ao marcar notificação como lida: ' + error.message);
+            }
+        }
+    </script>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

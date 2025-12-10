@@ -85,6 +85,9 @@
         </div>
 
         <form action="<%= currentPlan.price > 0 ? '/create-checkout-session' : '/process-checkout' %>" method="POST">
+            <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <% } %>
             <input type="hidden" name="planId" value="<%= currentPlan.id %>">
 
             <div class="mb-3">

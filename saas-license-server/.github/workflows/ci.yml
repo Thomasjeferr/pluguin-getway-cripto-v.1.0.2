@@ -1,0 +1,75 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: saas-license-server/package.json
+    
+    - name: Install dependencies
+      working-directory: ./saas-license-server
+      run: npm ci
+    
+    - name: Run linter
+      working-directory: ./saas-license-server
+      run: |
+        # Verificar sintaxe do código
+        node -c server.js || exit 1
+        echo "✅ Sintaxe do código verificada"
+    
+    - name: Check for security vulnerabilities
+      working-directory: ./saas-license-server
+      run: |
+        npm audit --audit-level=moderate || true
+        echo "⚠️ Verifique vulnerabilidades reportadas acima"
+    
+    # Nota: Testes automatizados completos requerem configuração adicional
+    # - name: Run tests
+    #   working-directory: ./saas-license-server
+    #   run: npm test
+    #   env:
+    #     MONGODB_URI: mongodb://localhost:27017/test-db
+    #     NODE_ENV: test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to production
+      run: |
+        echo "🚀 Deploy para produção"
+        echo "⚠️ Configure seu processo de deploy aqui"
+        echo "Exemplos:"
+        echo "  - Deploy para Railway/Render via CLI"
+        echo "  - Deploy via SSH"
+        echo "  - Deploy via Docker"
+        # Adicione seus comandos de deploy aqui

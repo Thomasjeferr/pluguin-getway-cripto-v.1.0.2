@@ -6,16 +6,29 @@
   "scripts": {
     "prestart": "node pre-start.js",
     "start": "node server.js",
-    "install-deps": "npm install"
+    "install-deps": "npm install",
+    "backup": "node backup-mongodb.js backup",
+    "backup:list": "node backup-mongodb.js list",
+    "backup:cleanup": "node backup-mongodb.js cleanup",
+    "test": "echo 'Testes não configurados ainda. Execute: npm install --save-dev jest' && exit 0",
+    "lint": "node -c server.js"
   },
   "dependencies": {
     "adm-zip": "^0.5.10",
     "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "compression": "^1.7.4",
+    "csurf": "^1.11.0",
+    "swagger-ui-express": "^5.0.0",
     "mongodb": "^7.0.0",
     "mongoose": "^8.0.0",
-    "stripe": "^14.0.0"
+    "stripe": "^14.0.0",
+    "bcrypt": "^5.1.1"
   }
 }

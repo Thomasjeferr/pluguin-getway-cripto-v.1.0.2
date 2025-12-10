@@ -858,6 +858,10 @@ app.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (re
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Servir arquivos estáticos (CSS, JS, imagens)
+app.use(express.static('public'));
+console.log('✅ Pasta "public" configurada para servir arquivos estáticos');
+
 // Cookie Parser (OBRIGATÓRIO antes de sessão e CSRF)
 if (cookieParser) {
     app.use(cookieParser());
@@ -887,7 +891,14 @@ if (csrf) {
     
     // Criar instância do CSRF para validação
     const csrfProtection = csrf({ 
-        cookie: false // Usar sessão ao invés de cookie - mais simples e compatível
+        cookie: false, // Usar sessão ao invés de cookie - mais simples e compatível
+        // Aceitar token vindo do header ou do body (para chamadas AJAX com JSON)
+        value: (req) => {
+            return req.body._csrf
+                || req.headers['x-csrf-token']
+                || req.headers['csrf-token']
+                || req.headers['x-xsrf-token'];
+        }
     });
     
     // Middleware para disponibilizar token CSRF em todas as views
@@ -950,7 +961,16 @@ function requireAuth(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
-    if (req.session && req.session.user === FINAL_ADMIN_USER) return next();
+    const isAdmin = req.session && req.session.user === FINAL_ADMIN_USER;
+    
+    if (isAdmin) return next();
+
+    // Se for requisição AJAX/JSON, retornar 401 em vez de redirect
+    const wantsJson = req.xhr || req.headers.accept?.includes('application/json');
+    if (wantsJson) {
+        return res.status(401).json({ success: false, message: 'Não autenticado. Faça login novamente.' });
+    }
+
     res.redirect('/acesso-admin');
 }
 
@@ -2289,16 +2309,15 @@ app.post('/admin/change-plan',
 // Rota para criar novo cliente manualmente
 app.post('/admin/create-client', requireAdmin, body ? [
     body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
-    body('plan').isIn(['trial', 'monthly', 'yearly']).withMessage('Plano inválido'),
     body('password').trim().isLength({ min: 6, max: 255 }).withMessage('Senha deve ter entre 6 e 255 caracteres'),
     body('domain').optional().trim().isLength({ max: 255 }).withMessage('Domínio inválido'),
     body('notes').optional().trim().isLength({ max: 1000 }).withMessage('Notas muito longas')
 ] : [], validateRequest, async (req, res) => {
     try {
-        console.log('📝 === INICIANDO CRIAÇÃO DE CLIENTE ===');
+        console.log('📝 === INICIANDO CRIAÇÃO DE CLIENTE (TRIAL) ===');
         console.log('📥 Dados recebidos:', {
             email: req.body.email,
-            plan: req.body.plan,
+            plan: 'trial (fixo)',
             hasPassword: !!req.body.password,
             domain: req.body.domain || '(vazio)',
             notes: req.body.notes ? req.body.notes.substring(0, 50) + '...' : '(vazio)'
@@ -2314,17 +2333,14 @@ app.post('/admin/create-client', requireAdmin, body ? [
         }
         console.log('✅ MongoDB conectado - Estado:', mongoose.connection.readyState);
         
-        const { email, plan, password, domain, notes } = req.body;
+        const { email, password, domain, notes } = req.body;
+        // Sempre usar 'trial' para criação manual (igual ao sistema de teste)
+        const plan = 'trial';
         
         // Validação básica
         if (!email || !isValidEmail(email)) {
             console.error('❌ Email inválido:', email);
             return res.json({ success: false, message: 'Email inválido' });
-        }
-        
-        if (!plan || !['trial', 'monthly', 'yearly'].includes(plan)) {
-            console.error('❌ Plano inválido:', plan);
-            return res.json({ success: false, message: 'Plano inválido' });
         }
         
         if (!password || password.trim().length < 6) {
@@ -2375,18 +2391,10 @@ app.post('/admin/create-client', requireAdmin, body ? [
             console.log('✅ Produto encontrado! ID:', product._id);
         }
         
-        // Calcular datas de expiração
-        let trialExpiresAt = null;
-        let planExpiresAt = null;
-        
-        if (plan === 'trial') {
-            const trialDays = product ? (product.trialDays || 7) : 7;
-            trialExpiresAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
-        } else if (plan === 'monthly') {
-            planExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-        } else if (plan === 'yearly') {
-            planExpiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-        }
+        // Calcular data de expiração do trial (sempre trial para criação manual)
+        const trialDays = product ? (product.trialDays || 7) : 7;
+        const trialExpiresAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+        const planExpiresAt = null; // Sempre null para trial
         
         // Criar ou atualizar usuário
         console.log('👤 Verificando usuário existente...');
@@ -2432,31 +2440,27 @@ app.post('/admin/create-client', requireAdmin, body ? [
         });
         console.log('✅ Licença criada com sucesso! ID:', newLicense._id);
         
-        // Enviar email com chave de licença
+        // Enviar email com chave de licença trial (igual ao sistema de teste)
         try {
-            await sendLicenseEmail(sanitizedEmail, newLicense.key, plan, trialExpiresAt || planExpiresAt);
+            await sendLicenseEmail(sanitizedEmail, newLicense.key, 'trial', trialExpiresAt);
         } catch (emailError) {
             console.error('Erro ao enviar email:', emailError);
             // Não falhar a criação se o email falhar
         }
         
-        // Registrar atividade admin
-        await logAdminActivity(
-            req,
-            'client_created',
-            'Cliente criado manualmente',
-            sanitizedEmail,
-            {
-                licenseKey: newLicense.key.substring(0, 10) + '...',
-                plan: plan,
-                domain: sanitizedDomain
-            }
-        );
+        // Registrar atividade admin (igual ao sistema de teste)
+        await ActivityLog.create({
+            email: sanitizedEmail,
+            action: 'created',
+            description: 'Licença criada manualmente - Plano: trial',
+            adminUser: req.session.user || 'admin',
+            metadata: { plan: 'trial', source: 'manual' }
+        });
         
-        console.log('✅ === CLIENTE CRIADO COM SUCESSO ===');
+        console.log('✅ === CLIENTE CRIADO COM SUCESSO (TRIAL) ===');
         console.log('📧 Email:', sanitizedEmail);
         console.log('🔑 Chave:', newLicense.key);
-        console.log('📋 Plano:', plan);
+        console.log('📋 Plano: trial (fixo para criação manual)');
         
         res.json({ 
             success: true, 

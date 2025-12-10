@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log de Atividades do Admin - Plugin Cripto</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <%- include('partials/admin-layout-styles') %>
+    <style>
+        .content-card {
+            background: linear-gradient(135deg, rgba(19, 23, 34, 0.95) 0%, rgba(26, 31, 46, 0.95) 100%);
+            border: 1px solid rgba(30, 37, 50, 0.6);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .table {
+            color: var(--text-primary);
+        }
+
+        .table thead th {
+            background-color: #21262d;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .table td {
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .badge-action {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-login { background-color: rgba(35, 134, 54, 0.2); color: #3fb950; }
+        .badge-logout { background-color: rgba(218, 54, 51, 0.2); color: #f85149; }
+        .badge-license { background-color: rgba(88, 166, 255, 0.2); color: #58a6ff; }
+        .badge-plan { background-color: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .badge-payment { background-color: rgba(163, 113, 247, 0.2); color: #a371f7; }
+        .badge-config { background-color: rgba(110, 118, 129, 0.2); color: #8b949e; }
+        .badge-other { background-color: rgba(110, 118, 129, 0.2); color: #8b949e; }
+
+        .btn-nav {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-nav:hover {
+            background-color: #21262d;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <%- include('partials/admin-sidebar', { currentPage: 'atividades', notifications: typeof notifications !== 'undefined' ? notifications : { totalUnread: 0 } }) %>
+        
+        <div class="main-content">
+            <nav class="top-navbar">
+                <div class="d-flex justify-content-between align-items-center">
+                    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h4 class="mb-0">
+                        <i class="fa-solid fa-clock-rotate-left me-2" style="color: var(--primary);"></i>
+                        Log de Atividades
+                    </h4>
+                    <div></div>
+                </div>
+            </nav>
+
+            <div class="container pb-5" style="padding: 2rem;">
+        
+        <!-- Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-value"><%= stats.total %></div>
+                    <div class="stat-label">Total de Atividades</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-value"><%= stats.today %></div>
+                    <div class="stat-label">Hoje</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-value"><%= stats.thisWeek %></div>
+                    <div class="stat-label">Esta Semana</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="content-card mb-4">
+            <form method="GET" action="/admin/activity-log" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small">Filtrar por Ação:</label>
+                    <select name="action" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+                        <option value="all" <%= filterAction === 'all' ? 'selected' : '' %>>Todas as Ações</option>
+                        <option value="login" <%= filterAction === 'login' ? 'selected' : '' %>>Login</option>
+                        <option value="logout" <%= filterAction === 'logout' ? 'selected' : '' %>>Logout</option>
+                        <option value="license_toggled" <%= filterAction === 'license_toggled' ? 'selected' : '' %>>Ativar/Desativar Licença</option>
+                        <option value="plan_changed" <%= filterAction === 'plan_changed' ? 'selected' : '' %>>Alterar Plano</option>
+                        <option value="key_regenerated" <%= filterAction === 'key_regenerated' ? 'selected' : '' %>>Regenerar Chave</option>
+                        <option value="domain_updated" <%= filterAction === 'domain_updated' ? 'selected' : '' %>>Atualizar Domínio</option>
+                        <option value="subscription_cancelled" <%= filterAction === 'subscription_cancelled' ? 'selected' : '' %>>Cancelar Assinatura</option>
+                        <option value="payment_refunded" <%= filterAction === 'payment_refunded' ? 'selected' : '' %>>Reembolsar Pagamento</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-secondary small">&nbsp;</label>
+                    <a href="/admin/activity-log" class="btn btn-nav btn-sm w-100">
+                        <i class="fa-solid fa-times me-1"></i>Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabela de Atividades -->
+        <div class="content-card">
+            <div class="card-title">
+                <i class="fa-solid fa-list me-2 text-secondary"></i>
+                Histórico de Atividades
+            </div>
+            
+            <% if (activities.length === 0) { %>
+                <div class="text-center py-5 text-secondary">
+                    <i class="fa-solid fa-inbox fa-3x mb-3 opacity-25"></i>
+                    <p>Nenhuma atividade encontrada.</p>
+                </div>
+            <% } else { %>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Ação</th>
+                                <th>Descrição</th>
+                                <th>Cliente</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% activities.forEach(function(activity) { %>
+                                <tr>
+                                    <td style="font-size: 0.85rem;">
+                                        <%= new Date(activity.createdAt).toLocaleString('pt-BR') %>
+                                    </td>
+                                    <td>
+                                        <% 
+                                            let badgeClass = 'badge-other';
+                                            if (activity.action.includes('login')) badgeClass = 'badge-login';
+                                            else if (activity.action.includes('logout')) badgeClass = 'badge-logout';
+                                            else if (activity.action.includes('license') || activity.action.includes('activated') || activity.action.includes('deactivated')) badgeClass = 'badge-license';
+                                            else if (activity.action.includes('plan')) badgeClass = 'badge-plan';
+                                            else if (activity.action.includes('payment') || activity.action.includes('refund') || activity.action.includes('subscription')) badgeClass = 'badge-payment';
+                                            else if (activity.action.includes('config')) badgeClass = 'badge-config';
+                                        %>
+                                        <span class="badge-action <%= badgeClass %>">
+                                            <%= activity.action %>
+                                        </span>
+                                    </td>
+                                    <td><%= activity.description %></td>
+                                    <td>
+                                        <% if (activity.targetEmail) { %>
+                                            <a href="/admin/client/<%= encodeURIComponent(activity.targetEmail) %>" class="text-decoration-none" style="color: #58a6ff;">
+                                                <%= activity.targetEmail %>
+                                            </a>
+                                        <% } else { %>
+                                            <span class="text-secondary">-</span>
+                                        <% } %>
+                                    </td>
+                                    <td style="font-size: 0.8rem; color: var(--text-secondary);">
+                                        <%= activity.ipAddress || '-' %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                <% if (pagination.totalPages > 1) { %>
+                    <div class="mt-4 pt-3 border-top border-secondary">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-secondary" style="font-size: 0.85rem;">
+                                Mostrando <%= (pagination.page - 1) * pagination.limit + 1 %> - 
+                                <%= Math.min(pagination.page * pagination.limit, pagination.totalActivities) %> 
+                                de <%= pagination.totalActivities %> atividades
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <% if (pagination.hasPrev) { %>
+                                        <li class="page-item">
+                                            <a class="page-link bg-dark text-white border-secondary" 
+                                               href="/admin/activity-log?page=<%= pagination.page - 1 %><%= filterAction !== 'all' ? '&action=' + filterAction : '' %>">
+                                                <i class="fa-solid fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <span class="page-link bg-dark text-secondary border-secondary">
+                                                <i class="fa-solid fa-chevron-left"></i>
+                                            </span>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+                                        <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                                            <a class="page-link bg-dark text-white border-secondary <%= i === pagination.page ? 'bg-primary' : '' %>" 
+                                               href="/admin/activity-log?page=<%= i %><%= filterAction !== 'all' ? '&action=' + filterAction : '' %>">
+                                                <%= i %>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% if (pagination.hasNext) { %>
+                                        <li class="page-item">
+                                            <a class="page-link bg-dark text-white border-secondary" 
+                                               href="/admin/activity-log?page=<%= pagination.page + 1 %><%= filterAction !== 'all' ? '&action=' + filterAction : '' %>">
+                                                <i class="fa-solid fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <span class="page-link bg-dark text-secondary border-secondary">
+                                                <i class="fa-solid fa-chevron-right"></i>
+                                            </span>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                <% } %>
+            <% } %>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

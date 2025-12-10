@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Cliente - <%= license.email %> - Plugin Cripto</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <%- include('partials/admin-layout-styles') %>
+    <style>
+        .content-card {
+            background: linear-gradient(135deg, rgba(19, 23, 34, 0.95) 0%, rgba(26, 31, 46, 0.95) 100%);
+            border: 1px solid rgba(30, 37, 50, 0.6);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: rgba(35, 134, 54, 0.15);
+            color: #3fb950;
+        }
+
+        .status-blocked {
+            background-color: rgba(218, 54, 51, 0.15);
+            color: #f85149;
+        }
+
+        .status-expired {
+            background-color: rgba(218, 54, 51, 0.15);
+            color: #f85149;
+        }
+
+        .status-expiring {
+            background-color: rgba(251, 188, 5, 0.15);
+            color: #d29922;
+        }
+
+        .table {
+            color: var(--text-primary);
+        }
+
+        .table thead th {
+            background-color: #21262d;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .table td {
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .btn-action {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .btn-action:hover {
+            background-color: #21262d;
+        }
+
+        .notes-textarea {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            min-height: 100px;
+        }
+
+        .notes-textarea:focus {
+            background-color: #0d1117;
+            border-color: var(--primary);
+            color: var(--text-primary);
+        }
+
+        .empty-state {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <%- include('partials/admin-sidebar', { currentPage: 'clientes', notifications: typeof notifications !== 'undefined' ? notifications : { totalUnread: 0 } }) %>
+        
+        <div class="main-content">
+            <nav class="top-navbar">
+                <div class="d-flex justify-content-between align-items-center">
+                    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h4 class="mb-0">
+                        <i class="fa-solid fa-user me-2" style="color: var(--primary);"></i>
+                        Detalhes do Cliente
+                    </h4>
+                    <a href="/admin" class="btn btn-nav btn-sm">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Voltar
+                    </a>
+                </div>
+            </nav>
+
+            <div class="container pb-5" style="padding: 2rem;">
+        
+        <!-- Mensagens de Sucesso/Erro -->
+        <% if (typeof query !== 'undefined' && query.success) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fa-solid fa-check-circle me-2"></i>Alterações salvas com sucesso!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.error) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa-solid fa-exclamation-circle me-2"></i><%= query.error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <!-- Header do Cliente -->
+        <div class="content-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="mb-1">
+                        <div class="d-inline-flex align-items-center me-3" style="width: 48px; height: 48px; background: #30363d; border-radius: 50%; justify-content: center; font-size: 1.5rem; font-weight: 600;">
+                            <%= license.email.charAt(0).toUpperCase() %>
+                        </div>
+                        <%= license.email %>
+                    </h4>
+                    <p class="text-secondary mb-0" style="font-size: 0.9rem;">
+                        Cliente desde <%= new Date(license.createdAt).toLocaleDateString('pt-BR') %>
+                    </p>
+                </div>
+                <div>
+                    <% if (license.active) { %>
+                        <span class="status-badge status-active">
+                            <i class="fa-solid fa-check me-1"></i> Ativo
+                        </span>
+                    <% } else { %>
+                        <span class="status-badge status-blocked">
+                            <i class="fa-solid fa-ban me-1"></i> Bloqueado
+                        </span>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Coluna Esquerda -->
+            <div class="col-md-8">
+                
+                <!-- Informações da Licença -->
+                <div class="content-card mb-4">
+                    <div class="card-title">
+                        <i class="fa-solid fa-key me-2 text-secondary"></i>
+                        Informações da Licença
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value"><%= license.email %></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Chave de Licença:</span>
+                        <span class="info-value">
+                            <code style="background: rgba(110, 118, 129, 0.1); padding: 4px 8px; border-radius: 4px; color: var(--primary);">
+                                <%= license.key %>
+                            </code>
+                            <button class="btn btn-sm btn-action ms-2" onclick="copyToClipboard('<%= license.key %>')" title="Copiar">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Plano:</span>
+                        <span class="info-value">
+                            <% if (license.plan === 'trial') { %>
+                                <span class="badge bg-warning text-dark">Trial</span>
+                            <% } else if (license.plan === 'monthly') { %>
+                                <span class="badge bg-primary">Mensal</span>
+                            <% } else if (license.plan === 'yearly') { %>
+                                <span class="badge bg-success">Anual</span>
+                            <% } %>
+                        </span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Domínio Registrado:</span>
+                        <span class="info-value">
+                            <% if (license.domain) { %>
+                                <a href="http://<%= license.domain %>" target="_blank" style="color: #58a6ff;">
+                                    <i class="fa-solid fa-link me-1"></i><%= license.domain %>
+                                </a>
+                            <% } else { %>
+                                <span class="text-secondary fst-italic">Não registrado</span>
+                            <% } %>
+                        </span>
+                    </div>
+                    
+                    <% 
+                        let expiresAt = null;
+                        let isExpired = false;
+                        let isExpiringSoon = false;
+                        let daysLeft = 0;
+                        
+                        if (license.plan === 'trial' && license.trialExpiresAt) {
+                            expiresAt = new Date(license.trialExpiresAt);
+                        } else if ((license.plan === 'monthly' || license.plan === 'yearly') && license.planExpiresAt) {
+                            expiresAt = new Date(license.planExpiresAt);
+                        }
+                        
+                        if (expiresAt) {
+                            const now = new Date();
+                            daysLeft = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
+                            isExpired = daysLeft <= 0;
+                            isExpiringSoon = daysLeft <= 7 && daysLeft > 0;
+                        }
+                    %>
+                    
+                    <% if (expiresAt) { %>
+                        <div class="info-row">
+                            <span class="info-label">Data de Expiração:</span>
+                            <span class="info-value">
+                                <%= expiresAt.toLocaleDateString('pt-BR') %>
+                                <% if (isExpired) { %>
+                                    <span class="status-badge status-expired ms-2">
+                                        <i class="fa-solid fa-exclamation-triangle me-1"></i>Expirado
+                                    </span>
+                                <% } else if (isExpiringSoon) { %>
+                                    <span class="status-badge status-expiring ms-2">
+                                        <i class="fa-solid fa-clock me-1"></i>Expira em <%= daysLeft %> dia<%= daysLeft !== 1 ? 's' : '' %>
+                                    </span>
+                                <% } else { %>
+                                    <span class="text-secondary ms-2">
+                                        (em <%= daysLeft %> dia<%= daysLeft !== 1 ? 's' : '' %>)
+                                    </span>
+                                <% } %>
+                            </span>
+                        </div>
+                    <% } %>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Data de Criação:</span>
+                        <span class="info-value"><%= new Date(license.createdAt).toLocaleString('pt-BR') %></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Última Atualização:</span>
+                        <span class="info-value">
+                            <%= license.updatedAt ? new Date(license.updatedAt).toLocaleString('pt-BR') : 'Nunca' %>
+                        </span>
+                    </div>
+                    
+                    <% if (license.stripeCustomerId) { %>
+                        <div class="info-row">
+                            <span class="info-label">Stripe Customer ID:</span>
+                            <span class="info-value">
+                                <code style="font-size: 0.85rem;"><%= license.stripeCustomerId %></code>
+                            </span>
+                        </div>
+                    <% } %>
+                    
+                    <% if (license.stripeSubscriptionId) { %>
+                        <div class="info-row">
+                            <span class="info-label">Stripe Subscription ID:</span>
+                            <span class="info-value">
+                                <code style="font-size: 0.85rem;"><%= license.stripeSubscriptionId %></code>
+                            </span>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Histórico de Pagamentos -->
+                <div class="content-card mb-4">
+                    <div class="card-title">
+                        <i class="fa-solid fa-credit-card me-2 text-secondary"></i>
+                        Histórico de Pagamentos
+                    </div>
+                    
+                    <% if (payments.length === 0) { %>
+                        <div class="empty-state">
+                            <i class="fa-solid fa-inbox fa-2x mb-3 opacity-25"></i>
+                            <p class="m-0">Nenhum pagamento encontrado.</p>
+                        </div>
+                    <% } else { %>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Recibo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% payments.forEach(function(payment) { %>
+                                        <tr>
+                                            <td><%= payment.created.toLocaleString('pt-BR') %></td>
+                                            <td>
+                                                <strong>R$ <%= payment.amount.toFixed(2).replace('.', ',') %></strong>
+                                            </td>
+                                            <td>
+                                                <% if (payment.paid && !payment.refunded) { %>
+                                                    <span class="badge bg-success">Pago</span>
+                                                <% } else if (payment.refunded) { %>
+                                                    <span class="badge bg-danger">Reembolsado</span>
+                                                <% } else { %>
+                                                    <span class="badge bg-warning text-dark">Pendente</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-1">
+                                                    <% if (payment.receipt_url) { %>
+                                                        <a href="<%= payment.receipt_url %>" target="_blank" class="btn btn-sm btn-action" title="Ver Recibo">
+                                                            <i class="fa-solid fa-file-invoice"></i>
+                                                        </a>
+                                                    <% } %>
+                                                    <% if (payment.paid && !payment.refunded && payment.id) { %>
+                                                        <button class="btn btn-sm btn-action text-warning" 
+                                                                onclick="refundPayment('<%= license.email %>', '<%= payment.id %>', <%= payment.amount %>)"
+                                                                title="Reembolsar Pagamento">
+                                                            <i class="fa-solid fa-undo"></i>
+                                                        </button>
+                                                    <% } %>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Histórico de Atividades -->
+                <div class="content-card mb-4">
+                    <div class="card-title">
+                        <i class="fa-solid fa-history me-2 text-secondary"></i>
+                        Histórico de Atividades
+                    </div>
+                    
+                    <% if (activities.length === 0) { %>
+                        <div class="empty-state">
+                            <i class="fa-solid fa-inbox fa-2x mb-3 opacity-25"></i>
+                            <p class="m-0">Nenhuma atividade registrada.</p>
+                        </div>
+                    <% } else { %>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Ação</th>
+                                        <th>Descrição</th>
+                                        <th>Admin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% activities.forEach(function(activity) { %>
+                                        <tr>
+                                            <td style="font-size: 0.85rem;">
+                                                <%= new Date(activity.createdAt).toLocaleString('pt-BR') %>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    <%= activity.action %>
+                                                </span>
+                                            </td>
+                                            <td><%= activity.description %></td>
+                                            <td style="font-size: 0.85rem; color: var(--text-secondary);">
+                                                <%= activity.adminUser %>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } %>
+                </div>
+
+            </div>
+
+            <!-- Coluna Direita -->
+            <div class="col-md-4">
+                
+                <!-- Ações Rápidas -->
+                <div class="content-card mb-4">
+                    <div class="card-title">
+                        <i class="fa-solid fa-bolt me-2 text-secondary"></i>
+                        Ações Rápidas
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <form action="/admin/change-plan" method="POST" class="mb-2">
+                            <input type="hidden" name="email" value="<%= license.email %>">
+                            <label class="form-label text-secondary small">Alterar Plano:</label>
+                            <div class="input-group">
+                                <select name="newPlan" class="form-select form-select-sm bg-dark text-light border-secondary" onchange="this.form.submit()">
+                                    <option value="trial" <%= license.plan === 'trial' ? 'selected' : '' %>>Trial</option>
+                                    <option value="monthly" <%= license.plan === 'monthly' ? 'selected' : '' %>>Mensal</option>
+                                    <option value="yearly" <%= license.plan === 'yearly' ? 'selected' : '' %>>Anual</option>
+                                </select>
+                            </div>
+                        </form>
+                        
+                        <form action="/toggle-license" method="POST" class="mb-2">
+                            <input type="hidden" name="email" value="<%= license.email %>">
+                            <% if (license.active) { %>
+                                <button type="submit" class="btn btn-danger btn-sm w-100">
+                                    <i class="fa-solid fa-ban me-1"></i>Bloquear Licença
+                                </button>
+                            <% } else { %>
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    <i class="fa-solid fa-check me-1"></i>Ativar Licença
+                                </button>
+                            <% } %>
+                        </form>
+                        
+                        <button class="btn btn-warning btn-sm w-100" onclick="regenerateKey('<%= license.email %>')">
+                            <i class="fa-solid fa-key me-1"></i>Regenerar Chave
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editar Domínio -->
+                <div class="content-card mb-4">
+                    <div class="card-title">
+                        <i class="fa-solid fa-globe me-2 text-secondary"></i>
+                        Editar Domínio
+                    </div>
+                    
+                    <form action="/admin/client/<%= encodeURIComponent(license.email) %>/update" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small">Domínio:</label>
+                            <input type="text" 
+                                   name="domain" 
+                                   class="form-control bg-dark text-white border-secondary" 
+                                   value="<%= license.domain || '' %>"
+                                   placeholder="exemplo.com.br">
+                            <small class="text-secondary">Deixe em branco para remover o domínio</small>
+                        </div>
+                        <button type="submit" class="btn btn-sm w-100" style="background: var(--primary); color: #fff; font-weight: 500;">
+                            <i class="fa-solid fa-save me-1"></i>Salvar Domínio
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Notas do Cliente -->
+                <div class="content-card mb-4">
+                    <div class="card-title">
+                        <i class="fa-solid fa-sticky-note me-2 text-secondary"></i>
+                        Notas Internas
+                    </div>
+                    
+                    <form action="/admin/client/<%= encodeURIComponent(license.email) %>/update" method="POST">
+                        <div class="mb-3">
+                            <textarea name="notes" 
+                                      class="form-control notes-textarea" 
+                                      rows="5"
+                                      placeholder="Adicione notas sobre este cliente..."><%= license.notes || '' %></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm w-100" style="background: var(--primary); color: #fff; font-weight: 500;">
+                            <i class="fa-solid fa-save me-1"></i>Salvar Notas
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Informações da Assinatura Stripe -->
+                <% if (subscription) { %>
+                    <div class="content-card mb-4">
+                        <div class="card-title">
+                            <i class="fa-brands fa-stripe me-2 text-secondary"></i>
+                            Assinatura Stripe
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">
+                                <span class="badge bg-<%= subscription.status === 'active' ? 'success' : subscription.status === 'canceled' ? 'danger' : 'warning' %>">
+                                    <%= subscription.status %>
+                                </span>
+                            </span>
+                        </div>
+                        
+                        <% if (subscription.current_period_end) { %>
+                            <div class="info-row">
+                                <span class="info-label">Próxima Renovação:</span>
+                                <span class="info-value">
+                                    <%= new Date(subscription.current_period_end * 1000).toLocaleDateString('pt-BR') %>
+                                </span>
+                            </div>
+                        <% } %>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Valor:</span>
+                            <span class="info-value">
+                                R$ <%= (subscription.items.data[0]?.price?.unit_amount / 100 || 0).toFixed(2).replace('.', ',') %>
+                                / <%= subscription.items.data[0]?.price?.recurring?.interval || 'mês' %>
+                            </span>
+                        </div>
+                        
+                        <% if (subscription.status === 'active') { %>
+                            <div class="mt-3 pt-3 border-top border-secondary">
+                                <button class="btn btn-danger btn-sm w-100" onclick="cancelSubscription('<%= license.email %>')">
+                                    <i class="fa-solid fa-ban me-1"></i>Cancelar Assinatura
+                                </button>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copiado para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('Erro ao copiar. Texto: ' + text);
+            });
+        }
+
+        async function regenerateKey(email) {
+            if (!confirm('Tem certeza que deseja regenerar a chave de licença? A chave antiga será invalidada.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/manage-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        action: 'regenerate-key'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Chave regenerada com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erro ao regenerar chave: ' + error.message);
+            }
+        }
+
+        async function cancelSubscription(email) {
+            if (!confirm('Tem certeza que deseja cancelar a assinatura? A licença será desativada.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/cancel-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Assinatura cancelada com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erro ao cancelar assinatura: ' + error.message);
+            }
+        }
+
+        async function refundPayment(email, chargeId, amount) {
+            const confirmMsg = `Tem certeza que deseja reembolsar R$ ${amount.toFixed(2).replace('.', ',')}?\n\nEsta ação não pode ser desfeita.`;
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/refund-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        email, 
+                        chargeId, 
+                        amount 
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Reembolso processado com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erro ao processar reembolso: ' + error.message);
+            }
+        }
+    </script>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
