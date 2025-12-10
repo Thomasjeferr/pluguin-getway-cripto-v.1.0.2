@@ -18,31 +18,341 @@
 
             <%- include('partials/admin-layout-styles') %>
 
+                <!-- ESTILOS PARA MODAIS PERSONALIZADOS -->
+                <style>
+                    /* Modal Personalizado */
+                    .custom-modal-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.7);
+                        backdrop-filter: blur(4px);
+                        z-index: 10000;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        animation: fadeIn 0.2s ease;
+                    }
+
+                    .custom-modal {
+                        background: var(--bg-card, #1e293b);
+                        border: 1px solid var(--border-light, rgba(255, 255, 255, 0.1));
+                        border-radius: 16px;
+                        padding: 0;
+                        max-width: 500px;
+                        width: 90%;
+                        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                        animation: slideUp 0.3s ease;
+                        overflow: hidden;
+                    }
+
+                    .custom-modal-header {
+                        padding: 1.5rem 2rem;
+                        border-bottom: 1px solid var(--border-light, rgba(255, 255, 255, 0.1));
+                        display: flex;
+                        align-items: center;
+                        gap: 1rem;
+                    }
+
+                    .custom-modal-header.warning {
+                        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+                        border-bottom-color: rgba(239, 68, 68, 0.3);
+                    }
+
+                    .custom-modal-header.success {
+                        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%);
+                        border-bottom-color: rgba(34, 197, 94, 0.3);
+                    }
+
+                    .custom-modal-header.error {
+                        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+                        border-bottom-color: rgba(239, 68, 68, 0.4);
+                    }
+
+                    .custom-modal-icon {
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 12px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 24px;
+                        flex-shrink: 0;
+                    }
+
+                    .custom-modal-icon.warning {
+                        background: rgba(239, 68, 68, 0.2);
+                        color: #f87171;
+                    }
+
+                    .custom-modal-icon.success {
+                        background: rgba(34, 197, 94, 0.2);
+                        color: #4ade80;
+                    }
+
+                    .custom-modal-icon.error {
+                        background: rgba(239, 68, 68, 0.3);
+                        color: #f87171;
+                    }
+
+                    .custom-modal-title {
+                        color: var(--text-primary, #f1f5f9);
+                        font-size: 1.25rem;
+                        font-weight: 600;
+                        margin: 0;
+                        flex: 1;
+                    }
+
+                    .custom-modal-body {
+                        padding: 2rem;
+                        color: var(--text-secondary, #cbd5e1);
+                        line-height: 1.6;
+                    }
+
+                    .custom-modal-body strong {
+                        color: var(--text-primary, #f1f5f9);
+                        font-weight: 600;
+                    }
+
+                    .custom-modal-body ul {
+                        margin: 1rem 0;
+                        padding-left: 1.5rem;
+                    }
+
+                    .custom-modal-body li {
+                        margin: 0.5rem 0;
+                        color: var(--text-secondary, #cbd5e1);
+                    }
+
+                    .custom-modal-footer {
+                        padding: 1.5rem 2rem;
+                        border-top: 1px solid var(--border-light, rgba(255, 255, 255, 0.1));
+                        display: flex;
+                        gap: 1rem;
+                        justify-content: flex-end;
+                    }
+
+                    .custom-modal-btn {
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 8px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        border: none;
+                        transition: all 0.2s ease;
+                        font-size: 0.95rem;
+                    }
+
+                    .custom-modal-btn-primary {
+                        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                        color: white;
+                    }
+
+                    .custom-modal-btn-primary:hover {
+                        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+                    }
+
+                    .custom-modal-btn-danger {
+                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                        color: white;
+                    }
+
+                    .custom-modal-btn-danger:hover {
+                        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+                    }
+
+                    .custom-modal-btn-secondary {
+                        background: var(--bg-tertiary, #334155);
+                        color: var(--text-primary, #f1f5f9);
+                        border: 1px solid var(--border-light, rgba(255, 255, 255, 0.1));
+                    }
+
+                    .custom-modal-btn-secondary:hover {
+                        background: var(--bg-secondary, #475569);
+                        border-color: var(--border, rgba(255, 255, 255, 0.2));
+                    }
+
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+
+                    @keyframes slideUp {
+                        from {
+                            opacity: 0;
+                            transform: translateY(20px) scale(0.95);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateY(0) scale(1);
+                        }
+                    }
+
+                    @keyframes fadeOut {
+                        from { opacity: 1; }
+                        to { opacity: 0; }
+                    }
+
+                    @keyframes slideDown {
+                        from {
+                            opacity: 1;
+                            transform: translateY(0) scale(1);
+                        }
+                        to {
+                            opacity: 0;
+                            transform: translateY(20px) scale(0.95);
+                        }
+                    }
+                </style>
+
                 <!-- SCRIPT CRÍTICO: Definir deleteClient ANTES de qualquer HTML -->
                 <script>
+                    // Funções para modais personalizados
+                    window.showCustomConfirm = function(options) {
+                        return new Promise(function(resolve) {
+                            const overlay = document.createElement('div');
+                            overlay.className = 'custom-modal-overlay';
+                            
+                            const modal = document.createElement('div');
+                            modal.className = 'custom-modal';
+                            
+                            const headerClass = options.type === 'warning' ? 'warning' : options.type === 'error' ? 'error' : '';
+                            const iconClass = options.type === 'warning' ? 'warning' : options.type === 'error' ? 'error' : 'success';
+                            const icon = options.type === 'warning' || options.type === 'error' ? '⚠️' : '✅';
+                            
+                            modal.innerHTML = `
+                                <div class="custom-modal-header ${headerClass}">
+                                    <div class="custom-modal-icon ${iconClass}">${icon}</div>
+                                    <h3 class="custom-modal-title">${options.title || 'Confirmação'}</h3>
+                                </div>
+                                <div class="custom-modal-body">
+                                    ${options.message || ''}
+                                </div>
+                                <div class="custom-modal-footer">
+                                    <button class="custom-modal-btn custom-modal-btn-secondary" data-action="cancel">Cancelar</button>
+                                    <button class="custom-modal-btn ${options.danger ? 'custom-modal-btn-danger' : 'custom-modal-btn-primary'}" data-action="confirm">${options.confirmText || 'Confirmar'}</button>
+                                </div>
+                            `;
+                            
+                            overlay.appendChild(modal);
+                            document.body.appendChild(overlay);
+                            
+                            function close(result) {
+                                overlay.style.animation = 'fadeOut 0.2s ease';
+                                modal.style.animation = 'slideDown 0.2s ease';
+                                setTimeout(function() {
+                                    document.body.removeChild(overlay);
+                                }, 200);
+                                resolve(result);
+                            }
+                            
+                            modal.querySelectorAll('[data-action]').forEach(function(btn) {
+                                btn.addEventListener('click', function() {
+                                    close(btn.dataset.action === 'confirm');
+                                });
+                            });
+                            
+                            overlay.addEventListener('click', function(e) {
+                                if (e.target === overlay) {
+                                    close(false);
+                                }
+                            });
+                        });
+                    };
+
+                    window.showCustomAlert = function(options) {
+                        return new Promise(function(resolve) {
+                            const overlay = document.createElement('div');
+                            overlay.className = 'custom-modal-overlay';
+                            
+                            const modal = document.createElement('div');
+                            modal.className = 'custom-modal';
+                            
+                            const headerClass = options.type === 'error' ? 'error' : options.type === 'success' ? 'success' : '';
+                            const iconClass = options.type === 'error' ? 'error' : options.type === 'success' ? 'success' : 'warning';
+                            const icon = options.type === 'error' ? '❌' : options.type === 'success' ? '✅' : '⚠️';
+                            
+                            modal.innerHTML = `
+                                <div class="custom-modal-header ${headerClass}">
+                                    <div class="custom-modal-icon ${iconClass}">${icon}</div>
+                                    <h3 class="custom-modal-title">${options.title || 'Aviso'}</h3>
+                                </div>
+                                <div class="custom-modal-body">
+                                    ${options.message || ''}
+                                </div>
+                                <div class="custom-modal-footer">
+                                    <button class="custom-modal-btn custom-modal-btn-primary" data-action="ok">OK</button>
+                                </div>
+                            `;
+                            
+                            overlay.appendChild(modal);
+                            document.body.appendChild(overlay);
+                            
+                            function close() {
+                                overlay.style.animation = 'fadeOut 0.2s ease';
+                                modal.style.animation = 'slideDown 0.2s ease';
+                                setTimeout(function() {
+                                    document.body.removeChild(overlay);
+                                }, 200);
+                                resolve();
+                            }
+                            
+                            modal.querySelector('[data-action="ok"]').addEventListener('click', close);
+                            
+                            overlay.addEventListener('click', function(e) {
+                                if (e.target === overlay) {
+                                    close();
+                                }
+                            });
+                        });
+                    };
+
                     // Definir função deleteClient IMEDIATAMENTE no head para garantir disponibilidade
                     window.deleteClient = function deleteClient(email) {
-                        // Confirmação dupla para evitar exclusões acidentais
-                        var confirmFirst = confirm(
-                            '⚠️ ATENÇÃO: Você está prestes a EXCLUIR PERMANENTEMENTE o cliente:\n\n' +
-                            email + '\n\n' +
-                            'Esta ação irá:\n' +
-                            '• Remover a licença\n' +
-                            '• Deletar o usuário\n' +
-                            '• Apagar todos os logs\n' +
-                            '• Remover todas as notificações\n\n' +
-                            'Esta ação NÃO PODE SER DESFEITA!\n\n' +
-                            'Deseja continuar?'
-                        );
+                        // Primeira confirmação com modal personalizado
+                        window.showCustomConfirm({
+                            type: 'warning',
+                            title: '⚠️ ATENÇÃO',
+                            message: `
+                                <p>Você está prestes a <strong>EXCLUIR PERMANENTEMENTE</strong> o cliente:</p>
+                                <p style="text-align: center; margin: 1rem 0; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px; font-weight: 600; color: #f87171;">
+                                    ${email}
+                                </p>
+                                <p><strong>Esta ação irá:</strong></p>
+                                <ul>
+                                    <li>Remover a licença</li>
+                                    <li>Deletar o usuário</li>
+                                    <li>Apagar todos os logs</li>
+                                    <li>Remover todas as notificações</li>
+                                </ul>
+                                <p style="color: #f87171; font-weight: 600; margin-top: 1rem;">
+                                    ⚠️ Esta ação NÃO PODE SER DESFEITA!
+                                </p>
+                            `,
+                            confirmText: 'Continuar',
+                            danger: true
+                        }).then(function(confirmed) {
+                            if (!confirmed) return;
 
-                        if (!confirmFirst) return;
-
-                        // Segunda confirmação
-                        var confirmSecond = confirm(
-                            'Confirme novamente: Excluir ' + email + ' PERMANENTEMENTE?'
-                        );
-
-                        if (!confirmSecond) return;
+                            // Segunda confirmação
+                            window.showCustomConfirm({
+                                type: 'warning',
+                                title: 'Confirmação Final',
+                                message: `
+                                    <p>Confirme novamente:</p>
+                                    <p style="text-align: center; margin: 1rem 0; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px; font-weight: 600; color: #f87171;">
+                                        Excluir <strong>${email}</strong> PERMANENTEMENTE?
+                                    </p>
+                                `,
+                                confirmText: 'Sim, Excluir',
+                                danger: true
+                            }).then(function(confirmedSecond) {
+                                if (!confirmedSecond) return;
 
                         // Obter token CSRF
                         var csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -76,15 +386,30 @@
                             .then(function (result) {
                                 console.log('✅ Resultado:', result);
                                 if (result.success) {
-                                    alert('✅ Cliente excluído com sucesso!');
-                                    window.location.reload();
+                                    window.showCustomAlert({
+                                        type: 'success',
+                                        title: '✅ Sucesso',
+                                        message: '<p>Cliente excluído com sucesso!</p>'
+                                    }).then(function() {
+                                        window.location.reload();
+                                    });
                                 } else {
-                                    alert('❌ Erro: ' + (result.message || 'Falha ao excluir cliente'));
+                                    window.showCustomAlert({
+                                        type: 'error',
+                                        title: '❌ Erro',
+                                        message: '<p>' + (result.message || 'Falha ao excluir cliente') + '</p>'
+                                    });
                                 }
                             })
                             .catch(function (error) {
                                 console.error('❌ Erro ao deletar cliente:', error);
-                                alert('❌ Erro ao excluir cliente: ' + error.message + '\n\nVerifique o console para mais detalhes.');
+                                window.showCustomAlert({
+                                    type: 'error',
+                                    title: '❌ Erro',
+                                    message: '<p>Erro ao excluir cliente: <strong>' + error.message + '</strong></p><p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">Verifique o console para mais detalhes.</p>'
+                                });
+                            });
+                                });
                             });
                     };
                     
