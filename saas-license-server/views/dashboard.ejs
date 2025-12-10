@@ -18,6 +18,80 @@
 
             <%- include('partials/admin-layout-styles') %>
 
+                <!-- SCRIPT CRÍTICO: Definir deleteClient ANTES de qualquer HTML -->
+                <script>
+                    // Definir função deleteClient IMEDIATAMENTE no head para garantir disponibilidade
+                    window.deleteClient = function deleteClient(email) {
+                        // Confirmação dupla para evitar exclusões acidentais
+                        var confirmFirst = confirm(
+                            '⚠️ ATENÇÃO: Você está prestes a EXCLUIR PERMANENTEMENTE o cliente:\n\n' +
+                            email + '\n\n' +
+                            'Esta ação irá:\n' +
+                            '• Remover a licença\n' +
+                            '• Deletar o usuário\n' +
+                            '• Apagar todos os logs\n' +
+                            '• Remover todas as notificações\n\n' +
+                            'Esta ação NÃO PODE SER DESFEITA!\n\n' +
+                            'Deseja continuar?'
+                        );
+
+                        if (!confirmFirst) return;
+
+                        // Segunda confirmação
+                        var confirmSecond = confirm(
+                            'Confirme novamente: Excluir ' + email + ' PERMANENTEMENTE?'
+                        );
+
+                        if (!confirmSecond) return;
+
+                        // Obter token CSRF
+                        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                        var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+                        console.log('🗑️ Deletando cliente:', email);
+                        console.log('🔑 CSRF Token:', csrfToken ? 'Presente' : 'Ausente');
+
+                        fetch('/admin/delete-client', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'CSRF-Token': csrfToken,
+                                'X-CSRF-Token': csrfToken
+                            },
+                            body: JSON.stringify({
+                                email: email,
+                                _csrf: csrfToken
+                            }),
+                            credentials: 'same-origin'
+                        })
+                            .then(function (response) {
+                                console.log('📡 Resposta do servidor:', response.status, response.statusText);
+                                if (!response.ok) {
+                                    return response.json().then(function(err) {
+                                        throw new Error(err.message || 'Erro ao deletar cliente');
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(function (result) {
+                                console.log('✅ Resultado:', result);
+                                if (result.success) {
+                                    alert('✅ Cliente excluído com sucesso!');
+                                    window.location.reload();
+                                } else {
+                                    alert('❌ Erro: ' + (result.message || 'Falha ao excluir cliente'));
+                                }
+                            })
+                            .catch(function (error) {
+                                console.error('❌ Erro ao deletar cliente:', error);
+                                alert('❌ Erro ao excluir cliente: ' + error.message + '\n\nVerifique o console para mais detalhes.');
+                            });
+                    };
+                    
+                    console.log('✅ [HEAD] Função deleteClient definida no escopo global');
+                    console.log('✅ [HEAD] window.deleteClient:', typeof window.deleteClient);
+                </script>
+
                 <!-- OVERRIDE CRÍTICO DO BOOTSTRAP - REMOVER CORES ESCURAS DOS PLACEHOLDERS -->
                 <style type="text/css">
                     /* DESABILITAR COMPLETAMENTE OS ESTILOS DE PLACEHOLDER DO BOOTSTRAP */
@@ -2304,8 +2378,9 @@
                                                                                 title="Ver Detalhes">
                                                                                 <i class="fa-solid fa-eye"></i>
                                                                             </a>
-                                                                            <button class="btn btn-action danger btn-sm"
-                                                                                onclick="deleteClient('<%= license.email %>')"
+                                                                            <button type="button" class="btn btn-action danger btn-sm btn-delete-client"
+                                                                                data-client-email="<%= license.email %>"
+                                                                                onclick="if(typeof window.deleteClient==='function'){window.deleteClient('<%= license.email %>');return false;}else{console.error('deleteClient não disponível, tipo:',typeof window.deleteClient);alert('Erro: Função deleteClient não disponível. Recarregue a página.');return false;}"
                                                                                 title="Excluir Cliente Permanentemente">
                                                                                 <i class="fa-solid fa-trash"></i>
                                                                             </button>
@@ -2663,6 +2738,195 @@
     <script src="/diagnostic-fix.js"></script>
 
     <script>
+        // ============================================
+        // FUNÇÕES GLOBAIS - DEFINIR PRIMEIRO
+        // ============================================
+        
+        // IMPORTANTE: Definir a função ANTES de qualquer outro código
+        // Função para deletar cliente completamente (DEFINIR PRIMEIRO - ANTES DE QUALQUER USO)
+        // Garantir que está disponível em múltiplos escopos
+        (function() {
+            'use strict';
+            
+            // Definir função imediatamente
+            window.deleteClient = function deleteClient(email) {
+            // Confirmação dupla para evitar exclusões acidentais
+            var confirmFirst = confirm(
+                '⚠️ ATENÇÃO: Você está prestes a EXCLUIR PERMANENTEMENTE o cliente:\n\n' +
+                email + '\n\n' +
+                'Esta ação irá:\n' +
+                '• Remover a licença\n' +
+                '• Deletar o usuário\n' +
+                '• Apagar todos os logs\n' +
+                '• Remover todas as notificações\n\n' +
+                'Esta ação NÃO PODE SER DESFEITA!\n\n' +
+                'Deseja continuar?'
+            );
+
+            if (!confirmFirst) return;
+
+            // Segunda confirmação
+            var confirmSecond = confirm(
+                'Confirme novamente: Excluir ' + email + ' PERMANENTEMENTE?'
+            );
+
+            if (!confirmSecond) return;
+
+            // Obter token CSRF
+            var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+            console.log('🗑️ Deletando cliente:', email);
+            console.log('🔑 CSRF Token:', csrfToken ? 'Presente' : 'Ausente');
+
+            fetch('/admin/delete-client', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'CSRF-Token': csrfToken,
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({
+                    email: email,
+                    _csrf: csrfToken
+                }),
+                credentials: 'same-origin'
+            })
+                .then(function (response) {
+                    console.log('📡 Resposta do servidor:', response.status, response.statusText);
+                    if (!response.ok) {
+                        return response.json().then(function(err) {
+                            throw new Error(err.message || 'Erro ao deletar cliente');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function (result) {
+                    console.log('✅ Resultado:', result);
+                    if (result.success) {
+                        alert('✅ Cliente excluído com sucesso!');
+                        window.location.reload();
+                    } else {
+                        alert('❌ Erro: ' + (result.message || 'Falha ao excluir cliente'));
+                    }
+                })
+                .catch(function (error) {
+                    console.error('❌ Erro ao deletar cliente:', error);
+                    alert('❌ Erro ao excluir cliente: ' + error.message + '\n\nVerifique o console para mais detalhes.');
+                });
+            };
+            
+            // Também criar referência local para compatibilidade
+            var deleteClient = window.deleteClient;
+            
+            // Também atribuir diretamente (backup)
+            if (typeof globalThis !== 'undefined') {
+                globalThis.deleteClient = window.deleteClient;
+            }
+            
+            console.log('✅ Função deleteClient definida IMEDIATAMENTE no escopo global');
+            console.log('✅ window.deleteClient:', typeof window.deleteClient);
+            console.log('✅ Teste rápido:', typeof window.deleteClient === 'function' ? 'OK' : 'ERRO');
+            
+            // Teste imediato
+            if (typeof window.deleteClient !== 'function') {
+                console.error('❌ ERRO CRÍTICO: deleteClient não foi definida corretamente!');
+            }
+        })();
+        
+        // Verificação adicional após definição
+        console.log('✅ Verificação pós-definição - window.deleteClient:', typeof window.deleteClient);
+        
+        // Verificação adicional - garantir que está no escopo global
+        if (typeof window.deleteClient === 'function') {
+            console.log('✅ deleteClient confirmada no escopo global');
+        } else {
+            console.error('❌ ERRO: deleteClient NÃO está no escopo global!');
+        }
+        
+        // Event delegation para botões de deletar (funciona mesmo com stopPropagation)
+        // Usar event delegation no document para capturar todos os cliques
+        function setupDeleteButtons() {
+            console.log('🔍 Configurando event delegation para botões de deletar...');
+            
+            // Remover listeners anteriores se existirem
+            if (window._deleteButtonHandler) {
+                document.removeEventListener('click', window._deleteButtonHandler);
+            }
+            
+            // Criar handler usando event delegation
+            window._deleteButtonHandler = function(e) {
+                // Verificar se o clique foi em um botão de deletar ou em seus filhos
+                const deleteButton = e.target.closest('.btn-delete-client');
+                
+                if (deleteButton) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    
+                    const email = deleteButton.getAttribute('data-client-email');
+                    console.log('🖱️ Botão deletar clicado!');
+                    console.log('📧 Email:', email);
+                    console.log('🔍 Função deleteClient disponível?', typeof window.deleteClient === 'function');
+                    
+                    if (!email) {
+                        console.error('❌ Erro: email não encontrado no atributo data-client-email');
+                        alert('❌ Erro: Email do cliente não encontrado. Recarregue a página.');
+                        return false;
+                    }
+                    
+                    if (typeof window.deleteClient !== 'function') {
+                        console.error('❌ Erro: função deleteClient não está disponível');
+                        console.error('❌ Tipo de window.deleteClient:', typeof window.deleteClient);
+                        alert('❌ Erro: Função de deletar não está disponível. Recarregue a página.');
+                        return false;
+                    }
+                    
+                    console.log('✅ Chamando deleteClient com email:', email);
+                    try {
+                        window.deleteClient(email);
+                    } catch (error) {
+                        console.error('❌ Erro ao executar deleteClient:', error);
+                        alert('❌ Erro ao deletar cliente: ' + error.message);
+                    }
+                    
+                    return false;
+                }
+            };
+            
+            // Adicionar listener no document (captura fase)
+            document.addEventListener('click', window._deleteButtonHandler, true);
+            
+            // Verificar quantos botões existem
+            const deleteButtons = document.querySelectorAll('.btn-delete-client');
+            console.log('📊 Botões de deletar encontrados:', deleteButtons.length);
+            
+            if (deleteButtons.length === 0) {
+                console.warn('⚠️ Nenhum botão de deletar encontrado. Os botões podem ser criados dinamicamente.');
+            } else {
+                deleteButtons.forEach(function(btn, index) {
+                    const email = btn.getAttribute('data-client-email');
+                    console.log(`  Botão ${index + 1}: email = ${email}`);
+                });
+            }
+            
+            console.log('✅ Event delegation configurado para botões de deletar');
+        }
+        
+        // Configurar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupDeleteButtons);
+        } else {
+            // DOM já carregado
+            setupDeleteButtons();
+        }
+        
+        // Também configurar após window.load (para garantir)
+        window.addEventListener('load', function() {
+            console.log('🔄 Window carregada, reconfigurando botões de deletar...');
+            setTimeout(setupDeleteButtons, 100);
+        });
+
         // FUNÇÕES GLOBAIS DO MODAL - AGUARDAR BOOTSTRAP CARREGAR
         // Usar função que aguarda o Bootstrap estar disponível
         function initModalFunctions() {
@@ -3620,64 +3884,6 @@
                 });
             }
         });
-
-        // Função para deletar cliente completamente
-        function deleteClient(email) {
-            // Confirmação dupla para evitar exclusões acidentais
-            var confirmFirst = confirm(
-                '⚠️ ATENÇÃO: Você está prestes a EXCLUIR PERMANENTEMENTE o cliente:\n\n' +
-                '${email}\n\n' +
-                'Esta ação irá:\n' +
-                '• Remover a licença\n' +
-                '• Deletar o usuário\n' +
-                '• Apagar todos os logs\n' +
-                '• Remover todas as notificações\n\n' +
-                'Esta ação NÃO PODE SER DESFEITA!\n\n' +
-                'Deseja continuar?'
-            );
-
-            if (!confirmFirst) return;
-
-            // Segunda confirmação
-            var confirmSecond = confirm(
-                'Confirme novamente: Excluir ' + email + ' PERMANENTEMENTE?'
-            );
-
-            if (!confirmSecond) return;
-
-            // Obter token CSRF
-            var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
-            fetch('/admin/delete-client', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'CSRF-Token': csrfToken,
-                    'X-CSRF-Token': csrfToken
-                },
-                body: JSON.stringify({
-                    email: email,
-                    _csrf: csrfToken
-                }),
-                credentials: 'same-origin'
-            })
-                .then(function (response) {
-                    return response.json();
-                })
-                .then(function (result) {
-                    if (result.success) {
-                        alert('✅ Cliente excluído com sucesso!');
-                        window.location.reload();
-                    } else {
-                        alert('❌ Erro: ' + (result.message || 'Falha ao excluir cliente'));
-                    }
-                })
-                .catch(function (error) {
-                    console.error('Erro ao deletar cliente:', error);
-                    alert('❌ Erro ao excluir cliente. Verifique o console.');
-                });
-        }
 
     </script>
 

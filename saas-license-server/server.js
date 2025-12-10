@@ -589,9 +589,10 @@ if (helmet) {
                 defaultSrc: ["'self'"],
                 styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
                 scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+                scriptSrcAttr: ["'unsafe-inline'"], // Permitir event handlers inline (onclick, etc)
                 fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
                 imgSrc: ["'self'", "data:", "https:"],
-                connectSrc: ["'self'"]
+                connectSrc: ["'self'", "https://cdn.jsdelivr.net"] // Permitir conexões para CDN (Chart.js source maps)
             }
         },
         crossOriginEmbedderPolicy: false // Necessário para Chart.js
@@ -3655,13 +3656,20 @@ app.get('/admin/export-csv', requireAdmin, async (req, res) => {
 
 // Rota para deletar cliente completamente
 app.post('/admin/delete-client', requireAdmin, 
-    body ? [
-        body('email').isEmail().normalizeEmail().withMessage('Email inválido')
-    ] : [],
-    validateRequest,
     async (req, res) => {
     try {
         const { email } = req.body;
+        
+        // Validar email
+        if (!email || typeof email !== 'string') {
+            return res.status(400).json({ success: false, message: 'Email é obrigatório' });
+        }
+        
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ success: false, message: 'Email inválido' });
+        }
         
         // Sanitizar email
         const sanitizedEmail = email.trim().toLowerCase();
@@ -3678,13 +3686,18 @@ app.post('/admin/delete-client', requireAdmin,
         await User.deleteOne({ email: sanitizedEmail });
         await License.deleteOne({ email: sanitizedEmail });
 
-        // 3. Registrar ação no log do admin
-        await AdminActivityLog.create({
-            action: 'delete_client',
-            details: `Cliente ${sanitizedEmail} deletado completamente do sistema`,
-            adminUser: req.session.user || 'admin',
-            timestamp: new Date()
-        });
+        // 3. Registrar ação no log do admin (com tratamento de erro)
+        try {
+            await AdminActivityLog.create({
+                adminUser: req.session.user || 'admin',
+                action: 'delete_client',
+                description: `Cliente ${sanitizedEmail} deletado completamente do sistema`,
+                targetEmail: sanitizedEmail
+            });
+        } catch (logError) {
+            // Não falhar a operação se o log falhar, apenas registrar
+            console.error('Erro ao registrar log de atividade (não crítico):', logError);
+        }
 
         res.json({ success: true, message: 'Cliente excluído com sucesso' });
     } catch (error) {
