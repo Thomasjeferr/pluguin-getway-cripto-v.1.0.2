@@ -743,6 +743,272 @@
                 font-size: 3rem;
             }
         }
+
+        /* ============================================
+           SEÇÃO DE SCREENSHOTS/DEMO DO PLUGIN
+           ============================================ */
+        
+        .screenshots-section {
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--dark-bg) 0%, rgba(11, 14, 17, 0.95) 100%);
+        }
+
+        .screenshots-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(240, 185, 11, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .screenshots-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .screenshots-header h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #F0B90B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .screenshots-header p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Card destacado (ocupa 2 colunas) */
+        .screenshot-card[style*="grid-column: span 2"] {
+            min-height: 400px;
+        }
+
+        @media (max-width: 992px) {
+            .screenshot-card[style*="grid-column: span 2"] {
+                grid-column: span 1 !important;
+            }
+        }
+
+        .screenshot-card {
+            background: linear-gradient(135deg, rgba(24, 26, 32, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(240, 185, 11, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .screenshot-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(240, 185, 11, 0.8), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .screenshot-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .screenshot-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(240, 185, 11, 0.5);
+            box-shadow: 0 20px 60px rgba(240, 185, 11, 0.3),
+                        0 0 0 1px rgba(240, 185, 11, 0.2) inset;
+        }
+
+        .screenshot-image-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 60%; /* Aspect ratio 16:10 */
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+            overflow: hidden;
+        }
+
+        .screenshot-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s;
+        }
+
+        .screenshot-card:hover .screenshot-image {
+            transform: scale(1.1);
+        }
+
+        /* Placeholder para screenshot */
+        .screenshot-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, 
+                rgba(15, 23, 42, 0.9) 0%, 
+                rgba(30, 41, 59, 0.9) 50%,
+                rgba(15, 23, 42, 0.9) 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 5s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .screenshot-placeholder-icon {
+            font-size: 4rem;
+            color: rgba(240, 185, 11, 0.3);
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .screenshot-placeholder-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 0 1rem;
+        }
+
+        .screenshot-content {
+            padding: 1.5rem;
+        }
+
+        .screenshot-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .screenshot-title i {
+            color: #F0B90B;
+            font-size: 1.2rem;
+        }
+
+        .screenshot-description {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .screenshot-badge {
+            display: inline-block;
+            background: rgba(240, 185, 11, 0.2);
+            color: #F0B90B;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Carrossel de Screenshots (Alternativa) */
+        .screenshots-carousel {
+            position: relative;
+            margin-top: 3rem;
+        }
+
+        .screenshot-slide {
+            display: none;
+            animation: fadeIn 0.6s;
+        }
+
+        .screenshot-slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .carousel-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .carousel-dot.active {
+            background: #F0B90B;
+            transform: scale(1.3);
+        }
+
+        .carousel-dot:hover {
+            background: rgba(240, 185, 11, 0.7);
+        }
+
+        /* Responsive Screenshots */
+        @media (max-width: 768px) {
+            .screenshots-header h2 {
+                font-size: 2rem;
+            }
+
+            .screenshot-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .screenshots-section {
+                padding: 60px 0;
+            }
+        }
     </style>
     
     <!-- Script para garantir que openCheckout esteja disponível globalmente -->
@@ -906,6 +1172,7 @@
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a href="#features" class="nav-link text-white">Recursos</a></li>
                     <li class="nav-item"><a href="#how-it-works" class="nav-link text-white">Como Funciona</a></li>
+                    <li class="nav-item"><a href="#screenshots" class="nav-link text-white">Screenshots</a></li>
                     <li class="nav-item"><a href="#pricing" class="nav-link text-white">Planos</a></li>
                     <li class="nav-item"><a href="#faq" class="nav-link text-white">FAQ</a></li>
                     <li class="nav-item ms-3">
@@ -1024,6 +1291,198 @@
                         <div class="step-number">3</div>
                         <h4>Venda em Dólar</h4>
                         <p class="text-muted">Pronto! O cliente vê o QR Code Pix, paga em BRL e você recebe USDT automaticamente.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots/Demo do Plugin -->
+    <section id="screenshots" class="screenshots-section">
+        <div class="container">
+            <div class="screenshots-header">
+                <h2>Veja o Plugin em Ação</h2>
+                <p>Interface intuitiva, configuração simples e resultados instantâneos. Conheça cada funcionalidade do nosso plugin.</p>
+            </div>
+
+            <div class="screenshot-grid">
+                <!-- Screenshot 1: Painel de Configuração -->
+                <div class="screenshot-card">
+                    <div class="screenshot-image-wrapper">
+                        <div class="screenshot-placeholder">
+                            <i class="fas fa-cog screenshot-placeholder-icon"></i>
+                            <div class="screenshot-placeholder-text">
+                                Adicione a imagem do painel de configuração aqui
+                            </div>
+                        </div>
+                        <!-- Quando tiver a imagem, substitua o placeholder acima por:
+                        <img src="/images/screenshots/config-panel.png" alt="Painel de Configuração" class="screenshot-image">
+                        -->
+                    </div>
+                    <div class="screenshot-content">
+                        <h3 class="screenshot-title">
+                            <i class="fas fa-sliders-h"></i>
+                            Painel de Configuração
+                        </h3>
+                        <p class="screenshot-description">
+                            Configure suas chaves da Binance em minutos. Interface simples e intuitiva, sem complicações.
+                        </p>
+                        <span class="screenshot-badge">Fácil Setup</span>
+                    </div>
+                </div>
+
+                <!-- Screenshot 2: Layout do Checkout para o Cliente -->
+                <div class="screenshot-card" style="grid-column: span 2;">
+                    <div class="screenshot-image-wrapper">
+                        <div class="screenshot-placeholder">
+                            <i class="fas fa-shopping-cart screenshot-placeholder-icon"></i>
+                            <div class="screenshot-placeholder-text">
+                                Adicione a imagem completa do layout do checkout do cliente aqui<br>
+                                (Mostrando QR Code Pix, informações do pedido, status de pagamento)
+                            </div>
+                        </div>
+                        <!-- Quando tiver a imagem, substitua o placeholder acima por:
+                        <img src="/images/screenshots/checkout-cliente-layout.png" alt="Layout do Checkout para Cliente" class="screenshot-image">
+                        -->
+                    </div>
+                    <div class="screenshot-content">
+                        <h3 class="screenshot-title">
+                            <i class="fas fa-eye"></i>
+                            Layout do Checkout - Visão do Cliente
+                        </h3>
+                        <p class="screenshot-description">
+                            Veja exatamente como seu cliente visualiza o checkout. Interface limpa e profissional com QR Code Pix, informações do pedido, valor a pagar e status em tempo real. Experiência de pagamento fluida e intuitiva.
+                        </p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+                            <span class="screenshot-badge">Interface Cliente</span>
+                            <span class="screenshot-badge">QR Code Pix</span>
+                            <span class="screenshot-badge">Tempo Real</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screenshot 2b: Checkout com QR Code (versão compacta) -->
+                <div class="screenshot-card">
+                    <div class="screenshot-image-wrapper">
+                        <div class="screenshot-placeholder">
+                            <i class="fas fa-qrcode screenshot-placeholder-icon"></i>
+                            <div class="screenshot-placeholder-text">
+                                Adicione a imagem do QR Code Pix no checkout aqui
+                            </div>
+                        </div>
+                        <!-- Quando tiver a imagem, substitua o placeholder acima por:
+                        <img src="/images/screenshots/checkout-qrcode.png" alt="QR Code Pix no Checkout" class="screenshot-image">
+                        -->
+                    </div>
+                    <div class="screenshot-content">
+                        <h3 class="screenshot-title">
+                            <i class="fas fa-mobile-alt"></i>
+                            QR Code Pix no Checkout
+                        </h3>
+                        <p class="screenshot-description">
+                            QR Code gerado automaticamente e exibido de forma destacada. Cliente escaneia e paga em segundos.
+                        </p>
+                        <span class="screenshot-badge">Pagamento Rápido</span>
+                    </div>
+                </div>
+
+                <!-- Screenshot 3: Dashboard de Vendas -->
+                <div class="screenshot-card">
+                    <div class="screenshot-image-wrapper">
+                        <div class="screenshot-placeholder">
+                            <i class="fas fa-chart-line screenshot-placeholder-icon"></i>
+                            <div class="screenshot-placeholder-text">
+                                Adicione a imagem do dashboard de vendas aqui
+                            </div>
+                        </div>
+                        <!-- Quando tiver a imagem, substitua o placeholder acima por:
+                        <img src="/images/screenshots/dashboard.png" alt="Dashboard de Vendas" class="screenshot-image">
+                        -->
+                    </div>
+                    <div class="screenshot-content">
+                        <h3 class="screenshot-title">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard de Vendas
+                        </h3>
+                        <p class="screenshot-description">
+                            Acompanhe todas as transações em tempo real. Histórico completo e relatórios detalhados.
+                        </p>
+                        <span class="screenshot-badge">Analytics</span>
+                    </div>
+                </div>
+
+                <!-- Screenshot 4: Notificações -->
+                <div class="screenshot-card">
+                    <div class="screenshot-image-wrapper">
+                        <div class="screenshot-placeholder">
+                            <i class="fas fa-bell screenshot-placeholder-icon"></i>
+                            <div class="screenshot-placeholder-text">
+                                Adicione a imagem das notificações aqui
+                            </div>
+                        </div>
+                        <!-- Quando tiver a imagem, substitua o placeholder acima por:
+                        <img src="/images/screenshots/notifications.png" alt="Notificações" class="screenshot-image">
+                        -->
+                    </div>
+                    <div class="screenshot-content">
+                        <h3 class="screenshot-title">
+                            <i class="fas fa-bell"></i>
+                            Notificações em Tempo Real
+                        </h3>
+                        <p class="screenshot-description">
+                            Receba alertas instantâneos quando um pagamento for confirmado. Nunca perca uma venda.
+                        </p>
+                        <span class="screenshot-badge">Tempo Real</span>
+                    </div>
+                </div>
+
+                <!-- Screenshot 5: Integração WooCommerce -->
+                <div class="screenshot-card">
+                    <div class="screenshot-image-wrapper">
+                        <div class="screenshot-placeholder">
+                            <i class="fab fa-wordpress screenshot-placeholder-icon"></i>
+                            <div class="screenshot-placeholder-text">
+                                Adicione a imagem da integração WooCommerce aqui
+                            </div>
+                        </div>
+                        <!-- Quando tiver a imagem, substitua o placeholder acima por:
+                        <img src="/images/screenshots/woocommerce-integration.png" alt="Integração WooCommerce" class="screenshot-image">
+                        -->
+                    </div>
+                    <div class="screenshot-content">
+                        <h3 class="screenshot-title">
+                            <i class="fab fa-wordpress"></i>
+                            Integração WooCommerce
+                        </h3>
+                        <p class="screenshot-description">
+                            Funciona perfeitamente com qualquer tema WooCommerce. Ativação em um clique.
+                        </p>
+                        <span class="screenshot-badge">100% Compatível</span>
+                    </div>
+                </div>
+
+                <!-- Screenshot 6: Recebimento USDT -->
+                <div class="screenshot-card">
+                    <div class="screenshot-image-wrapper">
+                        <div class="screenshot-placeholder">
+                            <i class="fab fa-bitcoin screenshot-placeholder-icon"></i>
+                            <div class="screenshot-placeholder-text">
+                                Adicione a imagem do recebimento em USDT aqui
+                            </div>
+                        </div>
+                        <!-- Quando tiver a imagem, substitua o placeholder acima por:
+                        <img src="/images/screenshots/usdt-receipt.png" alt="Recebimento USDT" class="screenshot-image">
+                        -->
+                    </div>
+                    <div class="screenshot-content">
+                        <h3 class="screenshot-title">
+                            <i class="fas fa-dollar-sign"></i>
+                            Recebimento Automático
+                        </h3>
+                        <p class="screenshot-description">
+                            USDT cai direto na sua carteira Binance. Conversão automática de BRL para USDT.
+                        </p>
+                        <span class="screenshot-badge">Automático</span>
                     </div>
                 </div>
             </div>
