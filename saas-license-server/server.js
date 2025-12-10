@@ -2703,6 +2703,7 @@ app.get('/admin/client/:email', requireAdmin, async (req, res) => {
             currentProduct: productSlug,
             products: await Product.find({ active: true }).sort({ order: 1 }),
             currentPage: 'clientes',
+            csrfToken: res.locals.csrfToken || (req.csrfToken ? req.csrfToken() : null), // Adicionar CSRF token
             notifications: {
                 unread: unreadNotifications,
                 totalUnread: totalUnreadNotifications

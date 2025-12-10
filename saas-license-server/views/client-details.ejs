@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+        <meta name="csrf-token" content="<%= csrfToken %>">
+    <% } %>
     <title>Detalhes do Cliente - <%= license.email %> - Plugin Cripto</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -481,6 +484,9 @@
                     </div>
                     
                     <form action="/admin/client/<%= encodeURIComponent(license.email) %>/update" method="POST">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
                         <div class="mb-3">
                             <label class="form-label text-secondary small">Domínio:</label>
                             <input type="text" 
@@ -504,6 +510,9 @@
                     </div>
                     
                     <form action="/admin/client/<%= encodeURIComponent(license.email) %>/update" method="POST">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
                         <div class="mb-3">
                             <textarea name="notes" 
                                       class="form-control notes-textarea" 
