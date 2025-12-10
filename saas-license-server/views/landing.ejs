@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+        <meta name="csrf-token" content="<%= csrfToken %>">
+    <% } %>
     <title>Plugin Cripto Woocommerce - Receba Pix em USDT Automático</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -243,6 +246,152 @@
             line-height: 1.6;
         }
     </style>
+    
+    <!-- Script para garantir que openCheckout esteja disponível globalmente -->
+    <script>
+        // Configurações vindas do servidor (serão atualizadas após o DOM carregar)
+        let prices = {
+            monthly: <%= config.priceMonthly || 97 %>,
+            yearly: <%= config.priceYearly || 997 %>
+        };
+
+        // Função openCheckout definida no head para garantir disponibilidade global
+        window.openCheckout = function openCheckout(planType) {
+            try {
+                // Verificar se Bootstrap está carregado
+                if (typeof bootstrap === 'undefined') {
+                    console.error('Bootstrap não está carregado! Aguardando...');
+                    // Tentar novamente após um pequeno delay
+                    setTimeout(function() {
+                        if (typeof bootstrap !== 'undefined') {
+                            window.openCheckout(planType);
+                        } else {
+                            alert('Erro: Bootstrap não está disponível. Por favor, recarregue a página.');
+                        }
+                    }, 100);
+                    return;
+                }
+
+                const modalElement = document.getElementById('checkoutModal');
+                if (!modalElement) {
+                    console.error('Modal checkoutModal não encontrado!');
+                    alert('Erro: Modal não encontrado. Por favor, recarregue a página.');
+                    return;
+                }
+
+                const modal = new bootstrap.Modal(modalElement);
+                const form = document.getElementById('checkoutForm');
+                const title = document.getElementById('modalTitle');
+                const planIdInput = document.getElementById('planIdInput');
+                const btn = document.getElementById('checkoutBtn');
+                
+                if (!form || !title || !planIdInput || !btn) {
+                    console.error('Elementos do modal não encontrados!');
+                    alert('Erro: Elementos do modal não encontrados. Por favor, recarregue a página.');
+                    return;
+                }
+                
+                // Elementos de visualização
+                const trialContent = document.getElementById('trialContent');
+                const paidContent = document.getElementById('paidContent');
+                const paidName = document.getElementById('paidPlanName');
+                const paidPrice = document.getElementById('paidPlanPrice');
+                const paidTotal = document.getElementById('paidPlanTotal');
+
+                planIdInput.value = planType;
+
+                if (planType === 'trial') {
+                    title.innerText = "Criar Conta Grátis";
+                    if (trialContent) trialContent.style.display = 'block';
+                    if (paidContent) paidContent.style.display = 'none';
+                    
+                    form.action = "/process-checkout";
+                    btn.innerHTML = 'Começar Teste Agora <i class="fas fa-rocket ms-2"></i>';
+                    btn.className = "btn btn-success w-100 py-2";
+                    
+                    // Remover handler de submit anterior se existir
+                    form.onsubmit = null;
+                } 
+                else {
+                    title.innerText = "Checkout Seguro";
+                    if (trialContent) trialContent.style.display = 'none';
+                    if (paidContent) paidContent.style.display = 'block';
+                    
+                    let price = 0;
+                    let name = "";
+                    
+                    if (planType === 'monthly') {
+                        price = prices.monthly;
+                        name = "Assinatura Mensal";
+                    } else {
+                        price = prices.yearly;
+                        name = "Assinatura Anual";
+                    }
+
+                    const priceFmt = "R$ " + price.toFixed(2).replace('.', ',');
+                    if (paidName) paidName.innerText = name;
+                    if (paidPrice) paidPrice.innerText = priceFmt;
+                    if (paidTotal) paidTotal.innerText = priceFmt;
+
+                    btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
+                    btn.className = "btn btn-cta w-100 py-2";
+                    
+                    // Interceptar submit para criar sessão Stripe
+                    form.onsubmit = async function(e) {
+                        e.preventDefault();
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processando...';
+                        
+                        const formData = new FormData(form);
+                        const email = formData.get('email');
+                        const password = formData.get('password');
+                        
+                        try {
+                            const response = await fetch('/create-checkout-session', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    email: email,
+                                    password: password,
+                                    planId: planType
+                                })
+                            });
+
+                            const data = await response.json();
+                            
+                            if (data.error) {
+                                alert('Erro: ' + data.error);
+                                btn.disabled = false;
+                                btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
+                                return;
+                            }
+
+                            // Redirecionar para Stripe Checkout
+                            if (data.url) {
+                                window.location.href = data.url;
+                            } else {
+                                alert('Erro ao criar sessão de pagamento');
+                                btn.disabled = false;
+                                btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
+                            }
+                        } catch (error) {
+                            console.error('Erro:', error);
+                            alert('Erro ao processar pagamento: ' + error.message);
+                            btn.disabled = false;
+                            btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
+                        }
+                    };
+                }
+
+                modal.show();
+            } catch (error) {
+                console.error('Erro ao abrir modal:', error);
+                alert('Erro ao abrir modal: ' + error.message);
+            }
+        };
+    </script>
 </head>
 <body>
 
@@ -667,112 +816,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Configurações vindas do servidor
-        const prices = {
-            monthly: <%= config.priceMonthly %>,
-            yearly: <%= config.priceYearly %>
-        };
-
-        function openCheckout(planType) {
-            const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
-            const form = document.getElementById('checkoutForm');
-            const title = document.getElementById('modalTitle');
-            const planIdInput = document.getElementById('planIdInput');
-            const btn = document.getElementById('checkoutBtn');
-            
-            // Elementos de visualização
-            const trialContent = document.getElementById('trialContent');
-            const paidContent = document.getElementById('paidContent');
-            const paidName = document.getElementById('paidPlanName');
-            const paidPrice = document.getElementById('paidPlanPrice');
-            const paidTotal = document.getElementById('paidPlanTotal');
-
-            planIdInput.value = planType;
-
-            if (planType === 'trial') {
-                title.innerText = "Criar Conta Grátis";
-                trialContent.style.display = 'block';
-                paidContent.style.display = 'none';
-                
-                form.action = "/process-checkout";
-                btn.innerHTML = 'Começar Teste Agora <i class="fas fa-rocket ms-2"></i>';
-                btn.className = "btn btn-success w-100 py-2";
-            } 
-            else {
-                title.innerText = "Checkout Seguro";
-                trialContent.style.display = 'none';
-                paidContent.style.display = 'block';
-                
-                let price = 0;
-                let name = "";
-                
-                if (planType === 'monthly') {
-                    price = prices.monthly;
-                    name = "Assinatura Mensal";
-                } else {
-                    price = prices.yearly;
-                    name = "Assinatura Anual";
-                }
-
-                const priceFmt = "R$ " + price.toFixed(2).replace('.', ',');
-                paidName.innerText = name;
-                paidPrice.innerText = priceFmt;
-                paidTotal.innerText = priceFmt;
-
-                btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
-                btn.className = "btn btn-cta w-100 py-2";
-                
-                // Interceptar submit para criar sessão Stripe
-                form.onsubmit = async (e) => {
-                    e.preventDefault();
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processando...';
-                    
-                    const formData = new FormData(form);
-                    const email = formData.get('email');
-                    const password = formData.get('password');
-                    
-                    try {
-                        const response = await fetch('/create-checkout-session', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                email: email,
-                                password: password,
-                                planId: planType
-                            })
-                        });
-
-                        const data = await response.json();
-                        
-                        if (data.error) {
-                            alert('Erro: ' + data.error);
-                            btn.disabled = false;
-                            btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
-                            return;
-                        }
-
-                        // Redirecionar para Stripe Checkout
-                        if (data.url) {
-                            window.location.href = data.url;
-                        } else {
-                            alert('Erro ao criar sessão de pagamento');
-                            btn.disabled = false;
-                            btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
-                        }
-                    } catch (error) {
-                        console.error('Erro:', error);
-                        alert('Erro ao processar pagamento: ' + error.message);
-                        btn.disabled = false;
-                        btn.innerHTML = 'Ir para Pagamento <i class="fas fa-lock ms-2"></i>';
-                    }
-                };
-            }
-
-            modal.show();
-        }
+        // Atualizar preços quando o DOM carregar (valores vindos do servidor)
+        document.addEventListener('DOMContentLoaded', function() {
+            prices.monthly = <%= config.priceMonthly %>;
+            prices.yearly = <%= config.priceYearly %>;
+        });
     </script>
 </body>
 </html>

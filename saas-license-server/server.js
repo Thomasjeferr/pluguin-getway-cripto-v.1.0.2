@@ -1440,9 +1440,15 @@ async function checkExpiringTrials() {
 app.get('/', async (req, res) => {
     try {
         const config = await Config.findOne() || { priceMonthly: 97, priceYearly: 997 };
-        res.render('landing', { config });
+        res.render('landing', { 
+            config,
+            csrfToken: res.locals.csrfToken || (req.csrfToken ? req.csrfToken() : null)
+        });
     } catch (e) {
-        res.render('landing', { config: { priceMonthly: 97, priceYearly: 997 } });
+        res.render('landing', { 
+            config: { priceMonthly: 97, priceYearly: 997 },
+            csrfToken: res.locals.csrfToken || (req.csrfToken ? req.csrfToken() : null)
+        });
     }
 });
 
