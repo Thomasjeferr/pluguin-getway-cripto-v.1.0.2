@@ -415,6 +415,44 @@
                     
                     console.log('✅ [HEAD] Função deleteClient definida no escopo global');
                     console.log('✅ [HEAD] window.deleteClient:', typeof window.deleteClient);
+
+                    // Função para expandir/colapsar detalhes da linha (DEFINIR NO HEAD)
+                    window.toggleRowDetails = function toggleRowDetails(index) {
+                        console.log('🔍 toggleRowDetails chamado com index:', index);
+                        const detailsRow = document.getElementById('details-' + index);
+                        const mainRow = document.querySelector('[data-license-id="license-' + index + '"]');
+                        
+                        if (!detailsRow) {
+                            console.error('❌ Erro: detailsRow não encontrado para index:', index);
+                            return;
+                        }
+                        
+                        if (!mainRow) {
+                            console.error('❌ Erro: mainRow não encontrado para index:', index);
+                            return;
+                        }
+                        
+                        const expandBtn = mainRow.querySelector('.btn-expand-row');
+
+                        if (detailsRow.style.display === 'none' || !detailsRow.style.display) {
+                            detailsRow.style.display = 'table-row';
+                            mainRow.classList.add('expanded');
+                            if (expandBtn) {
+                                expandBtn.classList.add('expanded');
+                            }
+                            console.log('✅ Linha expandida para index:', index);
+                        } else {
+                            detailsRow.style.display = 'none';
+                            mainRow.classList.remove('expanded');
+                            if (expandBtn) {
+                                expandBtn.classList.remove('expanded');
+                            }
+                            console.log('✅ Linha colapsada para index:', index);
+                        }
+                    };
+                    
+                    console.log('✅ [HEAD] Função toggleRowDetails definida no escopo global');
+                    console.log('✅ [HEAD] window.toggleRowDetails:', typeof window.toggleRowDetails);
                 </script>
 
                 <!-- OVERRIDE CRÍTICO DO BOOTSTRAP - REMOVER CORES ESCURAS DOS PLACEHOLDERS -->
@@ -3916,22 +3954,32 @@
             }
         }
 
-        // Função para expandir/colapsar detalhes da linha
-        function toggleRowDetails(index) {
-            const detailsRow = document.getElementById('details-${index}');
-            const mainRow = document.querySelector('[data-license-id="license-${index}"]');
+        // Função para expandir/colapsar detalhes da linha (escopo global)
+        window.toggleRowDetails = function toggleRowDetails(index) {
+            const detailsRow = document.getElementById('details-' + index);
+            const mainRow = document.querySelector('[data-license-id="license-' + index + '"]');
+            
+            if (!detailsRow || !mainRow) {
+                console.error('❌ Erro: Elementos não encontrados para index:', index);
+                return;
+            }
+            
             const expandBtn = mainRow.querySelector('.btn-expand-row');
 
             if (detailsRow.style.display === 'none' || !detailsRow.style.display) {
                 detailsRow.style.display = 'table-row';
                 mainRow.classList.add('expanded');
-                expandBtn.classList.add('expanded');
+                if (expandBtn) {
+                    expandBtn.classList.add('expanded');
+                }
             } else {
                 detailsRow.style.display = 'none';
                 mainRow.classList.remove('expanded');
-                expandBtn.classList.remove('expanded');
+                if (expandBtn) {
+                    expandBtn.classList.remove('expanded');
+                }
             }
-        }
+        };
 
         // TESTE: Função simplificada para placeholders - removendo estilos inline que podem interferir
         // COMENTADO TEMPORARIAMENTE PARA TESTAR SE OS ESTILOS CSS ESTÁTICOS SÃO SUFICIENTES
@@ -3976,20 +4024,86 @@
 
         console.log('✅ JavaScript de placeholders DESABILITADO - usando apenas CSS estático para teste');
 
-        // Permitir clicar na linha principal para expandir (exceto em botões e links)
-        document.addEventListener('DOMContentLoaded', function () {
+        // Event delegation para botões de expandir (funciona mesmo com CSP)
+        // Remover listener anterior se existir
+        if (window._expandButtonHandler) {
+            document.removeEventListener('click', window._expandButtonHandler, true);
+        }
+        
+        window._expandButtonHandler = function(e) {
+            const expandBtn = e.target.closest('.btn-expand-row');
+            
+            if (expandBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Encontrar a linha principal
+                const mainRow = expandBtn.closest('.table-row-main');
+                if (!mainRow) {
+                    console.warn('⚠️ mainRow não encontrado');
+                    return;
+                }
+                
+                const licenseId = mainRow.getAttribute('data-license-id');
+                if (!licenseId) {
+                    console.warn('⚠️ licenseId não encontrado');
+                    return;
+                }
+                
+                const index = licenseId.replace('license-', '');
+                console.log('🖱️ Botão expandir clicado para index:', index);
+                
+                if (typeof window.toggleRowDetails === 'function') {
+                    window.toggleRowDetails(index);
+                } else {
+                    console.error('❌ toggleRowDetails não está disponível, tipo:', typeof window.toggleRowDetails);
+                }
+                
+                return false;
+            }
+        };
+        
+        // Adicionar listener no document (capture phase)
+        document.addEventListener('click', window._expandButtonHandler, true);
+        
+        function setupExpandButtons() {
+            console.log('🔍 Configurando event listeners para botões de expandir...');
+            
+            // Também configurar clique na linha inteira (exceto botões)
             const mainRows = document.querySelectorAll('.table-row-main');
             mainRows.forEach(row => {
-                row.addEventListener('click', function (e) {
+                // Remover listener anterior se existir
+                const newRow = row.cloneNode(true);
+                row.parentNode.replaceChild(newRow, row);
+                
+                newRow.addEventListener('click', function (e) {
                     // Não expandir se clicar em botões, links ou selects
-                    if (e.target.closest('button, a, select, form')) {
+                    if (e.target.closest('button, a, select, form, .btn-expand-row')) {
                         return;
                     }
-                    const licenseId = row.getAttribute('data-license-id');
+                    const licenseId = newRow.getAttribute('data-license-id');
+                    if (!licenseId) return;
                     const index = licenseId.replace('license-', '');
-                    toggleRowDetails(index);
+                    if (typeof window.toggleRowDetails === 'function') {
+                        window.toggleRowDetails(index);
+                    }
                 });
             });
+            
+            console.log('✅ Event listeners configurados para', mainRows.length, 'linhas');
+        }
+        
+        // Configurar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupExpandButtons);
+        } else {
+            setupExpandButtons();
+        }
+        
+        // Também configurar após window.load
+        window.addEventListener('load', function() {
+            setTimeout(setupExpandButtons, 100);
         });
 
         // Função para adicionar event listener ao botão (como fallback caso data-bs-toggle não funcione)
