@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
+// --- SISTEMA DE LOGGING PROFISSIONAL ---
+const logger = require('./utils/logger');
+
 // --- CARREGAMENTO MANUAL DO .ENV (SEM MÓDULO EXTERNO) ---
 try {
     // Tenta ler .env primeiro, depois configuracao.env
@@ -20,12 +23,12 @@ try {
                 }
             }
         });
-        console.log('✅ Arquivo de configuração carregado com sucesso');
+        logger.info('Arquivo de configuração carregado com sucesso');
     } else {
-        console.log('⚠️ Aviso: Arquivo .env ou configuracao.env não encontrado.');
+        logger.warn('Arquivo .env ou configuracao.env não encontrado');
     }
 } catch (err) {
-    console.log('⚠️ Erro ao ler configuração:', err.message);
+    logger.error('Erro ao ler configuração', err);
 }
 
 // --- DEPENDÊNCIAS ---
@@ -37,7 +40,7 @@ let cookieParser = null;
 try {
     cookieParser = require('cookie-parser');
 } catch (e) {
-    console.log('⚠️ cookie-parser não instalado. Execute: npm install cookie-parser');
+    logger.warn('cookie-parser não instalado. Execute: npm install cookie-parser');
 }
 let stripe = null; // Será inicializado quando necessário
 
@@ -46,7 +49,7 @@ let bcrypt = null;
 try {
     bcrypt = require('bcrypt');
 } catch (e) {
-    console.log('⚠️ bcrypt não instalado. Execute: npm install bcrypt');
+    logger.warn('bcrypt não instalado. Execute: npm install bcrypt');
 }
 
 // CSRF Protection
@@ -160,18 +163,14 @@ mongoose.connect(cleanMongoUri, {
     minPoolSize: 1,
 })
     .then(() => {
-        console.log('✅ MongoDB Conectado com Sucesso!');
-        console.log('📊 Database:', mongoose.connection.db.databaseName);
-        console.log('🔌 Estado da conexão:', mongoose.connection.readyState === 1 ? 'CONECTADO' : 'DESCONECTADO');
+        logger.info('MongoDB conectado com sucesso');
+        logger.debug('Database:', mongoose.connection.db.databaseName);
+        logger.debug('Estado da conexão:', mongoose.connection.readyState === 1 ? 'CONECTADO' : 'DESCONECTADO');
     })
     .catch(err => {
-        console.error('❌ Erro ao conectar no MongoDB:', err.message);
-        console.error('❌ Detalhes do erro:', err);
-        console.log('⚠️ Servidor continuará rodando, mas sem banco de dados.');
-        console.log('💡 Verifique:');
-        console.log('   1. Se o MongoDB está rodando (local) ou acessível (Atlas)');
-        console.log('   2. Se as credenciais estão corretas');
-        console.log('   3. Se o IP está autorizado no MongoDB Atlas (se aplicável)');
+        logger.error('Erro ao conectar no MongoDB', err);
+        logger.warn('Servidor continuará rodando, mas sem banco de dados');
+        logger.info('Verifique: MongoDB rodando, credenciais corretas, IP autorizado (Atlas)');
     });
 
 // --- MODELOS DE DADOS ---
@@ -443,22 +442,52 @@ async function comparePassword(plainPassword, hashedPassword) {
     return await bcrypt.compare(plainPassword, hashedPassword);
 }
 
-// Função para escapar caracteres especiais em regex (proteção contra ReDoS)
+/**
+ * Função para escapar caracteres especiais em regex (proteção contra ReDoS)
+ * 
+ * Esta função previne ataques de ReDoS (Regular Expression Denial of Service)
+ * ao escapar caracteres especiais e limitar o comprimento da string.
+ * 
+ * @param {string} str - String a ser sanitizada
+ * @returns {string} - String sanitizada e limitada a 100 caracteres
+ * 
+ * @example
+ * // Uso seguro em queries MongoDB
+ * const safeSearch = escapeRegex(req.query.search);
+ * query.$or = [
+ *   { email: { $regex: safeSearch, $options: 'i' } },
+ *   { domain: { $regex: safeSearch, $options: 'i' } }
+ * ];
+ */
 function escapeRegex(str) {
     if (!str || typeof str !== 'string') {
         return '';
     }
-    // Limitar comprimento para evitar strings muito longas
+    
+    // Limitar comprimento para evitar strings muito longas (proteção contra ReDoS)
+    // Strings muito longas podem causar lentidão em regex
     const maxLength = 100;
-    const limitedStr = str.substring(0, maxLength);
+    const limitedStr = str.trim().substring(0, maxLength);
+    
+    // Se string vazia após trim, retornar vazio
+    if (!limitedStr) {
+        return '';
+    }
+    
     // Escapar caracteres especiais do regex
+    // Caracteres escapados: . * + ? ^ $ { } ( ) | [ ] \
     return limitedStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // Credenciais Admin - Carregar de variáveis de ambiente (SEGURANÇA)
-// Detectar ambiente (produção se NODE_ENV=production ou se não estiver em localhost)
+// Detectar ambiente (produção se NODE_ENV=production)
 // Detecção mais restritiva de ambiente de produção
 // Só considera produção se NODE_ENV estiver explicitamente definido como 'production'
+// 
+// IMPORTANTE: Em produção, configure NODE_ENV=production para:
+// - Habilitar flag secure nos cookies (requer HTTPS)
+// - Desabilitar logs de debug
+// - Usar credenciais de ambiente (não padrões)
 const isProductionEnv = process.env.NODE_ENV === 'production';
 
 // Ler valores do ambiente (podem ser undefined)
@@ -871,13 +900,22 @@ if (cookieParser) {
 }
 
 // Configuração de sessão
+/**
+ * Configuração de Sessão
+ * 
+ * Cookies seguros configurados:
+ * - secure: true em produção (requer HTTPS), false em desenvolvimento
+ * - httpOnly: true (previne acesso via JavaScript - proteção XSS)
+ * - sameSite: 'strict' (proteção adicional contra CSRF)
+ * - maxAge: 24 horas
+ */
 app.use(session({
     secret: process.env.SESSION_SECRET || 'DEV_SECRET',
     resave: false,
     saveUninitialized: false, // Não criar sessão para requisições sem autenticação
     cookie: { 
-        secure: isProductionEnv, // true em produção (requer HTTPS)
-        httpOnly: true, // Prevenir acesso via JavaScript
+        secure: isProductionEnv, // true em produção (requer HTTPS), false em desenvolvimento
+        httpOnly: true, // Prevenir acesso via JavaScript (proteção XSS)
         sameSite: 'strict', // Proteção adicional contra CSRF
         maxAge: 24 * 60 * 60 * 1000 // 24 horas
     }
@@ -2249,7 +2287,7 @@ app.post('/admin/products',
             order: parseInt(order) || 0,
             promoText: promoText ? promoText.trim() : '',
             icon: icon ? icon.trim() : '',
-            active: active !== false
+            active: active === true || active === 'true' || active === undefined || active === null
         });
         
         await logAdminActivity(req, 'product_created', `Produto "${product.name}" criado`, null, null, product.slug);
@@ -2283,15 +2321,15 @@ app.put('/admin/products/:id',
         }
         
         // Atualizar campos (slug não pode ser alterado)
-        if (req.body.name !== undefined) product.name = req.body.name.trim();
-        if (req.body.description !== undefined) product.description = req.body.description.trim();
+        if (req.body.name !== undefined && req.body.name) product.name = req.body.name.trim();
+        if (req.body.description !== undefined) product.description = req.body.description ? req.body.description.trim() : '';
         if (req.body.trialDays !== undefined) product.trialDays = parseInt(req.body.trialDays) || 7;
         if (req.body.priceMonthly !== undefined) product.priceMonthly = parseFloat(req.body.priceMonthly) || 0;
         if (req.body.priceYearly !== undefined) product.priceYearly = parseFloat(req.body.priceYearly) || 0;
         if (req.body.order !== undefined) product.order = parseInt(req.body.order) || 0;
-        if (req.body.promoText !== undefined) product.promoText = req.body.promoText.trim();
-        if (req.body.icon !== undefined) product.icon = req.body.icon.trim();
-        if (req.body.active !== undefined) product.active = req.body.active !== false;
+        if (req.body.promoText !== undefined) product.promoText = req.body.promoText ? req.body.promoText.trim() : '';
+        if (req.body.icon !== undefined) product.icon = req.body.icon ? req.body.icon.trim() : '';
+        if (req.body.active !== undefined) product.active = req.body.active === true || req.body.active === 'true';
         
         product.updatedAt = new Date();
         await product.save();
@@ -2660,7 +2698,16 @@ app.post('/admin/create-client', requireAdmin, body ? [
     }
 });
 
-app.post('/admin/manage-subscription', requireAdmin, async (req, res) => {
+app.post('/admin/manage-subscription', 
+    requireAdmin,
+    body ? [
+        body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
+        body('action').trim().isIn(['activate', 'deactivate', 'change-plan']).withMessage('Ação inválida'),
+        body('newPlan').optional().trim().isIn(['trial', 'monthly', 'yearly']).withMessage('Plano inválido'),
+        body('productSlug').optional().trim().isLength({ max: 50 }).withMessage('Product slug inválido')
+    ] : [],
+    validateRequest,
+    async (req, res) => {
     try {
         const { email, action, newPlan, productSlug } = req.body;
         const query = { email };
@@ -2919,7 +2966,14 @@ app.post('/admin/client/:email/update',
 });
 
 // Cancelar assinatura Stripe
-app.post('/admin/cancel-subscription', requireAdmin, async (req, res) => {
+app.post('/admin/cancel-subscription', 
+    requireAdmin,
+    body ? [
+        body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
+        body('productSlug').optional().trim().isLength({ max: 50 }).withMessage('Product slug inválido')
+    ] : [],
+    validateRequest,
+    async (req, res) => {
     try {
         const { email, productSlug } = req.body;
         const query = { email };
@@ -3813,23 +3867,17 @@ app.get('/admin/export-csv', requireAdmin, async (req, res) => {
 });
 
 // Rota para deletar cliente completamente
-app.post('/admin/delete-client', requireAdmin, 
+app.post('/admin/delete-client', 
+    requireAdmin,
+    body ? [
+        body('email').isEmail().normalizeEmail().withMessage('Email inválido')
+    ] : [],
+    validateRequest,
     async (req, res) => {
     try {
         const { email } = req.body;
         
-        // Validar email
-        if (!email || typeof email !== 'string') {
-            return res.status(400).json({ success: false, message: 'Email é obrigatório' });
-        }
-        
-        // Validar formato de email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({ success: false, message: 'Email inválido' });
-        }
-        
-        // Sanitizar email
+        // Sanitizar email (já validado pelo express-validator)
         const sanitizedEmail = email.trim().toLowerCase();
 
         // 1. Buscar licença para confirmar que existe

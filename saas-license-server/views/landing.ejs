@@ -67,6 +67,7 @@
         .text-gradient {
             background: linear-gradient(to right, #fff, #F0B90B);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -1664,7 +1665,14 @@
                     if (paidContent) paidContent.style.display = 'none';
                     
                     form.action = "/process-checkout";
-                    btn.innerHTML = '<span>Começar Teste Agora</span><i class="fas fa-rocket"></i>';
+                    // Usar createElement ao invés de innerHTML para segurança
+                    btn.textContent = '';
+                    const span1 = document.createElement('span');
+                    span1.textContent = 'Começar Teste Agora';
+                    const icon1 = document.createElement('i');
+                    icon1.className = 'fas fa-rocket';
+                    btn.appendChild(span1);
+                    btn.appendChild(icon1);
                     btn.className = "modern-btn-primary modern-btn-success";
                     
                     // Remover handler de submit anterior se existir
@@ -1691,14 +1699,28 @@
                     if (paidPrice) paidPrice.innerText = priceFmt;
                     if (paidTotal) paidTotal.innerText = priceFmt;
 
-                    btn.innerHTML = '<span>Ir para Pagamento</span><i class="fas fa-lock"></i>';
+                    // Usar createElement ao invés de innerHTML para segurança
+                    btn.textContent = '';
+                    const span2 = document.createElement('span');
+                    span2.textContent = 'Ir para Pagamento';
+                    const icon2 = document.createElement('i');
+                    icon2.className = 'fas fa-lock';
+                    btn.appendChild(span2);
+                    btn.appendChild(icon2);
                     btn.className = "modern-btn-primary";
                     
                     // Interceptar submit para criar sessão Stripe
                     form.onsubmit = async function(e) {
                         e.preventDefault();
                         btn.disabled = true;
-                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processando...</span>';
+                        // Usar createElement ao invés de innerHTML para segurança
+                        btn.textContent = '';
+                        const spinner = document.createElement('i');
+                        spinner.className = 'fas fa-spinner fa-spin';
+                        const span3 = document.createElement('span');
+                        span3.textContent = 'Processando...';
+                        btn.appendChild(spinner);
+                        btn.appendChild(span3);
                         
                         const formData = new FormData(form);
                         const email = formData.get('email');
@@ -1729,7 +1751,14 @@
                             if (data.error) {
                                 alert('Erro: ' + data.error);
                                 btn.disabled = false;
-                                btn.innerHTML = '<span>Ir para Pagamento</span><i class="fas fa-lock"></i>';
+                                // Restaurar botão de forma segura
+                                btn.textContent = '';
+                                const spanErr1 = document.createElement('span');
+                                spanErr1.textContent = 'Ir para Pagamento';
+                                const iconErr1 = document.createElement('i');
+                                iconErr1.className = 'fas fa-lock';
+                                btn.appendChild(spanErr1);
+                                btn.appendChild(iconErr1);
                                 return;
                             }
 
@@ -1739,13 +1768,27 @@
                             } else {
                                 alert('Erro ao criar sessão de pagamento');
                                 btn.disabled = false;
-                                btn.innerHTML = '<span>Ir para Pagamento</span><i class="fas fa-lock"></i>';
+                                // Restaurar botão de forma segura
+                                btn.textContent = '';
+                                const spanErr2 = document.createElement('span');
+                                spanErr2.textContent = 'Ir para Pagamento';
+                                const iconErr2 = document.createElement('i');
+                                iconErr2.className = 'fas fa-lock';
+                                btn.appendChild(spanErr2);
+                                btn.appendChild(iconErr2);
                             }
                         } catch (error) {
                             console.error('Erro:', error);
                             alert('Erro ao processar pagamento: ' + error.message);
                             btn.disabled = false;
-                            btn.innerHTML = '<span>Ir para Pagamento</span><i class="fas fa-lock"></i>';
+                            // Restaurar botão de forma segura
+                            btn.textContent = '';
+                            const spanErr3 = document.createElement('span');
+                            spanErr3.textContent = 'Ir para Pagamento';
+                            const iconErr3 = document.createElement('i');
+                            iconErr3.className = 'fas fa-lock';
+                            btn.appendChild(spanErr3);
+                            btn.appendChild(iconErr3);
                         }
                     };
                 }
@@ -2565,8 +2608,11 @@
                 const container = document.getElementById('binance-qr-container-demo');
                 
                 if (container) {
-                    // Limpar e criar novo canvas
-                    container.innerHTML = '<canvas id="qrcodeCanvas"></canvas>';
+                    // Limpar e criar novo canvas de forma segura
+                    container.textContent = '';
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'qrcodeCanvas';
+                    container.appendChild(canvas);
                     
                     // Aguardar um pouco para garantir que o canvas foi criado
                     setTimeout(function() {
@@ -2583,12 +2629,21 @@
                             }, function (error) {
                                 if (error) {
                                     console.error('Erro ao gerar QR Code:', error);
-                                    container.innerHTML = '<div style="width: 160px; height: 160px; background: #f0f0f0; border: 2px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 11px;">QR Code</div>';
+                                    // Criar div de erro de forma segura
+                                    container.textContent = '';
+                                    const errorDiv = document.createElement('div');
+                                    errorDiv.style.cssText = 'width: 160px; height: 160px; background: #f0f0f0; border: 2px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 11px;';
+                                    errorDiv.textContent = 'QR Code';
+                                    container.appendChild(errorDiv);
                                 }
                             });
                         } else {
-                            // Fallback se QRCode não estiver disponível
-                            container.innerHTML = '<div style="width: 160px; height: 160px; background: #f0f0f0; border: 2px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 11px;">QR Code</div>';
+                            // Fallback se QRCode não estiver disponível - criar de forma segura
+                            container.textContent = '';
+                            const fallbackDiv = document.createElement('div');
+                            fallbackDiv.style.cssText = 'width: 160px; height: 160px; background: #f0f0f0; border: 2px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 11px;';
+                            fallbackDiv.textContent = 'QR Code';
+                            container.appendChild(fallbackDiv);
                         }
                     }, 200);
                 }
@@ -2628,7 +2683,7 @@
             if (!btnSimulate || !qrStatus) return;
 
             btnSimulate.disabled = true;
-            btnSimulate.innerHTML = '⏳ Processando...';
+            btnSimulate.textContent = '⏳ Processando...';
             paymentSimulated = true;
 
             // Fase 1: Aguardando (já está visível)
@@ -2679,7 +2734,7 @@
 
             if (btnSimulate) {
                 btnSimulate.disabled = false;
-                btnSimulate.innerHTML = '▶ Simular Pagamento';
+                btnSimulate.textContent = '▶ Simular Pagamento';
             }
 
             if (qrStatus) {
@@ -2693,7 +2748,7 @@
 
             if (copyBtn) {
                 copyBtn.classList.remove('copied');
-                copyBtn.innerHTML = '📋 Copiar Código Pix';
+                copyBtn.textContent = '📋 Copiar Código Pix';
             }
         }
 
@@ -2704,11 +2759,11 @@
                 
                 if (copyBtn) {
                     copyBtn.classList.add('copied');
-                    copyBtn.innerHTML = '✅ Código Copiado!';
+                    copyBtn.textContent = '✅ Código Copiado!';
                     
                     setTimeout(function() {
                         copyBtn.classList.remove('copied');
-                        copyBtn.innerHTML = '📋 Copiar Código Pix';
+                        copyBtn.textContent = '📋 Copiar Código Pix';
                     }, 2000);
                 }
                 

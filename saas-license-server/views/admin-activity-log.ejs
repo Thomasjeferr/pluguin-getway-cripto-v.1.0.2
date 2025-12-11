@@ -146,15 +146,15 @@
                 <div class="col-md-4">
                     <label class="form-label text-secondary small">Filtrar por Ação:</label>
                     <select name="action" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
-                        <option value="all" <%= filterAction === 'all' ? 'selected' : '' %>>Todas as Ações</option>
-                        <option value="login" <%= filterAction === 'login' ? 'selected' : '' %>>Login</option>
-                        <option value="logout" <%= filterAction === 'logout' ? 'selected' : '' %>>Logout</option>
-                        <option value="license_toggled" <%= filterAction === 'license_toggled' ? 'selected' : '' %>>Ativar/Desativar Licença</option>
-                        <option value="plan_changed" <%= filterAction === 'plan_changed' ? 'selected' : '' %>>Alterar Plano</option>
-                        <option value="key_regenerated" <%= filterAction === 'key_regenerated' ? 'selected' : '' %>>Regenerar Chave</option>
-                        <option value="domain_updated" <%= filterAction === 'domain_updated' ? 'selected' : '' %>>Atualizar Domínio</option>
-                        <option value="subscription_cancelled" <%= filterAction === 'subscription_cancelled' ? 'selected' : '' %>>Cancelar Assinatura</option>
-                        <option value="payment_refunded" <%= filterAction === 'payment_refunded' ? 'selected' : '' %>>Reembolsar Pagamento</option>
+                        <option value="all"<%= typeof filterAction !== 'undefined' && filterAction === 'all' ? ' selected' : '' %>>Todas as Ações</option>
+                        <option value="login"<%= typeof filterAction !== 'undefined' && filterAction === 'login' ? ' selected' : '' %>>Login</option>
+                        <option value="logout"<%= typeof filterAction !== 'undefined' && filterAction === 'logout' ? ' selected' : '' %>>Logout</option>
+                        <option value="license_toggled"<%= typeof filterAction !== 'undefined' && filterAction === 'license_toggled' ? ' selected' : '' %>>Ativar/Desativar Licença</option>
+                        <option value="plan_changed"<%= typeof filterAction !== 'undefined' && filterAction === 'plan_changed' ? ' selected' : '' %>>Alterar Plano</option>
+                        <option value="key_regenerated"<%= typeof filterAction !== 'undefined' && filterAction === 'key_regenerated' ? ' selected' : '' %>>Regenerar Chave</option>
+                        <option value="domain_updated"<%= typeof filterAction !== 'undefined' && filterAction === 'domain_updated' ? ' selected' : '' %>>Atualizar Domínio</option>
+                        <option value="subscription_cancelled"<%= typeof filterAction !== 'undefined' && filterAction === 'subscription_cancelled' ? ' selected' : '' %>>Cancelar Assinatura</option>
+                        <option value="payment_refunded"<%= typeof filterAction !== 'undefined' && filterAction === 'payment_refunded' ? ' selected' : '' %>>Reembolsar Pagamento</option>
                     </select>
                 </div>
                 <div class="col-md-2">

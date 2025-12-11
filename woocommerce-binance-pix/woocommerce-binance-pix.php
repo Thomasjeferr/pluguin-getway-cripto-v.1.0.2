@@ -16,6 +16,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// Define plugin version (centralizado para fácil manutenção)
+if ( ! defined( 'WC_BINANCE_PIX_VERSION' ) ) {
+    define( 'WC_BINANCE_PIX_VERSION', '1.0.0' );
+}
+
 // Define plugin paths
 define( 'WC_BINANCE_PIX_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WC_BINANCE_PIX_URL', plugin_dir_url( __FILE__ ) );
@@ -57,11 +62,63 @@ add_filter( 'woocommerce_payment_gateways', 'wc_binance_pix_add_to_gateways' );
  * para verificar o status da licença do plugin Binance Pix.
  * 
  * A validação principal é feita automaticamente pela classe WC_Binance_Pix_Gateway.
+ * Esta função verifica o status cacheado ou obtém a instância do gateway para validação.
+ * 
+ * @return bool True se a licença estiver válida, false caso contrário
  */
 function wc_binance_pix_check_license() {
-    // Esta função está disponível para uso externo se necessário
-    // A validação real é feita pela classe WC_Binance_Pix_Gateway
-    return true; // Retorna true por padrão - validação real está na classe
+    // Verificar cache primeiro (mais rápido e eficiente)
+    $cached_status = get_transient( 'wc_binance_pix_license_status' );
+    
+    if ( $cached_status === 'valid' ) {
+        return true;
+    }
+    
+    // Verificar modo degradado (servidor offline mas com cache válido recente)
+    $offline_mode = get_transient( 'wc_binance_pix_offline_mode' );
+    if ( $offline_mode === 'active' ) {
+        // Verificar se cache ainda é recente (últimas 24 horas)
+        $cache_time = get_transient( '_transient_timeout_wc_binance_pix_license_status' );
+        if ( $cache_time && $cache_time > time() - ( 24 * HOUR_IN_SECONDS ) ) {
+            // Verificar se havia um status válido antes do modo degradado
+            $last_valid = get_option( '_wc_binance_pix_license_last_valid' );
+            if ( $last_valid && $last_valid > time() - ( 24 * HOUR_IN_SECONDS ) ) {
+                return true; // Modo degradado com cache válido recente
+            }
+        }
+    }
+    
+    // Se não houver cache válido, verificar se há credenciais configuradas
+    // Obter instância do gateway para verificar configurações
+    if ( class_exists( 'WC_Binance_Pix_Gateway' ) && function_exists( 'WC' ) && WC() ) {
+        $gateways = WC()->payment_gateways();
+        if ( $gateways ) {
+            $payment_gateways = $gateways->payment_gateways();
+            if ( isset( $payment_gateways['binance_pix'] ) ) {
+                $gateway = $payment_gateways['binance_pix'];
+                
+                if ( is_a( $gateway, 'WC_Binance_Pix_Gateway' ) ) {
+                    // Verificar se há credenciais configuradas
+                    $license_email = $gateway->get_option( 'license_email' );
+                    $license_key = $gateway->get_option( 'license_key' );
+                    
+                    // Se não houver credenciais, licença não está configurada
+                    if ( empty( $license_email ) || empty( $license_key ) ) {
+                        return false;
+                    }
+                    
+                    // Se houver credenciais mas não houver cache válido,
+                    // retornar false (a validação real será feita pela classe quando necessário)
+                    // Não fazemos validação HTTP aqui para evitar bloqueios
+                    return false;
+                }
+            }
+        }
+    }
+    
+    // Se não conseguir obter gateway ou não houver credenciais,
+    // retornar false (licença não validada)
+    return false;
 }
 
 /**

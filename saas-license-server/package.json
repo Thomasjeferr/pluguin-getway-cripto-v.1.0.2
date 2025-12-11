@@ -11,7 +11,9 @@
     "backup:list": "node backup-mongodb.js list",
     "backup:cleanup": "node backup-mongodb.js cleanup",
     "test": "echo 'Testes não configurados ainda. Execute: npm install --save-dev jest' && exit 0",
-    "lint": "node -c server.js"
+    "lint": "node -c server.js",
+    "validate:templates": "node validate-templates.js",
+    "predeploy": "npm run validate:templates"
   },
   "dependencies": {
     "adm-zip": "^0.5.10",

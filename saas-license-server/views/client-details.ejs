@@ -6,7 +6,7 @@
     <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
         <meta name="csrf-token" content="<%= csrfToken %>">
     <% } %>
-    <title>Detalhes do Cliente - <%= license.email %> - Plugin Cripto</title>
+    <title>Detalhes do Cliente<%= typeof license !== 'undefined' && license && license.email ? ' - ' + license.email : '' %> - Plugin Cripto</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
@@ -174,16 +174,16 @@
                 <div>
                     <h4 class="mb-1">
                         <div class="d-inline-flex align-items-center me-3" style="width: 48px; height: 48px; background: #30363d; border-radius: 50%; justify-content: center; font-size: 1.5rem; font-weight: 600;">
-                            <%= license.email.charAt(0).toUpperCase() %>
+                            <%= typeof license !== 'undefined' && license && license.email ? license.email.charAt(0).toUpperCase() : '?' %>
                         </div>
-                        <%= license.email %>
+                        <%= typeof license !== 'undefined' && license && license.email ? license.email : 'Cliente' %>
                     </h4>
                     <p class="text-secondary mb-0" style="font-size: 0.9rem;">
-                        Cliente desde <%= new Date(license.createdAt).toLocaleDateString('pt-BR') %>
+                        Cliente desde <%= typeof license !== 'undefined' && license && license.createdAt ? new Date(license.createdAt).toLocaleDateString('pt-BR') : 'N/A' %>
                     </p>
                 </div>
                 <div>
-                    <% if (license.active) { %>
+                    <% if (typeof license !== 'undefined' && license && license.active) { %>
                         <span class="status-badge status-active">
                             <i class="fa-solid fa-check me-1"></i> Ativo
                         </span>
@@ -209,16 +209,16 @@
                     
                     <div class="info-row">
                         <span class="info-label">Email:</span>
-                        <span class="info-value"><%= license.email %></span>
+                        <span class="info-value"><%= typeof license !== 'undefined' && license && license.email ? license.email : 'N/A' %></span>
                     </div>
                     
                     <div class="info-row">
                         <span class="info-label">Chave de Licença:</span>
                         <span class="info-value">
                             <code style="background: rgba(110, 118, 129, 0.1); padding: 4px 8px; border-radius: 4px; color: var(--primary);">
-                                <%= license.key %>
+                                <%= typeof license !== 'undefined' && license && license.key ? license.key : 'N/A' %>
                             </code>
-                            <button class="btn btn-sm btn-action ms-2" onclick="copyToClipboard('<%= license.key %>')" title="Copiar">
+                            <button class="btn btn-sm btn-action ms-2" onclick="copyToClipboard('<%= typeof license !== 'undefined' && license && license.key ? license.key : '' %>')" title="Copiar">
                                 <i class="fa-solid fa-copy"></i>
                             </button>
                         </span>
@@ -227,12 +227,14 @@
                     <div class="info-row">
                         <span class="info-label">Plano:</span>
                         <span class="info-value">
-                            <% if (license.plan === 'trial') { %>
+                            <% if (typeof license !== 'undefined' && license && license.plan === 'trial') { %>
                                 <span class="badge bg-warning text-dark">Trial</span>
-                            <% } else if (license.plan === 'monthly') { %>
+                            <% } else if (typeof license !== 'undefined' && license && license.plan === 'monthly') { %>
                                 <span class="badge bg-primary">Mensal</span>
-                            <% } else if (license.plan === 'yearly') { %>
+                            <% } else if (typeof license !== 'undefined' && license && license.plan === 'yearly') { %>
                                 <span class="badge bg-success">Anual</span>
+                            <% } else { %>
+                                <span class="badge bg-secondary">N/A</span>
                             <% } %>
                         </span>
                     </div>
@@ -256,10 +258,12 @@
                         let isExpiringSoon = false;
                         let daysLeft = 0;
                         
-                        if (license.plan === 'trial' && license.trialExpiresAt) {
-                            expiresAt = new Date(license.trialExpiresAt);
-                        } else if ((license.plan === 'monthly' || license.plan === 'yearly') && license.planExpiresAt) {
-                            expiresAt = new Date(license.planExpiresAt);
+                        if (typeof license !== 'undefined' && license) {
+                            if (license.plan === 'trial' && license.trialExpiresAt) {
+                                expiresAt = new Date(license.trialExpiresAt);
+                            } else if ((license.plan === 'monthly' || license.plan === 'yearly') && license.planExpiresAt) {
+                                expiresAt = new Date(license.planExpiresAt);
+                            }
                         }
                         
                         if (expiresAt) {
@@ -330,7 +334,7 @@
                         Histórico de Pagamentos
                     </div>
                     
-                    <% if (payments.length === 0) { %>
+                    <% if (typeof payments === 'undefined' || !payments || payments.length === 0) { %>
                         <div class="empty-state">
                             <i class="fa-solid fa-inbox fa-2x mb-3 opacity-25"></i>
                             <p class="m-0">Nenhum pagamento encontrado.</p>
@@ -526,7 +530,7 @@
                 </div>
 
                 <!-- Informações da Assinatura Stripe -->
-                <% if (subscription) { %>
+                <% if (typeof subscription !== 'undefined' && subscription) { %>
                     <div class="content-card mb-4">
                         <div class="card-title">
                             <i class="fa-brands fa-stripe me-2 text-secondary"></i>

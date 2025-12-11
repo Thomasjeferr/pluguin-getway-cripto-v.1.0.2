@@ -128,7 +128,7 @@
                     <i class="fa-solid fa-filter me-2 text-secondary"></i>
                     Filtros
                 </div>
-                <% if (totalUnread > 0) { %>
+                <% if (typeof totalUnread !== 'undefined' && totalUnread > 0) { %>
                     <form action="/admin/notifications/read-all" method="POST" style="display: inline;">
                         <button type="submit" class="btn btn-sm btn-nav" onclick="return confirm('Marcar todas as notificações como lidas?')">
                             <i class="fa-solid fa-check-double me-1"></i>Marcar Todas como Lidas
@@ -172,12 +172,12 @@
             <div class="card-title">
                 <i class="fa-solid fa-bell me-2 text-secondary"></i>
                 Notificações
-                <% if (totalUnread > 0) { %>
+                <% if (typeof totalUnread !== 'undefined' && totalUnread > 0) { %>
                     <span class="badge bg-danger ms-2"><%= totalUnread %> não lidas</span>
                 <% } %>
             </div>
             
-            <% if (notifications.length === 0) { %>
+            <% if (typeof notifications === 'undefined' || !Array.isArray(notifications) || notifications.length === 0) { %>
                 <div class="text-center py-5 text-secondary">
                     <i class="fa-solid fa-inbox fa-3x mb-3 opacity-25"></i>
                     <p>Nenhuma notificação encontrada.</p>

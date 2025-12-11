@@ -213,6 +213,13 @@
                 <!-- SCRIPT CRÍTICO: Definir deleteClient ANTES de qualquer HTML -->
                 <script>
                     // Funções para modais personalizados
+                    // Função helper para escapar HTML (prevenir XSS)
+                    function escapeHtml(text) {
+                        const div = document.createElement('div');
+                        div.textContent = text;
+                        return div.innerHTML;
+                    }
+
                     window.showCustomConfirm = function(options) {
                         return new Promise(function(resolve) {
                             const overlay = document.createElement('div');
@@ -225,19 +232,46 @@
                             const iconClass = options.type === 'warning' ? 'warning' : options.type === 'error' ? 'error' : 'success';
                             const icon = options.type === 'warning' || options.type === 'error' ? '⚠️' : '✅';
                             
-                            modal.innerHTML = `
-                                <div class="custom-modal-header ${headerClass}">
-                                    <div class="custom-modal-icon ${iconClass}">${icon}</div>
-                                    <h3 class="custom-modal-title">${options.title || 'Confirmação'}</h3>
-                                </div>
-                                <div class="custom-modal-body">
-                                    ${options.message || ''}
-                                </div>
-                                <div class="custom-modal-footer">
-                                    <button class="custom-modal-btn custom-modal-btn-secondary" data-action="cancel">Cancelar</button>
-                                    <button class="custom-modal-btn ${options.danger ? 'custom-modal-btn-danger' : 'custom-modal-btn-primary'}" data-action="confirm">${options.confirmText || 'Confirmar'}</button>
-                                </div>
-                            `;
+                            // Construir DOM de forma segura
+                            const header = document.createElement('div');
+                            header.className = `custom-modal-header ${headerClass}`;
+                            
+                            const iconDiv = document.createElement('div');
+                            iconDiv.className = `custom-modal-icon ${iconClass}`;
+                            iconDiv.textContent = icon;
+                            
+                            const title = document.createElement('h3');
+                            title.className = 'custom-modal-title';
+                            title.textContent = options.title || 'Confirmação';
+                            
+                            header.appendChild(iconDiv);
+                            header.appendChild(title);
+                            
+                            const body = document.createElement('div');
+                            body.className = 'custom-modal-body';
+                            // Usar textContent para segurança (escapar HTML automaticamente)
+                            // Se precisar de HTML formatado, deve ser sanitizado no servidor antes
+                            body.textContent = options.message || '';
+                            
+                            const footer = document.createElement('div');
+                            footer.className = 'custom-modal-footer';
+                            
+                            const cancelBtn = document.createElement('button');
+                            cancelBtn.className = 'custom-modal-btn custom-modal-btn-secondary';
+                            cancelBtn.setAttribute('data-action', 'cancel');
+                            cancelBtn.textContent = 'Cancelar';
+                            
+                            const confirmBtn = document.createElement('button');
+                            confirmBtn.className = `custom-modal-btn ${options.danger ? 'custom-modal-btn-danger' : 'custom-modal-btn-primary'}`;
+                            confirmBtn.setAttribute('data-action', 'confirm');
+                            confirmBtn.textContent = options.confirmText || 'Confirmar';
+                            
+                            footer.appendChild(cancelBtn);
+                            footer.appendChild(confirmBtn);
+                            
+                            modal.appendChild(header);
+                            modal.appendChild(body);
+                            modal.appendChild(footer);
                             
                             overlay.appendChild(modal);
                             document.body.appendChild(overlay);
@@ -277,18 +311,40 @@
                             const iconClass = options.type === 'error' ? 'error' : options.type === 'success' ? 'success' : 'warning';
                             const icon = options.type === 'error' ? '❌' : options.type === 'success' ? '✅' : '⚠️';
                             
-                            modal.innerHTML = `
-                                <div class="custom-modal-header ${headerClass}">
-                                    <div class="custom-modal-icon ${iconClass}">${icon}</div>
-                                    <h3 class="custom-modal-title">${options.title || 'Aviso'}</h3>
-                                </div>
-                                <div class="custom-modal-body">
-                                    ${options.message || ''}
-                                </div>
-                                <div class="custom-modal-footer">
-                                    <button class="custom-modal-btn custom-modal-btn-primary" data-action="ok">OK</button>
-                                </div>
-                            `;
+                            // Construir DOM de forma segura
+                            const header = document.createElement('div');
+                            header.className = `custom-modal-header ${headerClass}`;
+                            
+                            const iconDiv = document.createElement('div');
+                            iconDiv.className = `custom-modal-icon ${iconClass}`;
+                            iconDiv.textContent = icon;
+                            
+                            const title = document.createElement('h3');
+                            title.className = 'custom-modal-title';
+                            title.textContent = options.title || 'Aviso';
+                            
+                            header.appendChild(iconDiv);
+                            header.appendChild(title);
+                            
+                            const body = document.createElement('div');
+                            body.className = 'custom-modal-body';
+                            // Usar textContent para segurança (escapar HTML automaticamente)
+                            // Se precisar de HTML formatado, deve ser sanitizado no servidor antes
+                            body.textContent = options.message || '';
+                            
+                            const footer = document.createElement('div');
+                            footer.className = 'custom-modal-footer';
+                            
+                            const okBtn = document.createElement('button');
+                            okBtn.className = 'custom-modal-btn custom-modal-btn-primary';
+                            okBtn.setAttribute('data-action', 'ok');
+                            okBtn.textContent = 'OK';
+                            
+                            footer.appendChild(okBtn);
+                            
+                            modal.appendChild(header);
+                            modal.appendChild(body);
+                            modal.appendChild(footer);
                             
                             overlay.appendChild(modal);
                             document.body.appendChild(overlay);
@@ -1208,7 +1264,7 @@
 
                     .empty-state {
                         padding: 4rem 1rem;
-                        text-center;
+                        text-align: center;
                         color: var(--text-secondary);
                     }
 
@@ -2060,14 +2116,13 @@
                                     </div>
                                 </div>
                                 <div class="stat-value highlight-success">
-                                    R$ <%= typeof stats !=='undefined' ?
-                                        stats.estimatedMonthlyRevenue.toFixed(2).replace('.', ',' ) : (licenses.length *
-                                        config.priceMonthly).toFixed(2).replace('.', ',' ) %>
+                                    R$ <%= typeof stats !== 'undefined' ? stats.estimatedMonthlyRevenue.toFixed(2).replace('.', ',') : (licenses.length * config.priceMonthly).toFixed(2).replace('.', ',') %>
                                 </div>
-                                <% if (typeof stats !=='undefined' && stats.revenueTrend !==undefined &&
-                                    stats.revenueTrend !==null) { const trend=stats.revenueTrend; const
-                                    trendClass=trend> 0 ? 'up' : trend < 0 ? 'down' : 'neutral' ; const trendIcon=trend>
-                                        0 ? 'up' : trend < 0 ? 'down' : 'minus' ; const trendValue=Math.abs(trend); %>
+                                <% if (typeof stats !== 'undefined' && stats.revenueTrend !== undefined && stats.revenueTrend !== null) { 
+                                    const trend = stats.revenueTrend; 
+                                    const trendClass = trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral'; 
+                                    const trendIcon = trend > 0 ? 'up' : trend < 0 ? 'down' : 'minus'; 
+                                    const trendValue = Math.abs(trend); %>
                                             <div class="stat-trend <%= trendClass %>">
                                                 <i class="fa-solid fa-arrow-<%= trendIcon %>"></i>
                                                 <span>
@@ -2601,8 +2656,8 @@
                                                 </a>
                                                 <button type="button" class="btn btn-nav btn-sm" id="btnCriarTeste"
                                                     onclick="if(typeof window.openNewClientModal==='function'){window.openNewClientModal();}else{console.error('openNewClientModal não disponível');alert('Erro: Função não disponível. Recarregue a página.');}return false;">
-                                                    <i class="fa-solid fa-plus me-1"></i> Criar Teste
-                                                </button>
+                                                                <i class="fa-solid fa-plus me-1"></i> Criar Teste
+                                                            </button>
                                             </div>
                                         </div>
 
@@ -2637,15 +2692,10 @@
                                                 <!-- Filtro por Plano -->
                                                 <div class="filter-group">
                                                     <select name="plan" class="form-select-filter">
-                                                        <option value="all" <%=typeof filterPlan !=='undefined' &&
-                                                            filterPlan==='all' ? 'selected' : '' %>>Todos os Planos
-                                                        </option>
-                                                        <option value="trial" <%=typeof filterPlan !=='undefined' &&
-                                                            filterPlan==='trial' ? 'selected' : '' %>>Trial</option>
-                                                        <option value="monthly" <%=typeof filterPlan !=='undefined' &&
-                                                            filterPlan==='monthly' ? 'selected' : '' %>>Mensal</option>
-                                                        <option value="yearly" <%=typeof filterPlan !=='undefined' &&
-                                                            filterPlan==='yearly' ? 'selected' : '' %>>Anual</option>
+                                                        <option value="all"<%= typeof filterPlan !== 'undefined' && filterPlan === 'all' ? ' selected' : '' %>>Todos os Planos</option>
+                                                        <option value="trial"<%= typeof filterPlan !== 'undefined' && filterPlan === 'trial' ? ' selected' : '' %>>Trial</option>
+                                                        <option value="monthly"<%= typeof filterPlan !== 'undefined' && filterPlan === 'monthly' ? ' selected' : '' %>>Mensal</option>
+                                                        <option value="yearly"<%= typeof filterPlan !== 'undefined' && filterPlan === 'yearly' ? ' selected' : '' %>>Anual</option>
                                                     </select>
                                                 </div>
 
@@ -2711,7 +2761,7 @@
                                                                 // Produto
                                                                 let productName = 'Padrão';
                                                                 if (license.productId && typeof license.productId === 'object' && license.productId.name) {
-                                                                    productName = license.productId.name;
+                                                                productName = license.productId.name;
                                                                 }
                                                                 %>
                                                                 <tr class="table-row-main"
@@ -3106,7 +3156,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="productForm" onsubmit="saveProduct(event)">
+                    <form id="productForm">
                         <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <% } %>
@@ -3206,7 +3256,7 @@
                     </form>
                 </div>
             </div>
-        </div>
+    </div>
     </div>
 
     <!-- Modal Novo Cliente - MOVER PARA ANTES DOS SCRIPTS -->
@@ -3221,7 +3271,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"
                         style="filter: invert(1);"></button>
                 </div>
-                <form id="newClientForm">
+                <form id="newClientForm" onsubmit="return false;" novalidate>
                     <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <% } %>
@@ -3316,10 +3366,357 @@
 
     <script>
         // ============================================
-        // FUNÇÕES GLOBAIS - DEFINIR PRIMEIRO
+        // FUNÇÕES GLOBAIS - DEFINIR PRIMEIRO (FORA DE QUALQUER IIFE)
         // ============================================
         
-        // IMPORTANTE: Definir a função ANTES de qualquer outro código
+        // IMPORTANTE: Definir funções GLOBALMENTE antes de qualquer outro código
+        
+        // ============================================
+        // FUNÇÃO PARA SUBMETER FORMULÁRIO DE CLIENTE (DEFINIR PRIMEIRO - ANTES DE TUDO)
+        // ============================================
+        // Definir diretamente no escopo global, SEM IIFE
+        let isSubmitting = false;
+        window.submitNewClient = async function (event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+            }
+
+            if (isSubmitting) {
+                console.warn('⚠️ Submissão já em andamento, ignorando...');
+                        return;
+                    }
+
+            console.log('📝 Iniciando submissão do formulário...');
+
+            const form = event ? event.target : document.getElementById('newClientForm');
+            if (!form) {
+                if (typeof window.showCustomAlert === 'function') {
+                    await window.showCustomAlert({
+                        type: 'error',
+                        title: 'Erro',
+                        message: 'Formulário não encontrado!'
+                    });
+                } else {
+                    alert('Formulário não encontrado!');
+                }
+                            return;
+            }
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (!submitBtn) {
+                if (typeof window.showCustomAlert === 'function') {
+                    await window.showCustomAlert({
+                        type: 'error',
+                        title: 'Erro',
+                        message: 'Botão de submit não encontrado!'
+                    });
+                        } else {
+                    alert('Botão de submit não encontrado!');
+                }
+                return;
+            }
+            
+            const originalText = submitBtn.innerHTML;
+
+            // Bloquear submissão visualmente e logicamente
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            // Usar createElement ao invés de innerHTML para segurança
+            const spinner = document.createElement('i');
+            spinner.className = 'fa-solid fa-spinner fa-spin me-2';
+            submitBtn.textContent = '';
+            submitBtn.appendChild(spinner);
+            submitBtn.appendChild(document.createTextNode(' Criando...'));
+
+            try {
+                // Coletar dados do formulário
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData);
+
+                // Obter token CSRF
+                let csrfToken = data._csrf || '';
+                if (!csrfToken) {
+                    const metaCsrf = document.querySelector('meta[name="csrf-token"]');
+                    if (metaCsrf) csrfToken = metaCsrf.getAttribute('content');
+                }
+
+                // Enviar usando JSON
+                const requestBody = {
+                    email: data.email,
+                    plan: 'trial', // Sempre trial
+                    password: data.password,
+                    domain: data.domain || null,
+                    notes: data.notes || null,
+                    _csrf: csrfToken
+                };
+
+                console.log('🌐 Enviando requisição para /admin/create-client (JSON)...');
+
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                if (csrfToken) {
+                    headers['CSRF-Token'] = csrfToken;
+                    headers['X-CSRF-Token'] = csrfToken;
+                }
+
+                const response = await fetch('/admin/create-client', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(requestBody),
+                    credentials: 'same-origin'
+                });
+
+                console.log('📥 Resposta recebida:', response.status);
+
+                if (!response.ok) {
+                    // Tentar ler erro como JSON, fallback para texto
+                    let errorMessage = `Erro do servidor (${response.status})`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) errorMessage = errorData.message;
+                    } catch (e) {
+                        const text = await response.text();
+                        if (text) errorMessage = text.substring(0, 100);
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const result = await response.json();
+                console.log('✅ Resultado:', result);
+
+                if (result.success) {
+                    // SUCESSO - Feedback visual suave
+                    console.log('✅ Cliente criado com sucesso!');
+
+                    // Usar createElement ao invés de innerHTML para segurança
+                    const checkIcon = document.createElement('i');
+                    checkIcon.className = 'fa-solid fa-check me-2';
+                    submitBtn.textContent = '';
+                    submitBtn.appendChild(checkIcon);
+                    submitBtn.appendChild(document.createTextNode(' Sucesso!'));
+                    submitBtn.classList.remove('btn-primary');
+                    submitBtn.classList.add('btn-success');
+
+                    // Mostrar toast de sucesso
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('Cliente criado com sucesso!', 'success');
+                    } else if (typeof window.showCustomAlert === 'function') {
+                        await window.showCustomAlert({
+                            type: 'success',
+                            title: 'Sucesso!',
+                            message: 'Cliente criado com sucesso!'
+                        });
+                    }
+
+                    // Fechar modal e recarregar
+                    setTimeout(() => {
+                        if (typeof window.closeNewClientModal === 'function') {
+                        window.closeNewClientModal();
+                        }
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    // ERRO DO SERVIDOR
+                    throw new Error(result.message || 'Erro ao criar cliente');
+                }
+            } catch (error) {
+                // ERRO - Mostrar alert customizado e liberar botão
+                console.error('❌ Erro:', error);
+                
+                if (typeof window.showCustomAlert === 'function') {
+                    await window.showCustomAlert({
+                        type: 'error',
+                        title: 'Erro ao Criar Cliente',
+                        message: error.message || 'Ocorreu um erro ao criar o cliente. Tente novamente.'
+                    });
+                } else {
+                alert('Erro: ' + error.message);
+                }
+
+                isSubmitting = false;
+                if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                }
+            }
+        };
+        
+        console.log('✅ [INÍCIO] Função submitNewClient definida:', typeof window.submitNewClient);
+        
+        // ============================================
+        // FUNÇÃO PARA ABRIR MODAL DE NOVO CLIENTE (DEFINIR PRIMEIRO)
+        // ============================================
+        window.openNewClientModal = function () {
+            try {
+                console.log('🔍 [GLOBAL] Tentando abrir modal de novo cliente...');
+                const modalElement = document.getElementById('newClientModal');
+                if (!modalElement) {
+                    console.error('❌ [GLOBAL] Modal newClientModal não encontrado!');
+                    alert('Erro: Modal não encontrado. Recarregue a página.');
+                    return;
+                }
+
+                // Tentar usar Bootstrap se disponível
+                if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+                    console.log('✅ [GLOBAL] Bootstrap disponível, usando Modal API');
+                    let bsModal = bootstrap.Modal.getInstance(modalElement);
+                    if (!bsModal) {
+                        bsModal = new bootstrap.Modal(modalElement, {
+                            backdrop: true,
+                            keyboard: true,
+                            focus: true
+                        });
+                    }
+                    bsModal.show();
+                    
+                    // IMPORTANTE: Anexar listener do formulário quando o modal for aberto
+                    setTimeout(() => {
+                        console.log('📝 Anexando listener do formulário após abrir modal...');
+                        console.log('✅ submitNewClient disponível?', typeof window.submitNewClient);
+                        const form = document.getElementById('newClientForm');
+                        if (form) {
+                            console.log('✅ Formulário encontrado, anexando listeners...');
+                            
+                            // Remover listener anterior se existir
+                            const newForm = form.cloneNode(true);
+                            form.parentNode.replaceChild(newForm, form);
+                            
+                            // Anexar listener no formulário
+                            const handleSubmit = function (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                                console.log('📝 [FORM] Formulário submetido!');
+                                console.log('🔍 [FORM] Verificando submitNewClient:', typeof window.submitNewClient);
+                                
+                                if (window.submitNewClient && typeof window.submitNewClient === 'function') {
+                                    console.log('✅ [FORM] Chamando window.submitNewClient...');
+                                    try {
+                                        window.submitNewClient(e);
+                                    } catch (error) {
+                                        console.error('❌ [FORM] Erro ao chamar submitNewClient:', error);
+                                        if (typeof window.showCustomAlert === 'function') {
+                                            window.showCustomAlert({
+                                                type: 'error',
+                                                title: 'Erro',
+                                                message: 'Erro ao processar formulário: ' + error.message
+                                            });
+                                        } else {
+                                            alert('Erro ao processar formulário: ' + error.message);
+                                        }
+                                    }
+                                } else {
+                                    console.error('❌ [FORM] Função submitNewClient não disponível!');
+                                    console.error('❌ [FORM] Tipo:', typeof window.submitNewClient);
+                                    
+                                    if (typeof window.showCustomAlert === 'function') {
+                                        window.showCustomAlert({
+                                            type: 'error',
+                                            title: 'Erro',
+                                            message: 'Função submitNewClient não está disponível! Recarregue a página.'
+                                        });
+                                    } else {
+                                        alert('Erro: Função submitNewClient não está disponível! Recarregue a página.');
+                                    }
+                                }
+                                return false;
+                            };
+                            
+                            newForm.addEventListener('submit', handleSubmit, true);
+                            
+                            // Anexar listener também no botão como fallback
+                            const submitBtn = newForm.querySelector('button[type="submit"]');
+                            if (submitBtn) {
+                                console.log('✅ Botão de submit encontrado, anexando listener...');
+                                submitBtn.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    console.log('📝 [BUTTON] Botão clicado!');
+                                    const formEvent = new Event('submit', { bubbles: true, cancelable: true });
+                                    newForm.dispatchEvent(formEvent);
+                                }, true);
+                            } else {
+                                console.warn('⚠️ Botão de submit não encontrado!');
+                            }
+                            
+                            console.log('✅ Listener do formulário anexado após abrir modal!');
+                        } else {
+                            console.error('❌ Formulário newClientForm não encontrado após abrir modal!');
+                        }
+                        
+                        const diagnosticResult = document.getElementById('diagnosticResult');
+                        if (diagnosticResult) {
+                            diagnosticResult.style.display = 'none';
+                        }
+                        if (typeof setupDiagnosticButton === 'function') {
+                            setupDiagnosticButton();
+                        }
+                    }, 200);
+                    
+                    console.log('✅ [GLOBAL] Modal aberto com Bootstrap API');
+                } else {
+                    console.warn('⚠️ [GLOBAL] Bootstrap não disponível, usando fallback manual');
+                    // Fallback manual
+                    modalElement.classList.add('show');
+                    modalElement.style.display = 'block';
+                    modalElement.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Criar backdrop
+                    let backdrop = document.getElementById('modalBackdrop');
+                    if (!backdrop) {
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        backdrop.id = 'modalBackdrop';
+                        document.body.appendChild(backdrop);
+                    }
+                    
+                    // Anexar listener do formulário
+                    setTimeout(() => {
+                        const form = document.getElementById('newClientForm');
+                        if (form) {
+                            const newForm = form.cloneNode(true);
+                            form.parentNode.replaceChild(newForm, form);
+                            
+                            newForm.addEventListener('submit', function (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                                console.log('📝 [FALLBACK] Formulário submetido!');
+                                if (window.submitNewClient && typeof window.submitNewClient === 'function') {
+                                    try {
+                                        window.submitNewClient(e);
+                                    } catch (error) {
+                                        console.error('❌ Erro ao chamar submitNewClient:', error);
+                                        alert('Erro ao processar formulário: ' + error.message);
+                                    }
+                                } else {
+                                    alert('Erro: Função submitNewClient não está disponível!');
+                                }
+                                return false;
+                            }, true);
+                        }
+                    }, 200);
+                    
+                    console.log('✅ [GLOBAL] Modal aberto manualmente');
+                }
+            } catch (error) {
+                console.error('❌ [GLOBAL] Erro ao abrir modal:', error);
+                alert('Erro ao abrir modal: ' + error.message);
+            }
+        };
+        
+        console.log('✅ [GLOBAL] Função openNewClientModal definida:', typeof window.openNewClientModal);
+        
+        // Função submitNewClient já foi definida no início do script (linha ~3330)
+        // Verificar se está disponível
+        console.log('✅ [SEGUNDA VERIFICAÇÃO] Função submitNewClient:', typeof window.submitNewClient);
+        
         // Função para deletar cliente completamente (DEFINIR PRIMEIRO - ANTES DE QUALQUER USO)
         // Garantir que está disponível em múltiplos escopos
         (function() {
@@ -3421,6 +3818,322 @@
             console.error('❌ ERRO: deleteClient NÃO está no escopo global!');
         }
         
+        // ============================================
+        // GERENCIAMENTO DE PRODUTOS - FUNÇÕES GLOBAIS (DEFINIR IMEDIATAMENTE)
+        // ============================================
+        
+        // Definir funções de produtos IMEDIATAMENTE para garantir disponibilidade
+        window.openNewProductModal = function() {
+            console.log('🔍 openNewProductModal chamada');
+            try {
+                const modal = document.getElementById('productModal');
+                if (!modal) {
+                    console.error('❌ Modal productModal não encontrado!');
+                    alert('Modal de produto não encontrado! Recarregue a página.');
+                    return;
+                }
+                console.log('✅ Modal encontrado');
+                
+                const form = document.getElementById('productForm');
+                if (!form) {
+                    console.error('❌ Formulário productForm não encontrado!');
+                    alert('Formulário não encontrado! Recarregue a página.');
+                    return;
+                }
+                
+                // Resetar formulário
+                form.reset();
+                const productId = document.getElementById('productId');
+                if (productId) productId.value = '';
+                
+                const modalTitle = document.getElementById('productModalTitle');
+                if (modalTitle) modalTitle.textContent = 'Novo Produto';
+                
+                const productSlug = document.getElementById('productSlug');
+                if (productSlug) productSlug.disabled = false;
+                
+                const productActive = document.getElementById('productActive');
+                if (productActive) productActive.checked = true;
+                
+                console.log('✅ Formulário resetado');
+                
+                // Abrir modal
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    console.log('✅ Usando Bootstrap Modal');
+                    let bsModal = bootstrap.Modal.getInstance(modal);
+                    if (!bsModal) {
+                        bsModal = new bootstrap.Modal(modal, {
+                            backdrop: true,
+                            keyboard: true,
+                            focus: true
+                        });
+                    }
+                    bsModal.show();
+                    console.log('✅ Modal aberto com Bootstrap');
+                } else {
+                    console.warn('⚠️ Bootstrap não disponível, usando fallback');
+                    modal.style.display = 'block';
+                    modal.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    // Criar backdrop
+                    let backdrop = document.querySelector('.modal-backdrop');
+                    if (!backdrop) {
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erro ao abrir modal de produto:', error);
+                console.error('Stack:', error.stack);
+                alert('Erro: ' + error.message);
+            }
+        };
+
+        window.editProduct = async function(productId) {
+            console.log('🔍 editProduct chamada para:', productId);
+            try {
+                // Buscar dados do produto
+                const response = await fetch(`/admin/products/${productId}`, {
+                    credentials: 'same-origin'
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: 'Erro ao buscar produto' }));
+                    throw new Error(errorData.message || errorData.error || 'Erro ao buscar produto');
+                }
+                
+                const product = await response.json();
+                console.log('✅ Produto carregado:', product);
+                
+                // Preencher formulário
+                const productIdEl = document.getElementById('productId');
+                if (productIdEl) productIdEl.value = product._id;
+                
+                const productName = document.getElementById('productName');
+                if (productName) productName.value = product.name || '';
+                
+                const productSlug = document.getElementById('productSlug');
+                if (productSlug) {
+                    productSlug.value = product.slug || '';
+                    productSlug.disabled = true; // Não pode alterar slug
+                }
+                
+                const productDescription = document.getElementById('productDescription');
+                if (productDescription) productDescription.value = product.description || '';
+                
+                const productTrialDays = document.getElementById('productTrialDays');
+                if (productTrialDays) productTrialDays.value = product.trialDays || 7;
+                
+                const productPriceMonthly = document.getElementById('productPriceMonthly');
+                if (productPriceMonthly) productPriceMonthly.value = product.priceMonthly || 0;
+                
+                const productPriceYearly = document.getElementById('productPriceYearly');
+                if (productPriceYearly) productPriceYearly.value = product.priceYearly || 0;
+                
+                const productOrder = document.getElementById('productOrder');
+                if (productOrder) productOrder.value = product.order || 0;
+                
+                const productPromoText = document.getElementById('productPromoText');
+                if (productPromoText) productPromoText.value = product.promoText || '';
+                
+                const productIcon = document.getElementById('productIcon');
+                if (productIcon) productIcon.value = product.icon || '';
+                
+                const productActive = document.getElementById('productActive');
+                if (productActive) productActive.checked = product.active !== false;
+                
+                const modalTitle = document.getElementById('productModalTitle');
+                if (modalTitle) modalTitle.textContent = 'Editar Produto';
+                
+                // Abrir modal
+                const modal = document.getElementById('productModal');
+                if (modal) {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        let bsModal = bootstrap.Modal.getInstance(modal);
+                        if (!bsModal) {
+                            bsModal = new bootstrap.Modal(modal, {
+                                backdrop: true,
+                                keyboard: true,
+                                focus: true
+                            });
+                        }
+                        bsModal.show();
+                        console.log('✅ Modal aberto com Bootstrap');
+                    } else {
+                        modal.style.display = 'block';
+                        modal.classList.add('show');
+                        document.body.classList.add('modal-open');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erro ao editar produto:', error);
+                alert('Erro: ' + error.message);
+            }
+        };
+
+        window.saveProduct = async function(event) {
+            if (event) event.preventDefault();
+            console.log('🔍 saveProduct chamada');
+            
+            const form = document.getElementById('productForm');
+            if (!form) {
+                alert('Formulário não encontrado!');
+                return;
+            }
+            
+            const formData = new FormData(form);
+            const productId = formData.get('productId');
+            const isEdit = !!productId;
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (!submitBtn) {
+                alert('Botão de submit não encontrado!');
+                return;
+            }
+            
+            const originalText = submitBtn.textContent || submitBtn.innerText;
+            submitBtn.disabled = true;
+            // Usar createElement ao invés de innerHTML para segurança
+            const spinner = document.createElement('i');
+            spinner.className = 'fa-solid fa-spinner fa-spin me-2';
+            submitBtn.textContent = '';
+            submitBtn.appendChild(spinner);
+            submitBtn.appendChild(document.createTextNode(' Salvando...'));
+            
+            try {
+                const csrfToken = formData.get('_csrf');
+                const data = {
+                    name: formData.get('name'),
+                    slug: formData.get('slug'),
+                    description: formData.get('description') || '',
+                    trialDays: parseInt(formData.get('trialDays')) || 7,
+                    priceMonthly: parseFloat(formData.get('priceMonthly')) || 0,
+                    priceYearly: parseFloat(formData.get('priceYearly')) || 0,
+                    order: parseInt(formData.get('order')) || 0,
+                    promoText: formData.get('promoText') || '',
+                    icon: formData.get('icon') || '',
+                    active: formData.get('active') === 'on',
+                    _csrf: csrfToken
+                };
+                
+                const url = isEdit ? `/admin/products/${productId}` : '/admin/products';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                console.log('📤 Enviando requisição:', method, url);
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken,
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: 'Erro do servidor' }));
+                    throw new Error(errorData.message || errorData.error || `Erro HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Resposta do servidor:', result);
+                
+                if (result.success) {
+                    // Usar createElement ao invés de innerHTML para segurança
+                    const checkIcon = document.createElement('i');
+                    checkIcon.className = 'fa-solid fa-check me-2';
+                    submitBtn.textContent = '';
+                    submitBtn.appendChild(checkIcon);
+                    submitBtn.appendChild(document.createTextNode(' Salvo!'));
+                    submitBtn.classList.remove('btn-accent');
+                    submitBtn.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error(result.message || 'Erro ao salvar produto');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao salvar produto:', error);
+                let errorMessage = 'Erro ao salvar produto';
+                if (error.message) {
+                    errorMessage = error.message;
+                } else if (error.response) {
+                    errorMessage = `Erro: ${error.response.status}`;
+                }
+                alert(errorMessage);
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        };
+
+        window.deleteProduct = async function(productId, productName) {
+            console.log('🔍 deleteProduct chamada para:', productId, productName);
+            if (!confirm(`Tem certeza que deseja deletar o produto "${productName}"?\n\nEsta ação não pode ser desfeita!`)) {
+                return;
+            }
+            
+            try {
+                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+                
+                if (!csrfToken) {
+                    alert('Token CSRF não encontrado! Recarregue a página.');
+                    return;
+                }
+                
+                console.log('📤 Enviando requisição DELETE para:', `/admin/products/${productId}`);
+                
+                const response = await fetch(`/admin/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken,
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ _csrf: csrfToken }),
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: 'Erro do servidor' }));
+                    throw new Error(errorData.message || errorData.error || `Erro HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Resposta do servidor:', result);
+                
+                if (result.success) {
+                    alert('Produto deletado com sucesso!');
+                    window.location.reload();
+                } else {
+                    throw new Error(result.message || 'Erro ao deletar produto');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao deletar produto:', error);
+                let errorMessage = 'Erro ao deletar produto';
+                if (error.message) {
+                    errorMessage = error.message;
+                }
+                alert(errorMessage);
+            }
+        };
+        
+        // Verificar se funções foram definidas
+        console.log('✅ Funções de produtos definidas:');
+        console.log('  - openNewProductModal:', typeof window.openNewProductModal);
+        console.log('  - editProduct:', typeof window.editProduct);
+        console.log('  - saveProduct:', typeof window.saveProduct);
+        console.log('  - deleteProduct:', typeof window.deleteProduct);
+        
+        // Função submitNewClient já foi definida no início do script (linha ~3326)
+        // Não definir novamente para evitar sobrescrita
+        // Verificar se está disponível
+        console.log('✅ Verificando submitNewClient (segunda verificação):', typeof window.submitNewClient);
+        
         // Event delegation para botões de deletar (funciona mesmo com stopPropagation)
         // Usar event delegation no document para capturar todos os cliques
         function setupDeleteButtons() {
@@ -3514,98 +4227,28 @@
                 return;
             }
 
-            console.log('✅ Bootstrap carregado, definindo funções do modal');
-
-            // FUNÇÃO PARA ABRIR MODAL - VERSÃO SIMPLIFICADA
-            window.openNewClientModal = function () {
-                try {
-                    console.log('🔍 Tentando abrir modal...');
+            console.log('✅ Bootstrap carregado, verificando função do modal');
+            
+            // Função openNewClientModal já foi definida no início do script (linha ~3327)
+            // NÃO sobrescrever, apenas verificar se está disponível
+            if (typeof window.openNewClientModal !== 'function') {
+                console.warn('⚠️ Função openNewClientModal não encontrada, definindo fallback...');
+                // Se por algum motivo não estiver definida, definir aqui como fallback
+                window.openNewClientModal = function () {
+                    console.log('🔍 [FALLBACK] Tentando abrir modal...');
                     const modalElement = document.getElementById('newClientModal');
                     if (!modalElement) {
-                        console.error('❌ Modal newClientModal não encontrado!');
-                        alert('Erro: Modal não encontrado. Recarregue a página.');
+                        console.error('❌ Modal não encontrado!');
                         return;
                     }
-
-                    // Verificar se Bootstrap está disponível
-                    if (typeof bootstrap === 'undefined' || typeof bootstrap.Modal === 'undefined') {
-                        console.error('❌ Bootstrap não está carregado!');
-                        alert('Erro: Bootstrap não está disponível. Recarregue a página.');
-                        return;
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const bsModal = new bootstrap.Modal(modalElement);
+                        bsModal.show();
                     }
-
-                    console.log('✅ Modal encontrado, Bootstrap disponível');
-
-                    // Método 1: Tentar usar Bootstrap Modal API
-                    try {
-                        let bsModal = bootstrap.Modal.getInstance(modalElement);
-                        if (!bsModal) {
-                            console.log('📦 Criando nova instância do modal Bootstrap...');
-                            bsModal = new bootstrap.Modal(modalElement, {
-                                backdrop: true,
-                                keyboard: true,
-                                focus: true
-                            });
-                        }
-
-                        if (bsModal && typeof bsModal.show === 'function') {
-                            bsModal.show();
-                            // Ocultar área de resultado do diagnóstico ao abrir o modal
-                            const diagnosticResult = document.getElementById('diagnosticResult');
-                            if (diagnosticResult) {
-                                diagnosticResult.style.display = 'none';
-                            }
-                            // Garantir que o listener do botão de diagnóstico está anexado
-                            setTimeout(() => {
-                                setupDiagnosticButton();
-                            }, 100);
-                            console.log('✅ Modal aberto com Bootstrap API!');
-                            return;
-                        }
-                    } catch (bsError) {
-                        console.warn('⚠️ Erro ao usar Bootstrap API:', bsError);
-                    }
-
-                    // Método 2: Fallback - Manipulação direta do DOM
-                    console.log('📦 Usando fallback manual para abrir modal...');
-                    modalElement.classList.add('show');
-                    modalElement.style.display = 'block';
-                    modalElement.setAttribute('aria-hidden', 'false');
-                    modalElement.removeAttribute('aria-hidden');
-                    document.body.classList.add('modal-open');
-                    document.body.style.overflow = 'hidden';
-
-                    // Criar backdrop manualmente
-                    let backdrop = document.getElementById('modalBackdrop');
-                    if (!backdrop) {
-                        backdrop = document.createElement('div');
-                        backdrop.className = 'modal-backdrop fade show';
-                        backdrop.id = 'modalBackdrop';
-                        document.body.appendChild(backdrop);
-                    }
-
-                    // Adicionar evento para fechar ao clicar no backdrop
-                    backdrop.addEventListener('click', function () {
-                        window.closeNewClientModal();
-                    });
-
-                    // Ocultar área de resultado do diagnóstico ao abrir o modal
-                    const diagnosticResult = document.getElementById('diagnosticResult');
-                    if (diagnosticResult) {
-                        diagnosticResult.style.display = 'none';
-                    }
-                    // Garantir que o listener do botão de diagnóstico está anexado
-                    setTimeout(() => {
-                        setupDiagnosticButton();
-                    }, 100);
-
-                    console.log('✅ Modal aberto manualmente!');
-                } catch (error) {
-                    console.error('❌ Erro ao abrir modal:', error);
-                    console.error('Stack trace:', error.stack);
-                    alert('Erro ao abrir modal: ' + error.message);
-                }
-            };
+                };
+            } else {
+                console.log('✅ Função openNewClientModal já está definida globalmente, não sobrescrevendo');
+            }
 
             // FUNÇÃO PARA FECHAR MODAL
             window.closeNewClientModal = function () {
@@ -3628,282 +4271,7 @@
                     console.error('Erro ao fechar modal:', error);
                 }
             };
-
-        // ============================================
-        // GERENCIAMENTO DE PRODUTOS
-        // ============================================
-        
-        window.openNewProductModal = function() {
-            try {
-                const modal = document.getElementById('productModal');
-                if (!modal) {
-                    alert('Modal de produto não encontrado!');
-                    return;
-                }
-                
-                // Resetar formulário
-                document.getElementById('productForm').reset();
-                document.getElementById('productId').value = '';
-                document.getElementById('productModalTitle').textContent = 'Novo Produto';
-                document.getElementById('productSlug').disabled = false;
-                document.getElementById('productActive').checked = true;
-                
-                // Abrir modal
-                if (typeof bootstrap !== 'undefined') {
-                    const bsModal = new bootstrap.Modal(modal);
-                    bsModal.show();
-                } else {
-                    modal.style.display = 'block';
-                    modal.classList.add('show');
-                }
-            } catch (error) {
-                console.error('Erro ao abrir modal de produto:', error);
-                alert('Erro: ' + error.message);
-            }
-        };
-
-        window.editProduct = async function(productId) {
-            try {
-                // Buscar dados do produto
-                const response = await fetch(`/admin/products/${productId}`);
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar produto');
-                }
-                
-                const product = await response.json();
-                
-                // Preencher formulário
-                document.getElementById('productId').value = product._id;
-                document.getElementById('productName').value = product.name || '';
-                document.getElementById('productSlug').value = product.slug || '';
-                document.getElementById('productSlug').disabled = true; // Não pode alterar slug
-                document.getElementById('productDescription').value = product.description || '';
-                document.getElementById('productTrialDays').value = product.trialDays || 7;
-                document.getElementById('productPriceMonthly').value = product.priceMonthly || 0;
-                document.getElementById('productPriceYearly').value = product.priceYearly || 0;
-                document.getElementById('productOrder').value = product.order || 0;
-                document.getElementById('productPromoText').value = product.promoText || '';
-                document.getElementById('productIcon').value = product.icon || '';
-                document.getElementById('productActive').checked = product.active !== false;
-                
-                document.getElementById('productModalTitle').textContent = 'Editar Produto';
-                
-                // Abrir modal
-                const modal = document.getElementById('productModal');
-                if (typeof bootstrap !== 'undefined') {
-                    const bsModal = new bootstrap.Modal(modal);
-                    bsModal.show();
-                } else {
-                    modal.style.display = 'block';
-                    modal.classList.add('show');
-                }
-            } catch (error) {
-                console.error('Erro ao editar produto:', error);
-                alert('Erro: ' + error.message);
-            }
-        };
-
-        window.saveProduct = async function(event) {
-            event.preventDefault();
-            
-            const form = document.getElementById('productForm');
-            const formData = new FormData(form);
-            const productId = formData.get('productId');
-            const isEdit = !!productId;
-            
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Salvando...';
-            
-            try {
-                const csrfToken = formData.get('_csrf');
-                const data = {
-                    name: formData.get('name'),
-                    slug: formData.get('slug'),
-                    description: formData.get('description') || '',
-                    trialDays: parseInt(formData.get('trialDays')) || 7,
-                    priceMonthly: parseFloat(formData.get('priceMonthly')) || 0,
-                    priceYearly: parseFloat(formData.get('priceYearly')) || 0,
-                    order: parseInt(formData.get('order')) || 0,
-                    promoText: formData.get('promoText') || '',
-                    icon: formData.get('icon') || '',
-                    active: formData.get('active') === 'on',
-                    _csrf: csrfToken
-                };
-                
-                const url = isEdit ? `/admin/products/${productId}` : '/admin/products';
-                const method = isEdit ? 'PUT' : 'POST';
-                
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'CSRF-Token': csrfToken,
-                        'X-CSRF-Token': csrfToken
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    submitBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Salvo!';
-                    submitBtn.classList.remove('btn-accent');
-                    submitBtn.classList.add('btn-success');
-                    
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    throw new Error(result.message || 'Erro ao salvar produto');
-                }
-            } catch (error) {
-                console.error('Erro ao salvar produto:', error);
-                alert('Erro: ' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
-        };
-
-        window.deleteProduct = async function(productId, productName) {
-            if (!confirm(`Tem certeza que deseja deletar o produto "${productName}"?\n\nEsta ação não pode ser desfeita!`)) {
-                return;
-            }
-            
-            try {
-                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-                const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-                
-                const response = await fetch(`/admin/products/${productId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'CSRF-Token': csrfToken,
-                        'X-CSRF-Token': csrfToken
-                    },
-                    body: JSON.stringify({ _csrf: csrfToken })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert('Produto deletado com sucesso!');
-                    window.location.reload();
-                } else {
-                    throw new Error(result.message || 'Erro ao deletar produto');
-                }
-            } catch (error) {
-                console.error('Erro ao deletar produto:', error);
-                alert('Erro: ' + error.message);
-            }
-        };
         } // FIM DA FUNÇÃO initModalFunctions
-
-        // FUNÇÃO PARA SUBMETER FORMULÁRIO
-        let isSubmitting = false; // Flag global para prevenir múltiplos envios
-
-        window.submitNewClient = async function (event) {
-            event.preventDefault();
-
-            if (isSubmitting) return;
-
-            console.log('📝 Iniciando submissão do formulário...');
-
-            const form = event.target;
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-
-            // Bloquear submissão visualmente e logicamente
-            isSubmitting = true;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Criando...';
-
-            try {
-                // Coletar dados do formulário
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData);
-
-                // Obter token CSRF
-                let csrfToken = data._csrf || '';
-                if (!csrfToken) {
-                    const metaCsrf = document.querySelector('meta[name="csrf-token"]');
-                    if (metaCsrf) csrfToken = metaCsrf.getAttribute('content');
-                }
-
-                // Enviar usando JSON
-                const requestBody = {
-                    email: data.email,
-                    plan: 'trial', // Sempre trial
-                    password: data.password,
-                    domain: data.domain || null,
-                    notes: data.notes || null,
-                    _csrf: csrfToken
-                };
-
-                console.log('🌐 Enviando requisição para /admin/create-client (JSON)...');
-
-                const headers = {
-                    'Content-Type': 'application/json'
-                };
-
-                if (csrfToken) {
-                    headers['CSRF-Token'] = csrfToken;
-                    headers['X-CSRF-Token'] = csrfToken;
-                }
-
-                const response = await fetch('/admin/create-client', {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(requestBody),
-                    credentials: 'same-origin'
-                });
-
-                console.log('📥 Resposta recebida:', response.status);
-
-                if (!response.ok) {
-                    // Tentar ler erro como JSON, fallback para texto
-                    let errorMessage = 'Erro do servidor (${response.status})';
-                    try {
-                        const errorData = await response.json();
-                        if (errorData.message) errorMessage = errorData.message;
-                    } catch (e) {
-                        const text = await response.text();
-                        if (text) errorMessage = text.substring(0, 100);
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                const result = await response.json();
-                console.log('✅ Resultado:', result);
-
-                if (result.success) {
-                    // SUCESSO - Feedback visual suave
-                    console.log('✅ Cliente criado com sucesso!');
-
-                    submitBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Sucesso!';
-                    submitBtn.classList.remove('btn-primary');
-                    submitBtn.classList.add('btn-success');
-
-                    // Fechar modal e recarregar
-                    setTimeout(() => {
-                        window.closeNewClientModal();
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    // ERRO DO SERVIDOR
-                    throw new Error(result.message || 'Erro ao criar cliente');
-                }
-            } catch (error) {
-                // ERRO - Mostrar alert e liberar botão
-                console.error('❌ Erro:', error);
-                alert('Erro: ' + error.message);
-
-                isSubmitting = false;
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
-        };
 
         // Botão de diagnóstico: faz um POST de teste para /admin/create-client com dados falsos
         window.runCreateClientDiagnostic = async function () {
@@ -4161,26 +4529,28 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        // Sistema de Toast Notifications
-        function showToast(message, type = 'success') {
+        // Sistema de Toast Notifications (GLOBAL)
+        window.showToast = function showToast(message, type = 'success') {
             const toast = document.createElement('div');
-            toast.className = 'toast-notification toast-${type}';
-            toast.style.cssText = '
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : type === 'warning' ? 'var(--warning)' : 'var(--info)'};
-                color: #fff;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                box-shadow: var(--shadow-lg);
-                z-index: 10000;
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                min-width: 300px;
-                animation: slideInRight 0.3s ease;
-            ';
+            toast.className = 'toast-notification toast-' + type;
+            
+            const bgColor = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : type === 'warning' ? 'var(--warning)' : 'var(--info)';
+            
+            toast.style.cssText = 
+                'position: fixed;' +
+                'top: 20px;' +
+                'right: 20px;' +
+                'background: ' + bgColor + ';' +
+                'color: #fff;' +
+                'padding: 1rem 1.5rem;' +
+                'border-radius: 8px;' +
+                'box-shadow: var(--shadow-lg);' +
+                'z-index: 10000;' +
+                'display: flex;' +
+                'align-items: center;' +
+                'gap: 0.75rem;' +
+                'min-width: 300px;' +
+                'animation: slideInRight 0.3s ease;';
 
             const icons = {
                 success: 'fa-check-circle',
@@ -4189,13 +4559,25 @@
                 info: 'fa-info-circle'
             };
 
-            toast.innerHTML = '
-                <i class="fa-solid ${icons[type]}"></i>
-                <span>${message}</span>
-                <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #fff; margin-left: auto; cursor: pointer; padding: 0.25rem;">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            ';
+            // Construir toast de forma segura (evitar XSS)
+            toast.textContent = ''; // Limpar
+            
+            const iconEl = document.createElement('i');
+            iconEl.className = 'fa-solid ' + icons[type];
+            toast.appendChild(iconEl);
+            
+            const spanEl = document.createElement('span');
+            spanEl.textContent = message; // Escapar automaticamente
+            toast.appendChild(spanEl);
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.style.cssText = 'background: transparent; border: none; color: #fff; margin-left: auto; cursor: pointer; padding: 0.25rem;';
+            closeBtn.onclick = function() { this.parentElement.remove(); };
+            
+            const closeIcon = document.createElement('i');
+            closeIcon.className = 'fa-solid fa-times';
+            closeBtn.appendChild(closeIcon);
+            toast.appendChild(closeBtn);
 
             document.body.appendChild(toast);
 
@@ -4207,7 +4589,7 @@
 
         // Adicionar animações CSS
         const style = document.createElement('style');
-        style.textContent = '
+        style.textContent = `
             @keyframes slideInRight {
                 from {
                     transform: translateX(100%);
@@ -4228,7 +4610,7 @@
                     opacity: 0;
                 }
             }
-        ';
+        `;
         document.head.appendChild(style);
 
         // Mensagens de sucesso/erro (usando toasts)
@@ -4315,10 +4697,20 @@
         function copyKey(key) {
             navigator.clipboard.writeText(key).then(() => {
                 const btn = event.target.closest('button');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
+                const originalContent = btn.cloneNode(true); // Clonar conteúdo original
+                
+                // Criar ícone de sucesso de forma segura
+                btn.textContent = '';
+                const checkIcon = document.createElement('i');
+                checkIcon.className = 'fa-solid fa-check text-success';
+                btn.appendChild(checkIcon);
+                
                 setTimeout(() => {
-                    btn.innerHTML = originalHTML;
+                    // Restaurar conteúdo original
+                    btn.textContent = '';
+                    Array.from(originalContent.childNodes).forEach(node => {
+                        btn.appendChild(node.cloneNode(true));
+                    });
                 }, 2000);
             });
         }
@@ -4354,15 +4746,15 @@
                 detailsRow.style.display = 'table-row';
                 mainRow.classList.add('expanded');
                 if (expandBtn) {
-                    expandBtn.classList.add('expanded');
+                expandBtn.classList.add('expanded');
                 }
             } else {
                 detailsRow.style.display = 'none';
                 mainRow.classList.remove('expanded');
                 if (expandBtn) {
-                    expandBtn.classList.remove('expanded');
-                }
+                expandBtn.classList.remove('expanded');
             }
+        }
         };
 
         // TESTE: Função simplificada para placeholders - removendo estilos inline que podem interferir
@@ -4526,7 +4918,7 @@
                         console.error('❌ openNewClientModal não está disponível');
                         alert('Erro: Função não disponível. Recarregue a página.');
                     }
-                    return false;
+                return false;
                 });
                 console.log('✅ Event listener adicionado ao botão Criar Teste');
             } else {
@@ -4621,16 +5013,20 @@
                 titleEl.style.color = cfg.color;
             }
 
-            // Atualizar mensagem
+            // Atualizar mensagem (usar textContent para segurança)
             if (messageEl) {
-                messageEl.innerHTML = message;
+                messageEl.textContent = message; // Escapar automaticamente
                 messageEl.style.color = 'var(--text-primary)';
             }
 
-            // Atualizar detalhes
+            // Atualizar detalhes (usar createElement para segurança)
             if (detailsEl) {
                 if (details) {
-                    detailsEl.innerHTML = '<strong>Detalhes:</strong> ${details}';
+                    detailsEl.textContent = ''; // Limpar
+                    const strong = document.createElement('strong');
+                    strong.textContent = 'Detalhes: ';
+                    detailsEl.appendChild(strong);
+                    detailsEl.appendChild(document.createTextNode(details)); // Escapar automaticamente
                     detailsEl.style.display = 'block';
                 } else {
                     detailsEl.style.display = 'none';
@@ -4665,7 +5061,14 @@
                 error: '❌'
             };
             const icon = icons[type] || icons.info;
-            el.innerHTML = '<strong>${icon} ${status}</strong>${detail ? ' — ' + detail : ''}';
+            // Construir de forma segura (evitar XSS)
+            el.textContent = ''; // Limpar
+            const strong = document.createElement('strong');
+            strong.textContent = icon + ' ' + status;
+            el.appendChild(strong);
+            if (detail) {
+                el.appendChild(document.createTextNode(' — ' + detail)); // Escapar automaticamente
+            }
         }
 
         // Função para adicionar listener ao formulário (SEM onsubmit inline - CSP bloqueava)
@@ -4673,14 +5076,59 @@
             const form = document.getElementById('newClientForm');
             if (form) {
                 console.log('✅ Formulário encontrado, anexando listener...');
-                form.addEventListener('submit', function (e) {
+                console.log('✅ Verificando submitNewClient antes de anexar:', typeof window.submitNewClient);
+                
+                // Remover todos os listeners anteriores
+                const newForm = form.cloneNode(true);
+                form.parentNode.replaceChild(newForm, form);
+                
+                // Anexar listener diretamente
+                newForm.addEventListener('submit', function (e) {
                     e.preventDefault();
+                    e.stopPropagation();
                     console.log('📝 Formulário submetido!');
-                    submitNewClient(e);
+                    console.log('🔍 Verificando submitNewClient no momento do submit:', typeof window.submitNewClient);
+                    
+                    // Tentar chamar a função diretamente
+                    if (window.submitNewClient && typeof window.submitNewClient === 'function') {
+                        console.log('✅ Chamando window.submitNewClient...');
+                        window.submitNewClient(e);
+                    } else {
+                        console.error('❌ Função submitNewClient não disponível!');
+                        console.error('Tipo:', typeof window.submitNewClient);
+                        console.error('window.submitNewClient:', window.submitNewClient);
+                        alert('Erro: Função submitNewClient não está disponível! Recarregue a página.');
+                    }
+                    return false;
                 });
                 console.log('✅ Listener do formulário anexado com sucesso!');
             } else {
                 console.warn('⚠️ Formulário newClientForm não encontrado');
+            }
+            
+            // Anexar listener ao formulário de produto também
+            const productForm = document.getElementById('productForm');
+            if (productForm) {
+                console.log('✅ Formulário de produto encontrado, anexando listener...');
+                // Remover listener anterior se existir
+                const newForm = productForm.cloneNode(true);
+                productForm.parentNode.replaceChild(newForm, productForm);
+                
+                newForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📝 Formulário de produto submetido!');
+                    if (typeof window.saveProduct === 'function') {
+                        window.saveProduct(e);
+                    } else {
+                        console.error('❌ Função saveProduct não disponível!');
+                        alert('Função saveProduct não disponível! Recarregue a página.');
+                    }
+                    return false;
+                });
+                console.log('✅ Listener do formulário de produto anexado com sucesso!');
+            } else {
+                console.warn('⚠️ Formulário productForm não encontrado (pode ser criado depois)');
             }
         }
 
@@ -4692,6 +5140,13 @@
                 setupButtonListener();
                 setupDiagnosticButton();
                 setupFormListener(); // Anexar listener do formulário
+                
+                // Verificar se funções de produtos estão disponíveis
+                console.log('✅ Verificando funções de produtos...');
+                console.log('  - openNewProductModal:', typeof window.openNewProductModal);
+                console.log('  - editProduct:', typeof window.editProduct);
+                console.log('  - saveProduct:', typeof window.saveProduct);
+                console.log('  - deleteProduct:', typeof window.deleteProduct);
             });
         } else {
             // DOM já carregado
@@ -4700,6 +5155,13 @@
             setupButtonListener();
             setupDiagnosticButton();
             setupFormListener(); // Anexar listener do formulário
+            
+            // Verificar se funções de produtos estão disponíveis
+            console.log('✅ Verificando funções de produtos...');
+            console.log('  - openNewProductModal:', typeof window.openNewProductModal);
+            console.log('  - editProduct:', typeof window.editProduct);
+            console.log('  - saveProduct:', typeof window.saveProduct);
+            console.log('  - deleteProduct:', typeof window.deleteProduct);
         }
 
         // Tentar inicializar também quando a janela carregar completamente
@@ -4712,6 +5174,13 @@
             setupButtonListener();
             setupDiagnosticButton();
             setupFormListener(); // Anexar listener do formulário
+            
+            // Verificar novamente funções de produtos
+            console.log('✅ Verificando funções de produtos após load...');
+            console.log('  - openNewProductModal:', typeof window.openNewProductModal);
+            console.log('  - editProduct:', typeof window.editProduct);
+            console.log('  - saveProduct:', typeof window.saveProduct);
+            console.log('  - deleteProduct:', typeof window.deleteProduct);
 
             // Adicionar listener para quando o modal Bootstrap for mostrado
             const modalElement = document.getElementById('newClientModal');
@@ -4720,6 +5189,17 @@
                     console.log('📦 Modal Bootstrap foi mostrado, re-anexando listeners...');
                     setTimeout(() => {
                         setupDiagnosticButton();
+                        setupFormListener();
+                    }, 100);
+                });
+            }
+            
+            // Adicionar listener para quando o modal de produto for mostrado
+            const productModalElement = document.getElementById('productModal');
+            if (productModalElement && typeof bootstrap !== 'undefined') {
+                productModalElement.addEventListener('shown.bs.modal', function () {
+                    console.log('📦 Modal de produto foi mostrado, anexando listener do formulário...');
+                    setTimeout(() => {
                         setupFormListener();
                     }, 100);
                 });

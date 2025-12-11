@@ -96,25 +96,25 @@
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-label">Receita Total</div>
-                    <div class="stat-value">R$ <%= stats.totalRevenue.toFixed(2).replace('.', ',') %></div>
+                    <div class="stat-value">R$ <%= (stats && stats.totalRevenue) ? stats.totalRevenue.toFixed(2).replace('.', ',') : '0,00' %></div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-label">Licenças Pagas</div>
-                    <div class="stat-value"><%= stats.totalPaidLicenses %></div>
+                    <div class="stat-value"><%= (stats && typeof stats.totalPaidLicenses !== 'undefined') ? stats.totalPaidLicenses : 0 %></div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-label">Planos Mensais</div>
-                    <div class="stat-value"><%= stats.monthlyCount %></div>
+                    <div class="stat-value"><%= (stats && typeof stats.monthlyCount !== 'undefined') ? stats.monthlyCount : 0 %></div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-label">Planos Anuais</div>
-                    <div class="stat-value"><%= stats.yearlyCount %></div>
+                    <div class="stat-value"><%= (stats && typeof stats.yearlyCount !== 'undefined') ? stats.yearlyCount : 0 %></div>
                 </div>
             </div>
         </div>
@@ -125,7 +125,7 @@
                 <i class="fa-solid fa-list me-2"></i>Licenças Pagas
             </h5>
             
-            <% if (paidLicenses.length === 0) { %>
+            <% if (typeof paidLicenses === 'undefined' || !paidLicenses || paidLicenses.length === 0) { %>
                 <div class="text-center py-5">
                     <i class="fa-solid fa-inbox fa-3x mb-3" style="opacity: 0.3;"></i>
                     <p class="text-secondary">Nenhuma venda registrada ainda.</p>
