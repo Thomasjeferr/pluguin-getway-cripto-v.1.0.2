@@ -147,3 +147,5 @@ define( 'WC_BINANCE_PIX_VERSION', '1.0.1' ); // Nova versão
 **Correção realizada em:** 2025-01-XX  
 **Status:** ✅ **Versão centralizada e documentada**
 
+
+

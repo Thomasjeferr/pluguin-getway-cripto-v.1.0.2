@@ -177,3 +177,5 @@ Se o repositório é público:
 **Correções realizadas em:** 2025-01-XX  
 **Próxima ação:** Rotacionar credenciais MongoDB e SESSION_SECRET
 
+
+

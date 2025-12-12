@@ -216,3 +216,5 @@ Se no futuro for necessário renderizar HTML formatado:
 **Correções realizadas em:** 2025-01-XX  
 **Próximo passo:** Testar funcionalidades e fazer deploy
 
+
+

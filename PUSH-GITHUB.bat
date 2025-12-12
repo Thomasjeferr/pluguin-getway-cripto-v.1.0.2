@@ -118,3 +118,5 @@ echo Acesse: https://github.com/Thomasjeferr/pluguin-getway-cripto-v.1.0.2
 echo.
 pause
 
+
+

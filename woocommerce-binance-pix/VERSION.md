@@ -92,3 +92,5 @@ Ao atualizar a versão:
 
 **Última atualização:** 2025-01-XX
 
+
+

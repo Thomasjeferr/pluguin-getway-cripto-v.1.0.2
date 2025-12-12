@@ -98,3 +98,5 @@ Os operadores ternários EJS estavam causando erros de renderização porque:
 **Correção realizada em:** 2025-01-XX  
 **Status:** ✅ **Todos os erros de sintaxe EJS corrigidos**
 
+
+

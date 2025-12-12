@@ -3271,7 +3271,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"
                         style="filter: invert(1);"></button>
                 </div>
-                <form id="newClientForm" onsubmit="return false;" novalidate>
+                <form id="newClientForm" method="POST" action="/admin/create-client" novalidate>
                     <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <% } %>
@@ -3365,6 +3365,10 @@
     <script src="/diagnostic-fix.js"></script>
 
     <script>
+        // Formulário simples - igual à landing page
+        // O formulário já tem method="POST" e action="/admin/create-client"
+        // Deixar fazer submit padrão sem JavaScript
+        
         // ============================================
         // FUNÇÕES GLOBAIS - DEFINIR PRIMEIRO (FORA DE QUALQUER IIFE)
         // ============================================
@@ -3573,90 +3577,6 @@
                     }
                     bsModal.show();
                     
-                    // IMPORTANTE: Anexar listener do formulário quando o modal for aberto
-                    setTimeout(() => {
-                        console.log('📝 Anexando listener do formulário após abrir modal...');
-                        console.log('✅ submitNewClient disponível?', typeof window.submitNewClient);
-                        const form = document.getElementById('newClientForm');
-                        if (form) {
-                            console.log('✅ Formulário encontrado, anexando listeners...');
-                            
-                            // Remover listener anterior se existir
-                            const newForm = form.cloneNode(true);
-                            form.parentNode.replaceChild(newForm, form);
-                            
-                            // Anexar listener no formulário
-                            const handleSubmit = function (e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                e.stopImmediatePropagation();
-                                console.log('📝 [FORM] Formulário submetido!');
-                                console.log('🔍 [FORM] Verificando submitNewClient:', typeof window.submitNewClient);
-                                
-                                if (window.submitNewClient && typeof window.submitNewClient === 'function') {
-                                    console.log('✅ [FORM] Chamando window.submitNewClient...');
-                                    try {
-                                        window.submitNewClient(e);
-                                    } catch (error) {
-                                        console.error('❌ [FORM] Erro ao chamar submitNewClient:', error);
-                                        if (typeof window.showCustomAlert === 'function') {
-                                            window.showCustomAlert({
-                                                type: 'error',
-                                                title: 'Erro',
-                                                message: 'Erro ao processar formulário: ' + error.message
-                                            });
-                                        } else {
-                                            alert('Erro ao processar formulário: ' + error.message);
-                                        }
-                                    }
-                                } else {
-                                    console.error('❌ [FORM] Função submitNewClient não disponível!');
-                                    console.error('❌ [FORM] Tipo:', typeof window.submitNewClient);
-                                    
-                                    if (typeof window.showCustomAlert === 'function') {
-                                        window.showCustomAlert({
-                                            type: 'error',
-                                            title: 'Erro',
-                                            message: 'Função submitNewClient não está disponível! Recarregue a página.'
-                                        });
-                                    } else {
-                                        alert('Erro: Função submitNewClient não está disponível! Recarregue a página.');
-                                    }
-                                }
-                                return false;
-                            };
-                            
-                            newForm.addEventListener('submit', handleSubmit, true);
-                            
-                            // Anexar listener também no botão como fallback
-                            const submitBtn = newForm.querySelector('button[type="submit"]');
-                            if (submitBtn) {
-                                console.log('✅ Botão de submit encontrado, anexando listener...');
-                                submitBtn.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    console.log('📝 [BUTTON] Botão clicado!');
-                                    const formEvent = new Event('submit', { bubbles: true, cancelable: true });
-                                    newForm.dispatchEvent(formEvent);
-                                }, true);
-                            } else {
-                                console.warn('⚠️ Botão de submit não encontrado!');
-                            }
-                            
-                            console.log('✅ Listener do formulário anexado após abrir modal!');
-                        } else {
-                            console.error('❌ Formulário newClientForm não encontrado após abrir modal!');
-                        }
-                        
-                        const diagnosticResult = document.getElementById('diagnosticResult');
-                        if (diagnosticResult) {
-                            diagnosticResult.style.display = 'none';
-                        }
-                        if (typeof setupDiagnosticButton === 'function') {
-                            setupDiagnosticButton();
-                        }
-                    }, 200);
-                    
                     console.log('✅ [GLOBAL] Modal aberto com Bootstrap API');
                 } else {
                     console.warn('⚠️ [GLOBAL] Bootstrap não disponível, usando fallback manual');
@@ -3676,32 +3596,8 @@
                         document.body.appendChild(backdrop);
                     }
                     
-                    // Anexar listener do formulário
-                    setTimeout(() => {
-                        const form = document.getElementById('newClientForm');
-                        if (form) {
-                            const newForm = form.cloneNode(true);
-                            form.parentNode.replaceChild(newForm, form);
-                            
-                            newForm.addEventListener('submit', function (e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                e.stopImmediatePropagation();
-                                console.log('📝 [FALLBACK] Formulário submetido!');
-                                if (window.submitNewClient && typeof window.submitNewClient === 'function') {
-                                    try {
-                                        window.submitNewClient(e);
-                                    } catch (error) {
-                                        console.error('❌ Erro ao chamar submitNewClient:', error);
-                                        alert('Erro ao processar formulário: ' + error.message);
-                                    }
-                                } else {
-                                    alert('Erro: Função submitNewClient não está disponível!');
-                                }
-                                return false;
-                            }, true);
-                        }
-                    }, 200);
+                    // Formulário já está configurado para fazer submit padrão POST
+                    // Não precisa de JavaScript adicional
                     
                     console.log('✅ [GLOBAL] Modal aberto manualmente');
                 }

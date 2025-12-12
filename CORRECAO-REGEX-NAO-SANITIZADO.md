@@ -244,3 +244,5 @@ escapeRegex("a".repeat(200));
 **Correção realizada em:** 2025-01-XX  
 **Status:** ✅ **Vulnerabilidade corrigida e documentada**
 
+
+

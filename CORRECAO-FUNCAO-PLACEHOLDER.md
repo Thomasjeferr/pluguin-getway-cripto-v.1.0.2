@@ -196,3 +196,5 @@ add_action( 'init', function() {
 **Correção realizada em:** 2025-01-XX  
 **Arquivo:** `woocommerce-binance-pix/woocommerce-binance-pix.php` (linhas 53-95)
 
+
+

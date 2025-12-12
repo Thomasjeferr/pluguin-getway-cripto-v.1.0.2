@@ -137,3 +137,5 @@ Os avisos do linter sobre EJS podem ser ignorados, pois são falsos positivos.
 **Correções realizadas em:** 2025-01-XX  
 **Próximo passo:** Corrigir uso de innerHTML (vulnerabilidade XSS)
 
+
+

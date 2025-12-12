@@ -233,3 +233,5 @@ body('planId').trim().isIn(['monthly', 'yearly', 'trial']).withMessage('Plano in
 **Correções realizadas em:** 2025-01-XX  
 **Status:** ✅ **Validação consistente implementada**
 
+
+

@@ -288,3 +288,5 @@ if (safeSearch) {
 **Guia criado em:** 2025-01-XX  
 **Status:** ✅ **Função implementada e documentada**
 
+
+

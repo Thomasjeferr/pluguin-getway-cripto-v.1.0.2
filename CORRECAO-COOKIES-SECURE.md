@@ -251,3 +251,5 @@ cookie: {
 **Correção verificada em:** 2025-01-XX  
 **Status:** ✅ **Configuração correta e documentada**
 
+
+

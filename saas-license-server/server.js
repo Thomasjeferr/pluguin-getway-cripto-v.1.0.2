@@ -965,7 +965,28 @@ if (csrf) {
         
         // Aplicar CSRF apenas em métodos que modificam dados
         if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
-            return csrfProtection(req, res, next);
+            return csrfProtection(req, res, (err) => {
+                if (err && err.code === 'EBADCSRFTOKEN') {
+                    logger.error('❌ Erro CSRF:', {
+                        path: req.path,
+                        method: req.method,
+                        body: req.body ? 'presente' : 'ausente',
+                        csrfToken: req.body?._csrf ? 'presente' : 'ausente',
+                        headers: {
+                            'x-csrf-token': req.headers['x-csrf-token'] ? 'presente' : 'ausente',
+                            'csrf-token': req.headers['csrf-token'] ? 'presente' : 'ausente'
+                        }
+                    });
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Erro de segurança: Token CSRF inválido ou ausente. Recarregue a página e tente novamente.'
+                    });
+                }
+                if (err) {
+                    return next(err);
+                }
+                next();
+            });
         }
         
         next();
@@ -2510,24 +2531,38 @@ app.post('/admin/create-client', requireAdmin, body ? [
     body('notes').optional().trim().isLength({ max: 1000 }).withMessage('Notas muito longas')
 ] : [], validateRequest, async (req, res) => {
     try {
-        console.log('📝 === INICIANDO CRIAÇÃO DE CLIENTE (TRIAL) ===');
-        console.log('📥 Dados recebidos:', {
+        logger.info('📝 === INICIANDO CRIAÇÃO DE CLIENTE (TRIAL) ===');
+        logger.info('📥 Dados recebidos:', {
             email: req.body.email,
             plan: 'trial (fixo)',
             hasPassword: !!req.body.password,
             domain: req.body.domain || '(vazio)',
-            notes: req.body.notes ? req.body.notes.substring(0, 50) + '...' : '(vazio)'
+            notes: req.body.notes ? req.body.notes.substring(0, 50) + '...' : '(vazio)',
+            csrfToken: req.body._csrf ? 'presente' : 'ausente',
+            contentType: req.headers['content-type'],
+            method: req.method
         });
+        
+        // Verificar se os dados essenciais estão presentes
+        if (!req.body.email) {
+            logger.error('❌ Email não fornecido');
+            return res.json({ success: false, message: 'Email é obrigatório' });
+        }
+        
+        if (!req.body.password) {
+            logger.error('❌ Senha não fornecida');
+            return res.json({ success: false, message: 'Senha é obrigatória' });
+        }
         
         // Verificar conexão com MongoDB
         if (mongoose.connection.readyState !== 1) {
-            console.error('❌ MongoDB não está conectado! Estado:', mongoose.connection.readyState);
+            logger.error('❌ MongoDB não está conectado! Estado:', mongoose.connection.readyState);
             return res.json({ 
                 success: false, 
                 message: 'Erro: Banco de dados não está conectado. Verifique a conexão MongoDB.' 
             });
         }
-        console.log('✅ MongoDB conectado - Estado:', mongoose.connection.readyState);
+        logger.info('✅ MongoDB conectado - Estado:', mongoose.connection.readyState);
         
         const { email, password, domain, notes } = req.body;
         // Sempre usar 'trial' para criação manual (igual ao sistema de teste)
@@ -2535,12 +2570,12 @@ app.post('/admin/create-client', requireAdmin, body ? [
         
         // Validação básica
         if (!email || !isValidEmail(email)) {
-            console.error('❌ Email inválido:', email);
+            logger.error('❌ Email inválido:', email);
             return res.json({ success: false, message: 'Email inválido' });
         }
         
         if (!password || password.trim().length < 6) {
-            console.error('❌ Senha inválida (menos de 6 caracteres)');
+            logger.error('❌ Senha inválida (menos de 6 caracteres)');
             return res.json({ success: false, message: 'Senha deve ter no mínimo 6 caracteres' });
         }
         
@@ -2565,12 +2600,12 @@ app.post('/admin/create-client', requireAdmin, body ? [
         }
         
         // Buscar ou criar produto
-        console.log('📦 Verificando produto...');
+        logger.info('📦 Verificando produto...');
         let product = await Product.findOne({ slug: productSlug, active: true }) || 
                       await Product.findOne({ slug: 'binance-pix' });
         
         if (!product) {
-            console.log('📦 Produto não encontrado, criando produto padrão...');
+            logger.info('📦 Produto não encontrado, criando produto padrão...');
             product = await Product.create({
                 slug: productSlug,
                 name: 'Plugin Binance Pix / USDT',
@@ -2582,9 +2617,9 @@ app.post('/admin/create-client', requireAdmin, body ? [
                 promoText: 'Oferta de Lançamento',
                 order: 0
             });
-            console.log('✅ Produto criado! ID:', product._id);
+            logger.info('✅ Produto criado! ID:', product._id);
         } else {
-            console.log('✅ Produto encontrado! ID:', product._id);
+            logger.info('✅ Produto encontrado! ID:', product._id);
         }
         
         // Calcular data de expiração do trial (sempre trial para criação manual)
@@ -2593,35 +2628,35 @@ app.post('/admin/create-client', requireAdmin, body ? [
         const planExpiresAt = null; // Sempre null para trial
         
         // Criar ou atualizar usuário
-        console.log('👤 Verificando usuário existente...');
+        logger.info('👤 Verificando usuário existente...');
         let user = await User.findOne({ email: sanitizedEmail });
-        console.log('👤 Usuário encontrado:', !!user);
+        logger.info('👤 Usuário encontrado:', !!user);
         
-        console.log('🔐 Hashando senha...');
+        logger.info('🔐 Hashando senha...');
         const hashedPassword = await hashPassword(sanitizedPassword);
         
         if (!user) {
             // Criar novo usuário com a senha fornecida
-            console.log('➕ Criando novo usuário...');
+            logger.info('➕ Criando novo usuário...');
             user = await User.create({ 
                 email: sanitizedEmail,
                 password: hashedPassword
             });
-            console.log('✅ Usuário criado com sucesso! ID:', user._id);
+            logger.info('✅ Usuário criado com sucesso! ID:', user._id);
         } else {
             // Atualizar senha do usuário existente
-            console.log('🔄 Atualizando senha do usuário existente...');
+            logger.info('🔄 Atualizando senha do usuário existente...');
             user.password = hashedPassword;
             await user.save();
-            console.log('✅ Senha do usuário atualizada!');
+            logger.info('✅ Senha do usuário atualizada!');
         }
         
         // Criar licença
-        console.log('🔑 Gerando chave de licença...');
+        logger.info('🔑 Gerando chave de licença...');
         const licenseKey = generateLicenseKey();
-        console.log('🔑 Chave gerada:', licenseKey.substring(0, 15) + '...');
+        logger.info('🔑 Chave gerada:', licenseKey.substring(0, 15) + '...');
         
-        console.log('📄 Criando licença no banco de dados...');
+        logger.info('📄 Criando licença no banco de dados...');
         const newLicense = await License.create({
             email: sanitizedEmail,
             key: licenseKey,
@@ -2634,13 +2669,14 @@ app.post('/admin/create-client', requireAdmin, body ? [
             trialExpiresAt: trialExpiresAt,
             planExpiresAt: planExpiresAt
         });
-        console.log('✅ Licença criada com sucesso! ID:', newLicense._id);
+        logger.info('✅ Licença criada com sucesso! ID:', newLicense._id);
         
         // Enviar email com chave de licença trial (igual ao sistema de teste)
         try {
             await sendLicenseEmail(sanitizedEmail, newLicense.key, 'trial', trialExpiresAt);
+            logger.info('✅ Email enviado com sucesso');
         } catch (emailError) {
-            console.error('Erro ao enviar email:', emailError);
+            logger.error('Erro ao enviar email:', emailError);
             // Não falhar a criação se o email falhar
         }
         
@@ -2653,29 +2689,58 @@ app.post('/admin/create-client', requireAdmin, body ? [
             metadata: { plan: 'trial', source: 'manual' }
         });
         
-        console.log('✅ === CLIENTE CRIADO COM SUCESSO (TRIAL) ===');
-        console.log('📧 Email:', sanitizedEmail);
-        console.log('🔑 Chave:', newLicense.key);
-        console.log('📋 Plano: trial (fixo para criação manual)');
+        logger.info('✅ === CLIENTE CRIADO COM SUCESSO (TRIAL) ===');
+        logger.info('📧 Email:', sanitizedEmail);
+        logger.info('🔑 Chave:', newLicense.key);
+        logger.info('📋 Plano: trial (fixo para criação manual)');
         
-        res.json({ 
-            success: true, 
-            message: 'Cliente criado com sucesso!',
-            license: {
-                key: newLicense.key,
-                email: sanitizedEmail
-            }
+        // IMPORTANTE: NUNCA criar sessão do cliente quando cadastrado pelo admin
+        // A sessão do cliente só deve ser criada quando ele se cadastra na landing page
+        // Garantir que a sessão do admin seja mantida
+        logger.info('🔐 Sessão atual ANTES do redirecionamento:', {
+            sessionUser: req.session.user,
+            sessionRole: req.session.role,
+            isAdmin: req.session.user === FINAL_ADMIN_USER,
+            isClient: req.session.role === 'client'
         });
         
+        // Retornar JSON se for requisição AJAX, senão redirecionar
+        const contentType = req.headers['content-type'] || '';
+        logger.info('📋 Content-Type da requisição:', contentType);
+        
+        if (contentType.includes('application/json')) {
+            logger.info('📤 Retornando JSON (requisição AJAX) - NÃO criando sessão do cliente');
+            res.json({ 
+                success: true, 
+                message: 'Cliente criado com sucesso!',
+                license: {
+                    key: newLicense.key,
+                    email: sanitizedEmail
+                }
+            });
+        } else {
+            // Form submit padrão - redirecionar para admin
+            // NÃO criar sessão do cliente (req.session.user e req.session.role NÃO devem ser definidos aqui)
+            // Garantir que a sessão do admin seja preservada
+            logger.info('🔄 Redirecionando admin para /admin?success=1 (SEM criar sessão do cliente)');
+            logger.info('🔐 Sessão do admin será preservada:', {
+                sessionUser: req.session.user,
+                sessionRole: req.session.role
+            });
+            // GARANTIR que não estamos criando sessão do cliente aqui
+            // req.session.user e req.session.role NÃO devem ser modificados
+            res.redirect('/admin?success=1&message=' + encodeURIComponent('Cliente criado com sucesso!'));
+        }
+        
     } catch (error) {
-        console.error('❌ === ERRO AO CRIAR CLIENTE ===');
-        console.error('❌ Tipo do erro:', error.constructor.name);
-        console.error('❌ Mensagem:', error.message);
-        console.error('❌ Stack:', error.stack);
+        logger.error('❌ === ERRO AO CRIAR CLIENTE ===');
+        logger.error('❌ Tipo do erro:', error.constructor.name);
+        logger.error('❌ Mensagem:', error.message);
+        logger.error('❌ Stack:', error.stack);
         
         // Verificar se é erro de validação do Mongoose
         if (error.name === 'ValidationError') {
-            console.error('❌ Erros de validação:', JSON.stringify(error.errors, null, 2));
+            logger.error('❌ Erros de validação:', JSON.stringify(error.errors, null, 2));
             return res.json({ 
                 success: false, 
                 message: 'Erro de validação: ' + Object.values(error.errors).map(e => e.message).join(', ')
@@ -2684,10 +2749,19 @@ app.post('/admin/create-client', requireAdmin, body ? [
         
         // Verificar se é erro de duplicação
         if (error.code === 11000) {
-            console.error('❌ Erro: Email ou chave já existe');
+            logger.error('❌ Erro: Email ou chave já existe');
             return res.json({ 
                 success: false, 
                 message: 'Email ou chave de licença já existe no sistema'
+            });
+        }
+        
+        // Verificar se é erro de CSRF
+        if (error.code === 'EBADCSRFTOKEN') {
+            logger.error('❌ Erro: Token CSRF inválido ou ausente');
+            return res.json({ 
+                success: false, 
+                message: 'Erro de segurança: Token CSRF inválido. Recarregue a página e tente novamente.'
             });
         }
         
@@ -3377,7 +3451,7 @@ function isValidEmail(email) {
 app.post('/process-checkout',
     body ? [
         body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
-        body('password').trim().isLength({ min: 3, max: 255 }).withMessage('Senha deve ter entre 3 e 255 caracteres')
+        body('password').trim().isLength({ min: 6, max: 255 }).withMessage('Senha deve ter entre 6 e 255 caracteres')
     ] : [],
     validateRequest,
     async (req, res) => {
@@ -3388,6 +3462,11 @@ app.post('/process-checkout',
     const sanitizedPassword = password.trim();
     
     try {
+        // Validação adicional de senha (mesma do admin)
+        if (!sanitizedPassword || sanitizedPassword.length < 6) {
+            return res.status(400).send('Senha deve ter no mínimo 6 caracteres');
+        }
+        
         let user = await User.findOne({ email: sanitizedEmail });
         if (!user) {
             // Hash da senha antes de criar usuário
@@ -3410,7 +3489,10 @@ app.post('/process-checkout',
                 productSlug: productSlug,
                 plan: 'trial', 
                 active: true,
-                trialExpiresAt
+                domain: null, // Padronizar com admin
+                notes: null, // Padronizar com admin
+                trialExpiresAt,
+                planExpiresAt: null // Padronizar com admin
             });
             
             // Enviar email com chave de licença trial
@@ -3420,16 +3502,16 @@ app.post('/process-checkout',
             await ActivityLog.create({
                 email: sanitizedEmail,
                 action: 'created',
-                description: 'Licença criada manualmente - Plano: trial',
-                adminUser: req.session.user || 'admin',
-                metadata: { plan: 'trial', source: 'manual' }
+                description: 'Licença criada via landing page - Plano: trial',
+                adminUser: 'system',
+                metadata: { plan: 'trial', source: 'landing_page' }
             });
         }
         req.session.user = sanitizedEmail;
         req.session.role = 'client';
         res.redirect('/minha-conta');
     } catch (e) { 
-        console.error('Erro em /process-checkout:', e);
+        logger.error('Erro em /process-checkout:', e);
         res.status(500).send("Erro interno do servidor");
     }
 });
