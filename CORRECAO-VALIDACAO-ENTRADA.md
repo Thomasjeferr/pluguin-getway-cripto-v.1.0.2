@@ -235,3 +235,4 @@ body('planId').trim().isIn(['monthly', 'yearly', 'trial']).withMessage('Plano in
 
 
 
+

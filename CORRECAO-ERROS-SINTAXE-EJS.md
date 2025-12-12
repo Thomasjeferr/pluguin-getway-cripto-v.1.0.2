@@ -100,3 +100,4 @@ Os operadores ternários EJS estavam causando erros de renderização porque:
 
 
 
+

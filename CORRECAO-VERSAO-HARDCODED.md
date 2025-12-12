@@ -149,3 +149,4 @@ define( 'WC_BINANCE_PIX_VERSION', '1.0.1' ); // Nova versão
 
 
 
+

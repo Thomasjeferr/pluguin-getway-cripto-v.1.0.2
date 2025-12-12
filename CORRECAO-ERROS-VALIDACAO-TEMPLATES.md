@@ -149,3 +149,4 @@ R$ <%= typeof stats !== 'undefined' ? stats.estimatedMonthlyRevenue.toFixed(2).r
 
 
 
+
